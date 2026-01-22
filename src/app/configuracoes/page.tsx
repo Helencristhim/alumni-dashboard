@@ -43,6 +43,7 @@ const getInitialModules = (): ModuleConfig[] => [
       { internal: 'data_venda', label: 'Data da Venda', external: '', required: true },
       { internal: 'faturamento', label: 'Valor/Faturamento', external: '', required: true },
       { internal: 'produto', label: 'Produto/Curso', external: '', required: true },
+      { internal: 'tipo_matricula', label: 'Tipo (Novo/Renovação)', external: '', required: true },
       { internal: 'aluno_id', label: 'ID do Aluno', external: '', required: false },
       { internal: 'aluno_nome', label: 'Nome do Aluno', external: '', required: false },
       { internal: 'forma_pagamento', label: 'Forma de Pagamento', external: '', required: false },
