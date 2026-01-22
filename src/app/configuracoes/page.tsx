@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import {
   Settings,
@@ -15,7 +15,8 @@ import {
   FileSpreadsheet,
   Link2,
   Table,
-  HelpCircle
+  HelpCircle,
+  Loader2
 } from 'lucide-react';
 
 interface ModuleConfig {
@@ -29,7 +30,7 @@ interface ModuleConfig {
   columns: { internal: string; label: string; external: string; required: boolean }[];
 }
 
-const initialModules: ModuleConfig[] = [
+const getInitialModules = (): ModuleConfig[] => [
   {
     id: 'vendas_b2c',
     name: 'Vendas B2C',
@@ -188,13 +189,52 @@ const initialModules: ModuleConfig[] = [
   },
 ];
 
+const STORAGE_KEY = 'alumni_dashboard_config';
+
 export default function ConfiguracoesPage() {
-  const [modules, setModules] = useState<ModuleConfig[]>(initialModules);
+  const [modules, setModules] = useState<ModuleConfig[]>([]);
   const [expandedModule, setExpandedModule] = useState<string | null>('vendas_b2c');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [testingConnection, setTestingConnection] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<Record<string, 'success' | 'error' | null>>({});
+
+  // Carrega configurações salvas do localStorage ao iniciar
+  useEffect(() => {
+    const loadSavedConfig = () => {
+      try {
+        const savedConfig = localStorage.getItem(STORAGE_KEY);
+        if (savedConfig) {
+          const parsed = JSON.parse(savedConfig);
+          // Merge com initialModules para garantir que novos campos existam
+          const merged = getInitialModules().map(initialMod => {
+            const savedMod = parsed.find((s: ModuleConfig) => s.id === initialMod.id);
+            if (savedMod) {
+              return {
+                ...initialMod,
+                ...savedMod,
+                columns: initialMod.columns.map(initialCol => {
+                  const savedCol = savedMod.columns?.find((c: { internal: string }) => c.internal === initialCol.internal);
+                  return savedCol ? { ...initialCol, external: savedCol.external } : initialCol;
+                })
+              };
+            }
+            return initialMod;
+          });
+          setModules(merged);
+        } else {
+          setModules(getInitialModules());
+        }
+      } catch (error) {
+        console.error('Erro ao carregar configurações:', error);
+        setModules(getInitialModules());
+      }
+      setLoading(false);
+    };
+
+    loadSavedConfig();
+  }, []);
 
   const handleModuleChange = (moduleId: string, field: string, value: string | boolean) => {
     setModules(prev => prev.map(mod =>
@@ -219,20 +259,30 @@ export default function ConfiguracoesPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    // Simula salvamento - em produção, salvar no backend/arquivo
-    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Salva no localStorage para persistência
-    localStorage.setItem('dashboard_config', JSON.stringify(modules));
+    try {
+      // Salva no localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(modules));
+
+      // Dispara evento para notificar outros componentes
+      window.dispatchEvent(new CustomEvent('configUpdated', { detail: modules }));
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+      alert('Erro ao salvar configurações');
+    }
 
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
   };
 
   const handleTestConnection = async (moduleId: string) => {
     const module = modules.find(m => m.id === moduleId);
-    if (!module?.sourceUrl) return;
+    if (!module?.sourceUrl) {
+      alert('Por favor, insira a URL da planilha primeiro');
+      return;
+    }
 
     setTestingConnection(moduleId);
     setConnectionStatus(prev => ({ ...prev, [moduleId]: null }));
@@ -241,20 +291,33 @@ export default function ConfiguracoesPage() {
       // Extrai ID da planilha
       const match = module.sourceUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
       if (!match) {
-        throw new Error('URL inválida');
+        throw new Error('URL inválida. Use a URL completa do Google Sheets.');
       }
 
       const sheetId = match[1];
-      const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(module.sheetName || 'Sheet1')}`;
+      const sheetName = module.sheetName || 'Sheet1';
+      const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
 
       const response = await fetch(exportUrl);
+
       if (response.ok) {
-        setConnectionStatus(prev => ({ ...prev, [moduleId]: 'success' }));
+        const text = await response.text();
+        if (text && text.length > 0) {
+          setConnectionStatus(prev => ({ ...prev, [moduleId]: 'success' }));
+
+          // Mostra preview das colunas encontradas
+          const firstLine = text.split('\n')[0];
+          const columns = firstLine.split(',').map(c => c.replace(/"/g, '').trim());
+          alert(`Conexão OK!\n\nColunas encontradas:\n${columns.join('\n')}`);
+        } else {
+          throw new Error('Planilha vazia');
+        }
       } else {
-        throw new Error('Não foi possível acessar');
+        throw new Error('Não foi possível acessar. Verifique se a planilha está pública.');
       }
-    } catch {
+    } catch (error) {
       setConnectionStatus(prev => ({ ...prev, [moduleId]: 'error' }));
+      alert(`Erro: ${error instanceof Error ? error.message : 'Não foi possível conectar'}`);
     }
 
     setTestingConnection(null);
@@ -264,6 +327,16 @@ export default function ConfiguracoesPage() {
     const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
     return match ? match[1] : '';
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -318,7 +391,7 @@ export default function ConfiguracoesPage() {
                 <li>Cole a <strong>URL completa</strong> da sua planilha Google Sheets</li>
                 <li>Informe o <strong>nome da aba</strong> que contém os dados</li>
                 <li>Mapeie as <strong>colunas</strong>: digite o nome exato como aparece na planilha</li>
-                <li>Clique em <strong>"Testar Conexão"</strong> para verificar</li>
+                <li>Clique em <strong>"Testar"</strong> para verificar e ver as colunas disponíveis</li>
                 <li>Clique em <strong>"Salvar Configurações"</strong></li>
               </ol>
               <p className="mt-3 text-blue-600">
@@ -348,6 +421,11 @@ export default function ConfiguracoesPage() {
                   <div>
                     <div className="flex items-center gap-3">
                       <h3 className="font-semibold text-gray-900">{module.name}</h3>
+                      {module.sourceUrl && (
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                          Configurado
+                        </span>
+                      )}
                       {connectionStatus[module.id] === 'success' && (
                         <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
                           <CheckCircle className="w-3 h-3" />
@@ -391,7 +469,7 @@ export default function ConfiguracoesPage() {
                     <div>
                       <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                         <Link2 className="w-4 h-4" />
-                        URL da Planilha Google Sheets
+                        URL da Planilha Google Sheets *
                       </label>
                       <input
                         type="url"
@@ -401,8 +479,8 @@ export default function ConfiguracoesPage() {
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                       />
                       {module.sourceUrl && extractSheetId(module.sourceUrl) && (
-                        <p className="mt-1 text-xs text-gray-400">
-                          ID: {extractSheetId(module.sourceUrl)}
+                        <p className="mt-1 text-xs text-green-600">
+                          ID detectado: {extractSheetId(module.sourceUrl).substring(0, 20)}...
                         </p>
                       )}
                     </div>
@@ -410,7 +488,7 @@ export default function ConfiguracoesPage() {
                     <div>
                       <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                         <Table className="w-4 h-4" />
-                        Nome da Aba
+                        Nome da Aba *
                       </label>
                       <div className="flex gap-2">
                         <input
@@ -423,7 +501,7 @@ export default function ConfiguracoesPage() {
                         <button
                           onClick={() => handleTestConnection(module.id)}
                           disabled={!module.sourceUrl || testingConnection === module.id}
-                          className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap"
+                          className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap flex items-center gap-2"
                         >
                           {testingConnection === module.id ? (
                             <RefreshCw className="w-4 h-4 animate-spin" />
@@ -472,6 +550,8 @@ export default function ConfiguracoesPage() {
                             className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                               column.required && !column.external
                                 ? 'border-orange-200 bg-orange-50'
+                                : column.external
+                                ? 'border-green-200 bg-green-50'
                                 : 'border-gray-200'
                             }`}
                           />
