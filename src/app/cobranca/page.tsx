@@ -1,57 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ModuleContainer, ModuleSection } from '@/components/layout/ModuleContainer';
 import { KPICard } from '@/components/ui/KPICard';
 import { ChartCard, LineChart, BarChartComponent, AreaChartComponent } from '@/components/ui/Charts';
 import { DateFilter } from '@/components/ui/DateFilter';
-import { Receipt, TrendingDown, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
+import { Receipt, TrendingDown, DollarSign, CheckCircle, AlertCircle, Settings } from 'lucide-react';
+import { useSheetData } from '@/lib/hooks/useSheetData';
+import Link from 'next/link';
 
-// Dados de demonstração
-const demoData = {
-  inadimplenciaPercentual: 4.5,
-  inadimplenciaAnterior: 5.8,
-  inadimplenciaValor: 185000,
-  valorAnterior: 232000,
-  valorRecuperado: 78000,
-  recuperadoAnterior: 52000,
-  titulosVencer: 15,
-  titulosAtrasados: 42,
-};
-
-const evolucaoInadimplencia = [
-  { mes: 'Jul', inadimplencia: 6.2, recuperado: 45000 },
-  { mes: 'Ago', inadimplencia: 5.8, recuperado: 52000 },
-  { mes: 'Set', inadimplencia: 5.5, recuperado: 58000 },
-  { mes: 'Out', inadimplencia: 5.1, recuperado: 65000 },
-  { mes: 'Nov', inadimplencia: 5.8, recuperado: 52000 },
-  { mes: 'Dez', inadimplencia: 4.5, recuperado: 78000 },
-];
-
-const inadimplenciaPorFaixa = [
-  { faixa: '1-15 dias', valor: 45000, quantidade: 18, cor: '#F59E0B' },
-  { faixa: '16-30 dias', valor: 52000, quantidade: 12, cor: '#F97316' },
-  { faixa: '31-60 dias', valor: 48000, quantidade: 8, cor: '#EF4444' },
-  { faixa: '61-90 dias', valor: 25000, quantidade: 3, cor: '#DC2626' },
-  { faixa: '+90 dias', valor: 15000, quantidade: 1, cor: '#991B1B' },
-];
-
-const recuperacaoPorAcao = [
-  { acao: 'WhatsApp automático', recuperado: 28000, sucesso: 65 },
-  { acao: 'Ligação cobrança', recuperado: 22000, sucesso: 45 },
-  { acao: 'E-mail lembrete', recuperado: 15000, sucesso: 35 },
-  { acao: 'Negociação especial', recuperado: 8000, sucesso: 80 },
-  { acao: 'Cobrança externa', recuperado: 5000, sucesso: 25 },
-];
-
-const titulosRecentes = [
-  { aluno: 'Carlos Mendes', curso: 'Particular presencial', valor: 1500, diasAtraso: 5, status: 'Em cobrança' },
-  { aluno: 'Ana Beatriz', curso: 'Community', valor: 800, diasAtraso: 12, status: 'Em cobrança' },
-  { aluno: 'Pedro Santos', curso: 'Conexion', valor: 1000, diasAtraso: 22, status: 'Negociando' },
-  { aluno: 'Maria Silva', curso: 'Particular online', valor: 1200, diasAtraso: 35, status: 'Crítico' },
-  { aluno: 'João Costa', curso: 'Community Flow', valor: 1200, diasAtraso: 8, status: 'Em cobrança' },
-];
+interface TituloCobranca {
+  data_vencimento: Date | string;
+  aluno_nome?: string;
+  curso?: string;
+  valor?: number;
+  dias_atraso?: number;
+  status?: string;
+  valor_recuperado?: number;
+  acao_cobranca?: string;
+  [key: string]: unknown;
+}
 
 export default function CobrancaPage() {
   const [startDate, setStartDate] = useState(() => {
@@ -60,27 +29,152 @@ export default function CobrancaPage() {
     return date;
   });
   const [endDate, setEndDate] = useState(new Date());
-  const [loading, setLoading] = useState(false);
+
+  const { data, loading, error, lastUpdated, sourceUrl, refresh } = useSheetData<TituloCobranca>('cobranca');
 
   const handleDateChange = (start: Date, end: Date) => {
     setStartDate(start);
     setEndDate(end);
   };
 
-  const handleRefresh = async () => {
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setLoading(false);
-  };
+  // Filtra dados pelo período selecionado
+  const filteredData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    return data.filter(item => {
+      if (!item.data_vencimento) return true;
+
+      let itemDate: Date;
+      if (item.data_vencimento instanceof Date) {
+        itemDate = item.data_vencimento;
+      } else if (typeof item.data_vencimento === 'string') {
+        const parts = item.data_vencimento.split('/');
+        if (parts.length === 3) {
+          itemDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        } else {
+          itemDate = new Date(item.data_vencimento);
+        }
+      } else {
+        return true;
+      }
+
+      return itemDate >= startDate && itemDate <= endDate;
+    });
+  }, [data, startDate, endDate]);
+
+  // Calcula KPIs
+  const kpis = useMemo(() => {
+    if (filteredData.length === 0) {
+      return {
+        inadimplenciaValor: 0,
+        valorRecuperado: 0,
+        titulosAtrasados: 0,
+        titulosVencer: 0,
+      };
+    }
+
+    const atrasados = filteredData.filter(item => {
+      const diasAtraso = typeof item.dias_atraso === 'number' ? item.dias_atraso : 0;
+      return diasAtraso > 0;
+    });
+
+    const inadimplenciaValor = atrasados.reduce((sum, item) => {
+      const valor = typeof item.valor === 'number' ? item.valor : 0;
+      return sum + valor;
+    }, 0);
+
+    const valorRecuperado = filteredData.reduce((sum, item) => {
+      const valor = typeof item.valor_recuperado === 'number' ? item.valor_recuperado : 0;
+      return sum + valor;
+    }, 0);
+
+    const aVencer = filteredData.filter(item => {
+      const diasAtraso = typeof item.dias_atraso === 'number' ? item.dias_atraso : 0;
+      return diasAtraso <= 0 && diasAtraso >= -5;
+    });
+
+    return {
+      inadimplenciaValor,
+      valorRecuperado,
+      titulosAtrasados: atrasados.length,
+      titulosVencer: aVencer.length,
+    };
+  }, [filteredData]);
+
+  // Inadimplência por faixa de atraso
+  const inadimplenciaPorFaixa = useMemo(() => {
+    const faixas = [
+      { faixa: '1-15 dias', min: 1, max: 15, cor: '#F59E0B' },
+      { faixa: '16-30 dias', min: 16, max: 30, cor: '#F97316' },
+      { faixa: '31-60 dias', min: 31, max: 60, cor: '#EF4444' },
+      { faixa: '61-90 dias', min: 61, max: 90, cor: '#DC2626' },
+      { faixa: '+90 dias', min: 91, max: 9999, cor: '#991B1B' },
+    ];
+
+    return faixas.map(faixa => {
+      const titulos = filteredData.filter(item => {
+        const dias = typeof item.dias_atraso === 'number' ? item.dias_atraso : 0;
+        return dias >= faixa.min && dias <= faixa.max;
+      });
+
+      const valor = titulos.reduce((sum, item) => {
+        return sum + (typeof item.valor === 'number' ? item.valor : 0);
+      }, 0);
+
+      return {
+        ...faixa,
+        valor,
+        quantidade: titulos.length,
+      };
+    });
+  }, [filteredData]);
+
+  // Títulos em atraso (para tabela)
+  const titulosRecentes = useMemo(() => {
+    return filteredData
+      .filter(item => {
+        const dias = typeof item.dias_atraso === 'number' ? item.dias_atraso : 0;
+        return dias > 0;
+      })
+      .map(item => ({
+        aluno: String(item.aluno_nome || 'N/A'),
+        curso: String(item.curso || 'N/A'),
+        valor: typeof item.valor === 'number' ? item.valor : 0,
+        diasAtraso: typeof item.dias_atraso === 'number' ? item.dias_atraso : 0,
+        status: String(item.status || 'Em cobrança'),
+      }))
+      .sort((a, b) => b.diasAtraso - a.diasAtraso)
+      .slice(0, 5);
+  }, [filteredData]);
+
+  // Se houver erro de configuração
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-96 text-center">
+          <AlertCircle className="w-16 h-16 text-orange-400 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Configuração Necessária</h2>
+          <p className="text-gray-500 mb-6 max-w-md">{error}</p>
+          <Link
+            href="/configuracoes"
+            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            <Settings className="w-5 h-5" />
+            Ir para Configurações
+          </Link>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
       <ModuleContainer
         title="Cobrança"
         description="Inadimplência e recuperação de valores"
-        sourceUrl="https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit"
-        lastUpdated={new Date()}
-        onRefresh={handleRefresh}
+        sourceUrl={sourceUrl || '#'}
+        lastUpdated={lastUpdated || undefined}
+        onRefresh={refresh}
         loading={loading}
         color="#F59E0B"
         actions={
@@ -92,45 +186,49 @@ export default function CobrancaPage() {
         }
       >
         <div className="space-y-8">
+          {/* Mensagem se não houver dados */}
+          {!loading && filteredData.length === 0 && (
+            <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-6 text-center">
+              <p className="text-yellow-800">
+                Nenhum dado encontrado para o período selecionado.
+                {data.length > 0 && ` (${data.length} registros totais na planilha)`}
+              </p>
+            </div>
+          )}
+
           {/* KPIs Principais */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <KPICard
-              title="Inadimplência (%)"
-              value={demoData.inadimplenciaPercentual}
-              previousValue={demoData.inadimplenciaAnterior}
-              format="percentage"
-              trend="down"
-              icon={<TrendingDown className="w-6 h-6" />}
-              color="#10B981"
-              subtitle="Redução é positivo"
-              loading={loading}
-            />
-            <KPICard
               title="Inadimplência (R$)"
-              value={demoData.inadimplenciaValor}
-              previousValue={demoData.valorAnterior}
+              value={kpis.inadimplenciaValor}
               format="currencyCompact"
-              trend="down"
               icon={<AlertCircle className="w-6 h-6" />}
               color="#EF4444"
               loading={loading}
             />
             <KPICard
               title="Valor Recuperado"
-              value={demoData.valorRecuperado}
-              previousValue={demoData.recuperadoAnterior}
+              value={kpis.valorRecuperado}
               format="currencyCompact"
               icon={<CheckCircle className="w-6 h-6" />}
               color="#10B981"
               loading={loading}
             />
             <KPICard
-              title="Títulos a Vencer (5 dias)"
-              value={demoData.titulosVencer}
+              title="Títulos Atrasados"
+              value={kpis.titulosAtrasados}
               format="number"
               icon={<Receipt className="w-6 h-6" />}
               color="#F59E0B"
-              subtitle={`${demoData.titulosAtrasados} atrasados`}
+              loading={loading}
+            />
+            <KPICard
+              title="Total Registros"
+              value={data.length}
+              format="number"
+              icon={<TrendingDown className="w-6 h-6" />}
+              color="#3B82F6"
+              subtitle="Na planilha"
               loading={loading}
             />
           </div>
@@ -163,152 +261,100 @@ export default function CobrancaPage() {
           {/* Gráficos */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ChartCard
-              title="Evolução da Inadimplência"
-              subtitle="Taxa mensal (%)"
+              title="Inadimplência por Faixa"
+              subtitle="Valor por período de atraso"
             >
-              <LineChart
-                data={evolucaoInadimplencia}
-                xKey="mes"
-                yKey="inadimplencia"
+              <BarChartComponent
+                data={inadimplenciaPorFaixa}
+                xKey="faixa"
+                yKey="valor"
                 color="#F59E0B"
-                formatY="percentage"
+                formatY="currency"
                 height={280}
                 loading={loading}
               />
             </ChartCard>
 
             <ChartCard
-              title="Recuperação Mensal"
-              subtitle="Valores recuperados (R$)"
+              title="Quantidade de Títulos"
+              subtitle="Por faixa de atraso"
             >
-              <AreaChartComponent
-                data={evolucaoInadimplencia}
-                xKey="mes"
-                yKey="recuperado"
-                color="#10B981"
-                formatY="currency"
+              <BarChartComponent
+                data={inadimplenciaPorFaixa}
+                xKey="faixa"
+                yKey="quantidade"
+                color="#EF4444"
                 height={280}
                 loading={loading}
               />
             </ChartCard>
           </div>
 
-          {/* Recuperação por ação */}
-          <ModuleSection
-            title="Efetividade das Ações de Cobrança"
-            subtitle="Valor recuperado e taxa de sucesso"
-          >
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ação
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Valor Recuperado
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Taxa de Sucesso
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Efetividade
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {recuperacaoPorAcao.map((acao) => (
-                    <tr key={acao.acao} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {acao.acao}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        R$ {acao.recuperado.toLocaleString('pt-BR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {acao.sucesso}%
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div
-                            className="h-2.5 rounded-full"
-                            style={{
-                              width: `${acao.sucesso}%`,
-                              backgroundColor: acao.sucesso >= 60 ? '#10B981' : acao.sucesso >= 40 ? '#F59E0B' : '#EF4444'
-                            }}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </ModuleSection>
-
           {/* Títulos em atraso */}
-          <ModuleSection
-            title="Títulos em Atraso - Atenção Prioritária"
-            subtitle="Principais casos para acompanhamento"
-          >
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Aluno
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Curso
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Valor
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Dias Atraso
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {titulosRecentes.map((titulo, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {titulo.aluno}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {titulo.curso}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        R$ {titulo.valor.toLocaleString('pt-BR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`text-sm font-medium ${
-                          titulo.diasAtraso <= 15 ? 'text-yellow-600' :
-                          titulo.diasAtraso <= 30 ? 'text-orange-600' : 'text-red-600'
-                        }`}>
-                          {titulo.diasAtraso} dias
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          titulo.status === 'Crítico'
-                            ? 'bg-red-100 text-red-800'
-                            : titulo.status === 'Negociando'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {titulo.status}
-                        </span>
-                      </td>
+          {titulosRecentes.length > 0 && (
+            <ModuleSection
+              title="Títulos em Atraso - Atenção Prioritária"
+              subtitle="Principais casos para acompanhamento"
+            >
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Aluno
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Curso
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Valor
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Dias Atraso
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </ModuleSection>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {titulosRecentes.map((titulo, i) => (
+                      <tr key={i} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {titulo.aluno}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {titulo.curso}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          R$ {titulo.valor.toLocaleString('pt-BR')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`text-sm font-medium ${
+                            titulo.diasAtraso <= 15 ? 'text-yellow-600' :
+                            titulo.diasAtraso <= 30 ? 'text-orange-600' : 'text-red-600'
+                          }`}>
+                            {titulo.diasAtraso} dias
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            titulo.status.toLowerCase().includes('crític')
+                              ? 'bg-red-100 text-red-800'
+                              : titulo.status.toLowerCase().includes('negoci')
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {titulo.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </ModuleSection>
+          )}
         </div>
       </ModuleContainer>
     </DashboardLayout>
