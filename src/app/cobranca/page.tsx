@@ -25,25 +25,46 @@ interface TituloCobranca {
   [key: string]: unknown;
 }
 
-// Função para parsear valor
+// Função para parsear valor (formato R$830.01 - ponto como decimal)
 const parseValor = (valor: unknown): number => {
   if (typeof valor === 'number') return valor;
   if (typeof valor === 'string') {
-    const limpo = valor.replace(/R\$\s*/gi, '').replace(/\./g, '').replace(',', '.').trim();
+    // Remove R$ e espaços
+    let limpo = valor.replace(/R\$\s*/gi, '').trim();
+
+    // Se tem vírgula e ponto, assume formato brasileiro (1.234,56)
+    if (limpo.includes(',') && limpo.includes('.')) {
+      limpo = limpo.replace(/\./g, '').replace(',', '.');
+    }
+    // Se só tem vírgula, pode ser decimal brasileiro (830,01)
+    else if (limpo.includes(',') && !limpo.includes('.')) {
+      limpo = limpo.replace(',', '.');
+    }
+    // Se só tem ponto, assume formato americano (830.01) - mantém como está
+
     const num = parseFloat(limpo);
     return isNaN(num) ? 0 : num;
   }
   return 0;
 };
 
-// Função para parsear data
+// Função para parsear data (formato DD/MM/AA ou DD/MM/AAAA)
 const parseDate = (dateValue: Date | string | undefined): Date | null => {
   if (!dateValue) return null;
   if (dateValue instanceof Date) return dateValue;
   if (typeof dateValue === 'string') {
     const parts = dateValue.split('/');
     if (parts.length === 3) {
-      return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      const day = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1;
+      let year = parseInt(parts[2]);
+
+      // Se ano tem 2 dígitos, converte para 4 dígitos
+      if (year < 100) {
+        year = year > 50 ? 1900 + year : 2000 + year;
+      }
+
+      return new Date(year, month, day);
     }
     return new Date(dateValue);
   }
@@ -102,16 +123,19 @@ export default function CobrancaPage() {
     };
   }, [data]);
 
-  // Valor total em aberto por mês
+  // Valor total em aberto por mês (GERAL - todos os registros)
   // - Mês de referência: coluna "Vencimento"
-  // - Valor: soma de "Valor total em aberto" onde Status = "Em contato"
+  // - Valor: soma de TODOS os "Valor total em aberto"
   const valorAbertoMes = useMemo(() => {
     const grupos: Record<string, number> = {};
 
-    data.forEach(item => {
-      // Só conta se o status for "Em contato"
-      if (!isEmContato(item.status)) return;
+    // Inicializa todos os meses com zero para mostrar gráfico completo
+    const mesesOrdem = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    mesesOrdem.forEach(mes => {
+      grupos[mes] = 0;
+    });
 
+    data.forEach(item => {
       const mes = getMonthFromDate(item.vencimento);
       if (mes === 'N/A') return;
 
@@ -119,12 +143,11 @@ export default function CobrancaPage() {
       grupos[mes] = (grupos[mes] || 0) + valor;
     });
 
-    // Ordena os meses
-    const mesesOrdem = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    return Object.entries(grupos)
-      .map(([mes, valor]) => ({ mes, valor }))
-      .filter(item => item.valor > 0)
-      .sort((a, b) => mesesOrdem.indexOf(a.mes) - mesesOrdem.indexOf(b.mes));
+    // Retorna todos os meses em ordem, mesmo os com valor zero
+    return mesesOrdem.map(mes => ({
+      mes,
+      valor: grupos[mes] || 0
+    }));
   }, [data]);
 
   // Valor recuperado por mês
@@ -133,8 +156,14 @@ export default function CobrancaPage() {
   const valorRecuperadoMes = useMemo(() => {
     const grupos: Record<string, number> = {};
 
+    // Inicializa todos os meses com zero
+    const mesesOrdem = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    mesesOrdem.forEach(mes => {
+      grupos[mes] = 0;
+    });
+
     data.forEach(item => {
-      // Só conta se tiver data de pagamento e valor recuperado
+      // Só conta se tiver data de pagamento
       if (!item.data_pagamento) return;
 
       const mes = getMonthFromDate(item.data_pagamento);
@@ -144,12 +173,11 @@ export default function CobrancaPage() {
       grupos[mes] = (grupos[mes] || 0) + valor;
     });
 
-    // Ordena os meses
-    const mesesOrdem = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    return Object.entries(grupos)
-      .map(([mes, valor]) => ({ mes, valor }))
-      .filter(item => item.valor > 0)
-      .sort((a, b) => mesesOrdem.indexOf(a.mes) - mesesOrdem.indexOf(b.mes));
+    // Retorna todos os meses em ordem
+    return mesesOrdem.map(mes => ({
+      mes,
+      valor: grupos[mes] || 0
+    }));
   }, [data]);
 
   // Títulos em contato (para tabela) - apenas status "Em contato"
@@ -259,7 +287,7 @@ export default function CobrancaPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ChartCard
                 title="Valor Total em Aberto por Mês"
-                subtitle="Mês de vencimento (Status: Em contato)"
+                subtitle="Mês de vencimento (Geral - todos os registros)"
               >
                 <BarChartComponent
                   data={valorAbertoMes}

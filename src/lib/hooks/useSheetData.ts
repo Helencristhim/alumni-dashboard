@@ -57,10 +57,20 @@ function parseValue(value: string): unknown {
   // Remove prefixo de moeda (R$, $, etc)
   strValue = strValue.replace(/^R\$\s*/i, '').replace(/^\$\s*/, '').trim();
 
-  // Tenta converter para número (formato brasileiro: 3.576,00)
+  // Tenta converter para número
   if (/^-?[\d.,]+$/.test(strValue)) {
-    // Remove pontos de milhar e troca vírgula por ponto
-    const normalized = strValue.replace(/\./g, '').replace(',', '.');
+    let normalized = strValue;
+
+    // Se tem vírgula e ponto, assume formato brasileiro (1.234,56)
+    if (strValue.includes(',') && strValue.includes('.')) {
+      normalized = strValue.replace(/\./g, '').replace(',', '.');
+    }
+    // Se só tem vírgula, pode ser decimal brasileiro (830,01)
+    else if (strValue.includes(',') && !strValue.includes('.')) {
+      normalized = strValue.replace(',', '.');
+    }
+    // Se só tem ponto, assume formato americano (830.01) - mantém como está
+
     const numValue = parseFloat(normalized);
     if (!isNaN(numValue)) {
       return numValue;
@@ -76,10 +86,19 @@ function parseValue(value: string): unknown {
     return false;
   }
 
-  // Tenta converter para data (formato brasileiro DD/MM/YYYY)
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(strValue)) {
-    const [day, month, year] = strValue.split('/').map(Number);
-    const date = new Date(year, month - 1, day);
+  // Tenta converter para data (formato DD/MM/AAAA ou DD/MM/AA)
+  if (/^\d{2}\/\d{2}\/\d{2,4}$/.test(strValue)) {
+    const parts = strValue.split('/').map(Number);
+    const day = parts[0];
+    const month = parts[1] - 1;
+    let year = parts[2];
+
+    // Se ano tem 2 dígitos, converte para 4 dígitos
+    if (year < 100) {
+      year = year > 50 ? 1900 + year : 2000 + year;
+    }
+
+    const date = new Date(year, month, day);
     if (!isNaN(date.getTime())) {
       return date;
     }
