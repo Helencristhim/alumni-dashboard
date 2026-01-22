@@ -1,0 +1,256 @@
+# ============================================================
+# CONFIGURAÇÃO CENTRAL DE FONTES DE DADOS - DASHBOARD ALUMNI
+# ============================================================
+# Este arquivo controla todas as conexões com planilhas.
+# Para alterar a fonte de dados de um módulo, basta editar aqui.
+# NÃO é necessário alterar código algum.
+# ============================================================
+
+# Credenciais Google Sheets (opcional - para planilhas privadas)
+google_credentials:
+  service_account_key_path: "./config/google-credentials.json"
+  # Deixe vazio se usar planilhas públicas
+
+# ============================================================
+# MÓDULO 1 - VENDAS B2C
+# ============================================================
+vendas_b2c:
+  name: "Vendas B2C"
+  description: "Faturamento e matrículas do canal direto ao consumidor"
+  enabled: true
+
+  # Fonte de dados
+  source:
+    type: "google_sheets"  # Opções: google_sheets | excel | csv
+    url: "https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit"
+    sheet_name: "Vendas B2C"
+    # Para Excel local, use: path: "./data/vendas_b2c.xlsx"
+
+  # Mapeamento de colunas (adapte ao nome real da sua planilha)
+  column_mapping:
+    data_venda: "Data"
+    faturamento: "Valor_Total"
+    produto: "Produto"
+    aluno_id: "ID_Aluno"
+    aluno_nome: "Nome_Aluno"
+    forma_pagamento: "Forma_Pagamento"
+    parcelas: "Qtd_Parcelas"
+    status: "Status_Venda"
+    vendedor: "Vendedor"
+    origem_lead: "Origem"
+
+  # Produtos rastreados neste módulo
+  produtos:
+    - "Particular presencial – inglês"
+    - "Particular online – inglês"
+    - "Particular online – espanhol"
+    - "Conexion – espanhol"
+    - "Community – inglês"
+    - "Community Flow – inglês"
+    - "Imersão – inglês"
+
+# ============================================================
+# MÓDULO 2 - VENDAS B2B
+# ============================================================
+vendas_b2b:
+  name: "Vendas B2B"
+  description: "Contratos corporativos e pipeline empresarial"
+  enabled: true
+
+  source:
+    type: "google_sheets"
+    url: "https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit"
+    sheet_name: "Vendas B2B"
+
+  column_mapping:
+    data_contrato: "Data_Fechamento"
+    empresa: "Empresa"
+    cnpj: "CNPJ"
+    valor_contrato: "Valor_Contrato"
+    valor_mensal: "Valor_Mensal"
+    duracao_meses: "Duracao_Meses"
+    status_pipeline: "Status"  # Valores: Prospecção, Qualificação, Proposta, Negociação, Fechado
+    probabilidade: "Probabilidade"
+    responsavel: "Responsavel"
+    qtd_colaboradores: "Qtd_Colaboradores"
+    forecast: "Forecast"
+
+# ============================================================
+# MÓDULO 3 - CUSTOMER CARE
+# ============================================================
+customer_care:
+  name: "Customer Care"
+  description: "Atendimento ao cliente e satisfação"
+  enabled: true
+
+  source:
+    type: "google_sheets"
+    url: "https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit"
+    sheet_name: "Atendimentos"
+
+  column_mapping:
+    data_atendimento: "Data"
+    hora_inicio: "Hora_Inicio"
+    hora_fim: "Hora_Fim"
+    tempo_resposta: "Tempo_Resposta_Min"
+    canal: "Canal"  # Valores: WhatsApp, Email, Telefone, Chat
+    motivo: "Motivo_Contato"
+    categoria: "Categoria"
+    aluno_id: "ID_Aluno"
+    atendente: "Atendente"
+    nps_score: "NPS"
+    csat_score: "CSAT"
+    resolvido: "Resolvido"  # Valores: Sim, Não
+    observacoes: "Observacoes"
+
+# ============================================================
+# MÓDULO 4 - CANCELAMENTOS
+# ============================================================
+cancelamentos:
+  name: "Cancelamentos"
+  description: "Churn e motivos de cancelamento por curso"
+  enabled: true
+
+  source:
+    type: "google_sheets"
+    url: "https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit"
+    sheet_name: "Cancelamentos"
+
+  column_mapping:
+    data_solicitacao: "Data_Solicitacao"
+    data_efetivacao: "Data_Efetivacao"
+    aluno_id: "ID_Aluno"
+    aluno_nome: "Nome_Aluno"
+    curso: "Curso"
+    motivo_principal: "Motivo_Principal"
+    motivo_detalhado: "Motivo_Detalhado"
+    valor_mensalidade: "Valor_Mensalidade"
+    tempo_como_aluno: "Meses_Como_Aluno"
+    tentativa_retencao: "Tentou_Reter"  # Valores: Sim, Não
+    feedback: "Feedback_Aluno"
+
+  # Cursos monitorados para cancelamento
+  cursos:
+    - "Particular presencial – inglês"
+    - "Particular online – inglês"
+    - "Particular online – espanhol"
+    - "Conexion – espanhol"
+    - "Community – inglês"
+    - "Community Flow – inglês"
+    - "Imersão – inglês"
+
+# ============================================================
+# MÓDULO 5 - COBRANÇA
+# ============================================================
+cobranca:
+  name: "Cobrança"
+  description: "Inadimplência e recuperação de valores"
+  enabled: true
+
+  source:
+    type: "google_sheets"
+    url: "https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit"
+    sheet_name: "Cobranca"
+
+  column_mapping:
+    data_vencimento: "Data_Vencimento"
+    data_pagamento: "Data_Pagamento"
+    aluno_id: "ID_Aluno"
+    aluno_nome: "Nome_Aluno"
+    valor_devido: "Valor_Devido"
+    valor_pago: "Valor_Pago"
+    status: "Status"  # Valores: Pago, Pendente, Atrasado, Recuperado, Perdido
+    dias_atraso: "Dias_Atraso"
+    acao_cobranca: "Acao_Realizada"
+    responsavel: "Responsavel"
+    curso: "Curso"
+
+# ============================================================
+# MÓDULO 6 - ALUNOS ATIVOS
+# ============================================================
+alunos_ativos:
+  name: "Alunos Ativos"
+  description: "Base de alunos ativos e receita por curso"
+  enabled: true
+
+  source:
+    type: "google_sheets"
+    url: "https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit"
+    sheet_name: "Alunos Ativos"
+
+  column_mapping:
+    aluno_id: "ID_Aluno"
+    aluno_nome: "Nome"
+    email: "Email"
+    curso: "Curso"
+    data_matricula: "Data_Matricula"
+    valor_mensalidade: "Valor_Mensalidade"
+    status: "Status"  # Valores: Ativo, Trancado, Formado
+    nivel: "Nivel"
+    professor: "Professor"
+    horario: "Horario"
+    modalidade: "Modalidade"  # Valores: Presencial, Online
+
+  cursos:
+    - "Particular presencial – inglês"
+    - "Particular online – inglês"
+    - "Particular online – espanhol"
+    - "Conexion – espanhol"
+    - "Community – inglês"
+    - "Community Flow – inglês"
+    - "Imersão – inglês"
+
+# ============================================================
+# MÓDULO 7 - MARKETING
+# ============================================================
+marketing:
+  name: "Marketing"
+  description: "Investimentos, CPL, CAC e performance de campanhas"
+  enabled: true
+
+  source:
+    type: "google_sheets"
+    url: "https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit"
+    sheet_name: "Marketing"
+
+  column_mapping:
+    data: "Data"
+    plataforma: "Plataforma"  # Valores: Google, Meta, LinkedIn, TikTok
+    campanha: "Campanha"
+    investimento: "Investimento"
+    impressoes: "Impressoes"
+    cliques: "Cliques"
+    leads: "Leads"
+    leads_qualificados: "Leads_Qualificados"
+    matriculas: "Matriculas"
+    receita_gerada: "Receita"
+    cpl: "CPL"
+    cac: "CAC"
+    roas: "ROAS"
+
+# ============================================================
+# CONFIGURAÇÕES GLOBAIS
+# ============================================================
+global_settings:
+  # Moeda para formatação
+  currency: "BRL"
+  currency_symbol: "R$"
+
+  # Formato de data (para parsing)
+  date_format: "DD/MM/YYYY"
+
+  # Timezone
+  timezone: "America/Sao_Paulo"
+
+  # Cache de dados (minutos)
+  cache_duration: 15
+
+  # Cores do dashboard por módulo
+  module_colors:
+    vendas_b2c: "#10B981"     # Verde
+    vendas_b2b: "#3B82F6"     # Azul
+    customer_care: "#8B5CF6"  # Roxo
+    cancelamentos: "#EF4444"  # Vermelho
+    cobranca: "#F59E0B"       # Laranja
+    alunos_ativos: "#06B6D4"  # Ciano
+    marketing: "#EC4899"      # Rosa
