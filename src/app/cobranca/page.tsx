@@ -4,9 +4,9 @@ import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ModuleContainer, ModuleSection } from '@/components/layout/ModuleContainer';
 import { KPICard } from '@/components/ui/KPICard';
-import { ChartCard, BarChartComponent, AreaChartComponent } from '@/components/ui/Charts';
+import { ChartCard, BarChartComponent } from '@/components/ui/Charts';
 import { DateFilter } from '@/components/ui/DateFilter';
-import { Receipt, DollarSign, CheckCircle, AlertCircle, Settings, Percent, Calendar, Phone } from 'lucide-react';
+import { Receipt, CheckCircle, AlertCircle, Settings, Phone } from 'lucide-react';
 import { useSheetData } from '@/lib/hooks/useSheetData';
 import Link from 'next/link';
 
@@ -58,133 +58,104 @@ const getMonthFromDate = (dateValue: Date | string | undefined): string => {
   return monthNames[date.getMonth()];
 };
 
+// Função para verificar se status é "Em contato"
+const isEmContato = (status: string | undefined): boolean => {
+  if (!status) return false;
+  const statusLower = String(status).toLowerCase().trim();
+  return statusLower === 'em contato' || statusLower === 'emcontato' || statusLower.includes('em contato');
+};
+
 export default function CobrancaPage() {
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
-    date.setDate(date.getDate() - 30);
+    date.setDate(date.getDate() - 90);
     return date;
   });
   const [endDate, setEndDate] = useState(new Date());
 
   const { data, loading, error, lastUpdated, sourceUrl, refresh } = useSheetData<TituloCobranca>('cobranca');
 
-  // Também busca dados de vendas para calcular % de inadimplência
-  const vendasData = useSheetData<{ cancelamento?: boolean | string }>('vendas_b2c');
-
   const handleDateChange = (start: Date, end: Date) => {
     setStartDate(start);
     setEndDate(end);
   };
 
-  // Filtra dados pelo período de vencimento
-  const filteredData = useMemo(() => {
-    if (!data || data.length === 0) return [];
-
-    return data.filter(item => {
-      const itemDate = parseDate(item.vencimento);
-      if (!itemDate) return true;
-      return itemDate >= startDate && itemDate <= endDate;
-    });
-  }, [data, startDate, endDate]);
-
-  // Valor total em aberto por mês (baseado no vencimento)
-  const valorAbertoMes = useMemo(() => {
-    const grupos: Record<string, number> = {};
-
-    data.forEach(item => {
-      const mes = getMonthFromDate(item.vencimento);
-      const valor = parseValor(item.valor_total_aberto);
-      grupos[mes] = (grupos[mes] || 0) + valor;
-    });
-
-    return Object.entries(grupos)
-      .map(([mes, valor]) => ({ mes, valor }))
-      .filter(item => item.valor > 0);
-  }, [data]);
-
-  // Valor total recuperado por mês (baseado na data de pagamento)
-  const valorRecuperadoMes = useMemo(() => {
-    const grupos: Record<string, number> = {};
-
-    data.forEach(item => {
-      if (!item.data_pagamento) return;
-      const mes = getMonthFromDate(item.data_pagamento);
-      const valor = parseValor(item.valor_recuperado);
-      grupos[mes] = (grupos[mes] || 0) + valor;
-    });
-
-    return Object.entries(grupos)
-      .map(([mes, valor]) => ({ mes, valor }))
-      .filter(item => item.valor > 0);
-  }, [data]);
-
   // Calcula KPIs
   const kpis = useMemo(() => {
-    // Valor total em aberto (absoluto - soma de toda a coluna)
+    // Inadimplência (Absoluto) = soma de todos os valores da coluna "valor total em aberto"
     const inadimplenciaAbsoluta = data.reduce((sum, item) => {
       return sum + parseValor(item.valor_total_aberto);
     }, 0);
 
-    // Valor total recuperado
+    // Valor Recuperado = soma de todos os valores da coluna "valor recuperado"
     const valorRecuperado = data.reduce((sum, item) => {
       return sum + parseValor(item.valor_recuperado);
     }, 0);
 
-    // % de inadimplência (alunos com pendência vs alunos ativos)
-    const alunosComPendencia = data.filter(item => parseValor(item.valor_total_aberto) > 0).length;
-    const totalAlunosAtivos = vendasData.data ? vendasData.data.filter(item => {
-      const cancelamento = item.cancelamento;
-      if (cancelamento === undefined || cancelamento === null) return true;
-      if (typeof cancelamento === 'boolean') return !cancelamento;
-      const cancelStr = String(cancelamento).toLowerCase().trim();
-      return cancelStr === 'false' || cancelStr === 'não' || cancelStr === 'nao' || cancelStr === 'n' || cancelStr === '0' || cancelStr === 'ativo';
-    }).length : 0;
-
-    const percentualInadimplencia = totalAlunosAtivos > 0
-      ? (alunosComPendencia / totalAlunosAtivos) * 100
-      : 0;
-
-    // Total de títulos em aberto
-    const titulosEmAberto = data.filter(item => parseValor(item.valor_total_aberto) > 0).length;
+    // Títulos em Aberto = número de linhas com status "Em contato"
+    const titulosEmAberto = data.filter(item => isEmContato(item.status)).length;
 
     return {
       inadimplenciaAbsoluta,
       valorRecuperado,
-      percentualInadimplencia,
       titulosEmAberto,
-      alunosComPendencia,
-      totalAlunosAtivos,
     };
-  }, [data, vendasData.data]);
-
-  // Comparativo mensal (aberto vs recuperado)
-  const comparativoMensal = useMemo(() => {
-    const meses: Record<string, { aberto: number; recuperado: number }> = {};
-
-    // Valor em aberto por mês de vencimento
-    data.forEach(item => {
-      const mes = getMonthFromDate(item.vencimento);
-      if (!meses[mes]) meses[mes] = { aberto: 0, recuperado: 0 };
-      meses[mes].aberto += parseValor(item.valor_total_aberto);
-    });
-
-    // Valor recuperado por mês de pagamento
-    data.forEach(item => {
-      if (!item.data_pagamento) return;
-      const mes = getMonthFromDate(item.data_pagamento);
-      if (!meses[mes]) meses[mes] = { aberto: 0, recuperado: 0 };
-      meses[mes].recuperado += parseValor(item.valor_recuperado);
-    });
-
-    return Object.entries(meses)
-      .map(([mes, dados]) => ({ mes, ...dados }))
-      .filter(item => item.aberto > 0 || item.recuperado > 0);
   }, [data]);
 
-  // Títulos em atraso (para tabela)
-  const titulosEmAtraso = useMemo(() => {
+  // Valor total em aberto por mês
+  // - Mês de referência: coluna "Vencimento"
+  // - Valor: soma de "Valor total em aberto" onde Status = "Em contato"
+  const valorAbertoMes = useMemo(() => {
+    const grupos: Record<string, number> = {};
+
+    data.forEach(item => {
+      // Só conta se o status for "Em contato"
+      if (!isEmContato(item.status)) return;
+
+      const mes = getMonthFromDate(item.vencimento);
+      if (mes === 'N/A') return;
+
+      const valor = parseValor(item.valor_total_aberto);
+      grupos[mes] = (grupos[mes] || 0) + valor;
+    });
+
+    // Ordena os meses
+    const mesesOrdem = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return Object.entries(grupos)
+      .map(([mes, valor]) => ({ mes, valor }))
+      .filter(item => item.valor > 0)
+      .sort((a, b) => mesesOrdem.indexOf(a.mes) - mesesOrdem.indexOf(b.mes));
+  }, [data]);
+
+  // Valor recuperado por mês
+  // - Mês de referência: coluna "Data de pagamento"
+  // - Valor: soma de "valor recuperado" separado por mês
+  const valorRecuperadoMes = useMemo(() => {
+    const grupos: Record<string, number> = {};
+
+    data.forEach(item => {
+      // Só conta se tiver data de pagamento e valor recuperado
+      if (!item.data_pagamento) return;
+
+      const mes = getMonthFromDate(item.data_pagamento);
+      if (mes === 'N/A') return;
+
+      const valor = parseValor(item.valor_recuperado);
+      grupos[mes] = (grupos[mes] || 0) + valor;
+    });
+
+    // Ordena os meses
+    const mesesOrdem = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return Object.entries(grupos)
+      .map(([mes, valor]) => ({ mes, valor }))
+      .filter(item => item.valor > 0)
+      .sort((a, b) => mesesOrdem.indexOf(a.mes) - mesesOrdem.indexOf(b.mes));
+  }, [data]);
+
+  // Títulos em contato (para tabela) - apenas status "Em contato"
+  const titulosEmContato = useMemo(() => {
     return data
-      .filter(item => parseValor(item.valor_total_aberto) > 0)
+      .filter(item => isEmContato(item.status))
       .map(item => {
         const vencimento = parseDate(item.vencimento);
         const hoje = new Date();
@@ -198,11 +169,10 @@ export default function CobrancaPage() {
           valorAberto: parseValor(item.valor_total_aberto),
           diasAtraso: diasAtraso > 0 ? diasAtraso : 0,
           ultimoContato: parseDate(item.data_ultimo_contato)?.toLocaleDateString('pt-BR') || '-',
-          status: String(item.status || 'Pendente'),
+          status: String(item.status || '-'),
         };
       })
-      .sort((a, b) => b.diasAtraso - a.diasAtraso)
-      .slice(0, 10);
+      .sort((a, b) => b.diasAtraso - a.diasAtraso);
   }, [data]);
 
   // Se houver erro de configuração
@@ -254,14 +224,14 @@ export default function CobrancaPage() {
           )}
 
           {/* KPIs Principais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <KPICard
               title="Inadimplência (Absoluto)"
               value={kpis.inadimplenciaAbsoluta}
               format="currencyCompact"
               icon={<AlertCircle className="w-6 h-6" />}
               color="#EF4444"
-              subtitle="Valor total em aberto"
+              subtitle="Soma de Valor Total em Aberto"
               loading={loading}
             />
             <KPICard
@@ -270,16 +240,8 @@ export default function CobrancaPage() {
               format="currencyCompact"
               icon={<CheckCircle className="w-6 h-6" />}
               color="#10B981"
-              subtitle="Total recuperado"
+              subtitle="Soma de Valor Recuperado"
               loading={loading}
-            />
-            <KPICard
-              title="% Inadimplência"
-              value={`${kpis.percentualInadimplencia.toFixed(1)}%`}
-              icon={<Percent className="w-6 h-6" />}
-              color={kpis.percentualInadimplencia > 15 ? '#EF4444' : '#F59E0B'}
-              subtitle={`${kpis.alunosComPendencia} de ${kpis.totalAlunosAtivos} alunos`}
-              loading={loading || vendasData.loading}
             />
             <KPICard
               title="Títulos em Aberto"
@@ -287,7 +249,7 @@ export default function CobrancaPage() {
               format="number"
               icon={<Receipt className="w-6 h-6" />}
               color="#F59E0B"
-              subtitle="Pendentes"
+              subtitle="Status: Em contato"
               loading={loading}
             />
           </div>
@@ -297,7 +259,7 @@ export default function CobrancaPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ChartCard
                 title="Valor Total em Aberto por Mês"
-                subtitle="Baseado no mês de vencimento"
+                subtitle="Mês de vencimento (Status: Em contato)"
               >
                 <BarChartComponent
                   data={valorAbertoMes}
@@ -312,7 +274,7 @@ export default function CobrancaPage() {
 
               <ChartCard
                 title="Valor Recuperado por Mês"
-                subtitle="Baseado no mês de pagamento"
+                subtitle="Mês da data de pagamento"
               >
                 <BarChartComponent
                   data={valorRecuperadoMes}
@@ -327,29 +289,11 @@ export default function CobrancaPage() {
             </div>
           )}
 
-          {/* Comparativo mensal */}
-          {comparativoMensal.length > 0 && (
-            <ChartCard
-              title="Comparativo Mensal: Em Aberto vs Recuperado"
-              subtitle="Evolução por mês"
-            >
-              <AreaChartComponent
-                data={comparativoMensal}
-                xKey="mes"
-                yKey="aberto"
-                color="#EF4444"
-                formatY="currency"
-                height={300}
-                loading={loading}
-              />
-            </ChartCard>
-          )}
-
-          {/* Títulos em Atraso */}
-          {titulosEmAtraso.length > 0 && (
+          {/* Títulos em Contato */}
+          {titulosEmContato.length > 0 && (
             <ModuleSection
-              title="Títulos em Aberto - Prioridade de Cobrança"
-              subtitle={`${titulosEmAtraso.length} registros com pendência`}
+              title="Títulos em Aberto - Status: Em Contato"
+              subtitle={`${titulosEmContato.length} registros com status "Em contato"`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -380,7 +324,7 @@ export default function CobrancaPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {titulosEmAtraso.map((titulo, i) => (
+                      {titulosEmContato.slice(0, 15).map((titulo, i) => (
                         <tr key={i} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {titulo.nome}
@@ -412,13 +356,7 @@ export default function CobrancaPage() {
                             {titulo.ultimoContato}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              titulo.status.toLowerCase().includes('pago')
-                                ? 'bg-green-100 text-green-800'
-                                : titulo.status.toLowerCase().includes('negoci')
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
                               {titulo.status}
                             </span>
                           </td>
@@ -431,11 +369,23 @@ export default function CobrancaPage() {
             </ModuleSection>
           )}
 
-          {/* Total de registros */}
-          <div className="bg-gray-50 rounded-xl p-4 text-center">
-            <p className="text-sm text-gray-600">
-              Total de registros na planilha: <span className="font-semibold">{data.length}</span>
-            </p>
+          {/* Resumo */}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center text-sm text-gray-600">
+              <p>
+                Total de registros: <span className="font-semibold">{data.length}</span>
+              </p>
+              <p>
+                Com status "Em contato": <span className="font-semibold text-orange-600">{kpis.titulosEmAberto}</span>
+              </p>
+              <p>
+                Taxa de recuperação: <span className="font-semibold text-green-600">
+                  {kpis.inadimplenciaAbsoluta > 0
+                    ? ((kpis.valorRecuperado / (kpis.inadimplenciaAbsoluta + kpis.valorRecuperado)) * 100).toFixed(1)
+                    : 0}%
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       </ModuleContainer>
