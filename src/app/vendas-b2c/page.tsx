@@ -6,7 +6,7 @@ import { ModuleContainer, ModuleSection } from '@/components/layout/ModuleContai
 import { KPICard } from '@/components/ui/KPICard';
 import { ChartCard, BarChartComponent, PieChartComponent, AreaChartComponent } from '@/components/ui/Charts';
 import { DateFilter } from '@/components/ui/DateFilter';
-import { DollarSign, Users, ShoppingCart, TrendingUp, AlertCircle, Settings, RefreshCw, UserPlus } from 'lucide-react';
+import { DollarSign, Users, ShoppingCart, TrendingUp, AlertCircle, Settings, RefreshCw, UserPlus, UserX, UserCheck } from 'lucide-react';
 import { useSheetData } from '@/lib/hooks/useSheetData';
 import Link from 'next/link';
 
@@ -15,13 +15,12 @@ interface VendaB2C {
   faturamento: number;
   produto: string;
   tipo_matricula?: string;
+  cancelamento?: boolean | string;
   aluno_id?: string;
   aluno_nome?: string;
   forma_pagamento?: string;
   parcelas?: number;
-  status?: string;
   vendedor?: string;
-  origem_lead?: string;
   [key: string]: unknown;
 }
 
@@ -76,6 +75,19 @@ export default function VendasB2CPage() {
            tipoLower === 'ren';
   };
 
+  // Função para verificar se está cancelado (TRUE = cancelado, FALSE = ativo)
+  const isCancelado = (cancelamento: boolean | string | undefined): boolean => {
+    if (cancelamento === undefined || cancelamento === null) return false;
+    if (typeof cancelamento === 'boolean') return cancelamento;
+    const cancelStr = String(cancelamento).toLowerCase().trim();
+    return cancelStr === 'true' ||
+           cancelStr === 'sim' ||
+           cancelStr === 's' ||
+           cancelStr === '1' ||
+           cancelStr === 'cancelado' ||
+           cancelStr === 'verdadeiro';
+  };
+
   // Separa novas matrículas e renovações
   const { novasMatriculas, renovacoes } = useMemo(() => {
     const novas: VendaB2C[] = [];
@@ -90,6 +102,22 @@ export default function VendasB2CPage() {
     });
 
     return { novasMatriculas: novas, renovacoes: renos };
+  }, [filteredData]);
+
+  // Separa alunos ativos e cancelados
+  const { alunosAtivos, alunosCancelados } = useMemo(() => {
+    const ativos: VendaB2C[] = [];
+    const cancelados: VendaB2C[] = [];
+
+    filteredData.forEach(item => {
+      if (isCancelado(item.cancelamento)) {
+        cancelados.push(item);
+      } else {
+        ativos.push(item);
+      }
+    });
+
+    return { alunosAtivos: ativos, alunosCancelados: cancelados };
   }, [filteredData]);
 
   // Calcula KPIs
@@ -109,6 +137,16 @@ export default function VendasB2CPage() {
       return sum + valor;
     }, 0);
 
+    const faturamentoAtivos = alunosAtivos.reduce((sum, item) => {
+      const valor = typeof item.faturamento === 'number' ? item.faturamento : 0;
+      return sum + valor;
+    }, 0);
+
+    const faturamentoCancelados = alunosCancelados.reduce((sum, item) => {
+      const valor = typeof item.faturamento === 'number' ? item.faturamento : 0;
+      return sum + valor;
+    }, 0);
+
     const totalVendas = filteredData.length;
     const ticketMedio = totalVendas > 0 ? faturamentoTotal / totalVendas : 0;
 
@@ -116,17 +154,21 @@ export default function VendasB2CPage() {
       faturamentoTotal,
       faturamentoNovas,
       faturamentoRenovacoes,
+      faturamentoAtivos,
+      faturamentoCancelados,
       totalNovasMatriculas: novasMatriculas.length,
       totalRenovacoes: renovacoes.length,
+      totalAtivos: alunosAtivos.length,
+      totalCancelados: alunosCancelados.length,
       ticketMedio,
     };
-  }, [filteredData, novasMatriculas, renovacoes]);
+  }, [filteredData, novasMatriculas, renovacoes, alunosAtivos, alunosCancelados]);
 
-  // Novas Matrículas por Produto (quantidade e valor)
+  // Novas Matrículas por Produto (quantidade e valor) - apenas ativos
   const novasMatriculasPorProduto = useMemo(() => {
     const grupos: Record<string, { quantidade: number; valor: number }> = {};
 
-    novasMatriculas.forEach(item => {
+    novasMatriculas.filter(item => !isCancelado(item.cancelamento)).forEach(item => {
       const produto = String(item.produto || 'Não informado');
       if (!grupos[produto]) {
         grupos[produto] = { quantidade: 0, valor: 0 };
@@ -143,11 +185,11 @@ export default function VendasB2CPage() {
       .sort((a, b) => b.valor - a.valor);
   }, [novasMatriculas]);
 
-  // Renovações por Produto (quantidade e valor)
+  // Renovações por Produto (quantidade e valor) - apenas ativos
   const renovacoesPorProduto = useMemo(() => {
     const grupos: Record<string, { quantidade: number; valor: number }> = {};
 
-    renovacoes.forEach(item => {
+    renovacoes.filter(item => !isCancelado(item.cancelamento)).forEach(item => {
       const produto = String(item.produto || 'Não informado');
       if (!grupos[produto]) {
         grupos[produto] = { quantidade: 0, valor: 0 };
@@ -163,6 +205,48 @@ export default function VendasB2CPage() {
       }))
       .sort((a, b) => b.valor - a.valor);
   }, [renovacoes]);
+
+  // Alunos Ativos por Produto
+  const ativosPorProduto = useMemo(() => {
+    const grupos: Record<string, { quantidade: number; valor: number }> = {};
+
+    alunosAtivos.forEach(item => {
+      const produto = String(item.produto || 'Não informado');
+      if (!grupos[produto]) {
+        grupos[produto] = { quantidade: 0, valor: 0 };
+      }
+      grupos[produto].quantidade += 1;
+      grupos[produto].valor += typeof item.faturamento === 'number' ? item.faturamento : 0;
+    });
+
+    return Object.entries(grupos)
+      .map(([produto, dados]) => ({
+        produto,
+        ...dados
+      }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+  }, [alunosAtivos]);
+
+  // Alunos Cancelados por Produto
+  const canceladosPorProduto = useMemo(() => {
+    const grupos: Record<string, { quantidade: number; valor: number }> = {};
+
+    alunosCancelados.forEach(item => {
+      const produto = String(item.produto || 'Não informado');
+      if (!grupos[produto]) {
+        grupos[produto] = { quantidade: 0, valor: 0 };
+      }
+      grupos[produto].quantidade += 1;
+      grupos[produto].valor += typeof item.faturamento === 'number' ? item.faturamento : 0;
+    });
+
+    return Object.entries(grupos)
+      .map(([produto, dados]) => ({
+        produto,
+        ...dados
+      }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+  }, [alunosCancelados]);
 
   // Agrupa por forma de pagamento
   const dadosPorPagamento = useMemo(() => {
@@ -239,6 +323,23 @@ export default function VendasB2CPage() {
     }));
   }, [filteredData]);
 
+  // Totais para tabelas de ativos
+  const totaisNovasAtivas = useMemo(() => {
+    const ativos = novasMatriculas.filter(item => !isCancelado(item.cancelamento));
+    return {
+      quantidade: ativos.length,
+      valor: ativos.reduce((sum, item) => sum + (typeof item.faturamento === 'number' ? item.faturamento : 0), 0)
+    };
+  }, [novasMatriculas]);
+
+  const totaisRenovacoesAtivas = useMemo(() => {
+    const ativos = renovacoes.filter(item => !isCancelado(item.cancelamento));
+    return {
+      quantidade: ativos.length,
+      valor: ativos.reduce((sum, item) => sum + (typeof item.faturamento === 'number' ? item.faturamento : 0), 0)
+    };
+  }, [renovacoes]);
+
   // Se houver erro de configuração, mostra mensagem amigável
   if (error) {
     return (
@@ -263,7 +364,7 @@ export default function VendasB2CPage() {
     <DashboardLayout>
       <ModuleContainer
         title="Vendas B2C"
-        description="Faturamento, matrículas e renovações do canal direto ao consumidor"
+        description="Faturamento, matrículas, renovações e status de alunos"
         sourceUrl={sourceUrl || '#'}
         lastUpdated={lastUpdated || undefined}
         onRefresh={refresh}
@@ -288,8 +389,8 @@ export default function VendasB2CPage() {
             </div>
           )}
 
-          {/* KPIs Principais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* KPIs Principais - Linha 1 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
               title="Faturamento Total"
               value={kpis.faturamentoTotal}
@@ -324,22 +425,51 @@ export default function VendasB2CPage() {
               color="#F59E0B"
               loading={loading}
             />
+          </div>
+
+          {/* KPIs - Linha 2: Alunos Ativos vs Cancelados */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <KPICard
+              title="Alunos Ativos"
+              value={kpis.totalAtivos}
+              format="number"
+              icon={<UserCheck className="w-6 h-6" />}
+              color="#10B981"
+              subtitle={`R$ ${(kpis.faturamentoAtivos / 1000).toFixed(0)}K`}
+              loading={loading}
+            />
+            <KPICard
+              title="Alunos Cancelados"
+              value={kpis.totalCancelados}
+              format="number"
+              icon={<UserX className="w-6 h-6" />}
+              color="#EF4444"
+              subtitle={`R$ ${(kpis.faturamentoCancelados / 1000).toFixed(0)}K perdidos`}
+              loading={loading}
+            />
+            <KPICard
+              title="Taxa de Cancelamento"
+              value={filteredData.length > 0 ? ((kpis.totalCancelados / filteredData.length) * 100).toFixed(1) + '%' : '0%'}
+              icon={<TrendingUp className="w-6 h-6" />}
+              color={kpis.totalCancelados / filteredData.length > 0.1 ? '#EF4444' : '#10B981'}
+              loading={loading}
+            />
             <KPICard
               title="Total Registros"
               value={data.length}
               format="number"
-              icon={<TrendingUp className="w-6 h-6" />}
+              icon={<Users className="w-6 h-6" />}
               color="#6B7280"
               subtitle="Na planilha"
               loading={loading}
             />
           </div>
 
-          {/* Novas Matrículas por Produto */}
+          {/* Novas Matrículas por Produto (apenas ativos) */}
           {novasMatriculasPorProduto.length > 0 && (
             <ModuleSection
               title="Novas Matrículas por Produto"
-              subtitle={`${kpis.totalNovasMatriculas} matrículas novas | R$ ${kpis.faturamentoNovas.toLocaleString('pt-BR')}`}
+              subtitle={`${totaisNovasAtivas.quantidade} matrículas ativas | R$ ${totaisNovasAtivas.valor.toLocaleString('pt-BR')}`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -386,13 +516,13 @@ export default function VendasB2CPage() {
                           TOTAL
                         </td>
                         <td className="px-6 py-3 text-center text-sm font-bold text-blue-900">
-                          {kpis.totalNovasMatriculas}
+                          {totaisNovasAtivas.quantidade}
                         </td>
                         <td className="px-6 py-3 text-sm font-bold text-blue-900 text-right">
-                          R$ {kpis.faturamentoNovas.toLocaleString('pt-BR')}
+                          R$ {totaisNovasAtivas.valor.toLocaleString('pt-BR')}
                         </td>
                         <td className="px-6 py-3 text-sm font-bold text-blue-900 text-right">
-                          R$ {kpis.totalNovasMatriculas > 0 ? Math.round(kpis.faturamentoNovas / kpis.totalNovasMatriculas).toLocaleString('pt-BR') : 0}
+                          R$ {totaisNovasAtivas.quantidade > 0 ? Math.round(totaisNovasAtivas.valor / totaisNovasAtivas.quantidade).toLocaleString('pt-BR') : 0}
                         </td>
                       </tr>
                     </tfoot>
@@ -402,11 +532,11 @@ export default function VendasB2CPage() {
             </ModuleSection>
           )}
 
-          {/* Renovações por Produto */}
+          {/* Renovações por Produto (apenas ativos) */}
           {renovacoesPorProduto.length > 0 && (
             <ModuleSection
               title="Renovações por Produto"
-              subtitle={`${kpis.totalRenovacoes} renovações | R$ ${kpis.faturamentoRenovacoes.toLocaleString('pt-BR')}`}
+              subtitle={`${totaisRenovacoesAtivas.quantidade} renovações ativas | R$ ${totaisRenovacoesAtivas.valor.toLocaleString('pt-BR')}`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -453,13 +583,71 @@ export default function VendasB2CPage() {
                           TOTAL
                         </td>
                         <td className="px-6 py-3 text-center text-sm font-bold text-purple-900">
-                          {kpis.totalRenovacoes}
+                          {totaisRenovacoesAtivas.quantidade}
                         </td>
                         <td className="px-6 py-3 text-sm font-bold text-purple-900 text-right">
-                          R$ {kpis.faturamentoRenovacoes.toLocaleString('pt-BR')}
+                          R$ {totaisRenovacoesAtivas.valor.toLocaleString('pt-BR')}
                         </td>
                         <td className="px-6 py-3 text-sm font-bold text-purple-900 text-right">
-                          R$ {kpis.totalRenovacoes > 0 ? Math.round(kpis.faturamentoRenovacoes / kpis.totalRenovacoes).toLocaleString('pt-BR') : 0}
+                          R$ {totaisRenovacoesAtivas.quantidade > 0 ? Math.round(totaisRenovacoesAtivas.valor / totaisRenovacoesAtivas.quantidade).toLocaleString('pt-BR') : 0}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </ModuleSection>
+          )}
+
+          {/* Alunos Cancelados por Produto */}
+          {canceladosPorProduto.length > 0 && (
+            <ModuleSection
+              title="Cancelamentos por Produto"
+              subtitle={`${kpis.totalCancelados} cancelamentos | R$ ${kpis.faturamentoCancelados.toLocaleString('pt-BR')} perdidos`}
+            >
+              <div className="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-red-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-red-800 uppercase tracking-wider">
+                          Produto
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-semibold text-red-800 uppercase tracking-wider">
+                          Cancelados
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-semibold text-red-800 uppercase tracking-wider">
+                          Valor Perdido
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {canceladosPorProduto.map((item, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                            {item.produto}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="inline-flex items-center justify-center px-3 py-1 text-sm font-semibold text-red-800 bg-red-100 rounded-full">
+                              {item.quantidade}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm font-semibold text-red-600 text-right">
+                            R$ {item.valor.toLocaleString('pt-BR')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-red-50">
+                      <tr>
+                        <td className="px-6 py-3 text-sm font-bold text-red-900">
+                          TOTAL
+                        </td>
+                        <td className="px-6 py-3 text-center text-sm font-bold text-red-900">
+                          {kpis.totalCancelados}
+                        </td>
+                        <td className="px-6 py-3 text-sm font-bold text-red-900 text-right">
+                          R$ {kpis.faturamentoCancelados.toLocaleString('pt-BR')}
                         </td>
                       </tr>
                     </tfoot>
@@ -508,7 +696,7 @@ export default function VendasB2CPage() {
             {novasMatriculasPorProduto.length > 0 && (
               <ChartCard
                 title="Faturamento por Produto"
-                subtitle="Novas matrículas"
+                subtitle="Novas matrículas ativas"
               >
                 <BarChartComponent
                   data={novasMatriculasPorProduto.slice(0, 7)}
@@ -617,14 +805,11 @@ export default function VendasB2CPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              String(venda.status || '').toLowerCase().includes('confirm') ||
-                              String(venda.status || '').toLowerCase().includes('pago')
-                                ? 'bg-green-100 text-green-800'
-                                : String(venda.status || '').toLowerCase().includes('pend')
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-gray-100 text-gray-800'
+                              isCancelado(venda.cancelamento)
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-green-100 text-green-800'
                             }`}>
-                              {String(venda.status || 'N/A')}
+                              {isCancelado(venda.cancelamento) ? 'Cancelado' : 'Ativo'}
                             </span>
                           </td>
                         </tr>

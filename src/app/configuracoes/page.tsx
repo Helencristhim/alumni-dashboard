@@ -44,13 +44,12 @@ const getInitialModules = (): ModuleConfig[] => [
       { internal: 'faturamento', label: 'Valor/Faturamento', external: '', required: true },
       { internal: 'produto', label: 'Produto/Curso', external: '', required: true },
       { internal: 'tipo_matricula', label: 'Tipo (Novo/Renovação)', external: '', required: true },
-      { internal: 'aluno_id', label: 'ID do Aluno', external: '', required: false },
+      { internal: 'cancelamento', label: 'Cancelamento (FALSE=Ativo, TRUE=Cancelado)', external: '', required: true },
+      { internal: 'aluno_id', label: 'ID do Aluno (CPF)', external: '', required: false },
       { internal: 'aluno_nome', label: 'Nome do Aluno', external: '', required: false },
       { internal: 'forma_pagamento', label: 'Forma de Pagamento', external: '', required: false },
       { internal: 'parcelas', label: 'Quantidade de Parcelas', external: '', required: false },
-      { internal: 'status', label: 'Status da Venda', external: '', required: false },
       { internal: 'vendedor', label: 'Vendedor', external: '', required: false },
-      { internal: 'origem_lead', label: 'Origem do Lead', external: '', required: false },
     ]
   },
   {
