@@ -10,6 +10,24 @@ import { DollarSign, Users, ShoppingCart, TrendingUp, AlertCircle, Settings, Ref
 import { useSheetData } from '@/lib/hooks/useSheetData';
 import Link from 'next/link';
 
+// Lista oficial de produtos
+const PRODUTOS_LISTA = [
+  'Espanhol 12 meses',
+  'Espanhol 6 meses',
+  'Inglês 12 meses - FLOW',
+  'Inglês 6 meses - FLOW',
+  'Inglês 12 meses',
+  'Inglês 10 meses',
+  'Inglês 09 meses',
+  'Inglês 06 meses',
+  'Inglês 03 meses',
+  'Inglês 01 mês',
+  'Aulas particulares',
+  'FAAP - Ribeirão',
+  'HDI - COPARTICIPACAO 30%',
+  'Imersão 01 mês',
+];
+
 interface VendaB2C {
   data_venda: Date | string;
   faturamento: number;
@@ -23,6 +41,17 @@ interface VendaB2C {
   vendedor?: string;
   [key: string]: unknown;
 }
+
+// Função para parsear valor que pode vir como string "R$ 3.576,00"
+const parseValor = (valor: unknown): number => {
+  if (typeof valor === 'number') return valor;
+  if (typeof valor === 'string') {
+    const limpo = valor.replace(/R\$\s*/gi, '').replace(/\./g, '').replace(',', '.').trim();
+    const num = parseFloat(limpo);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
+};
 
 export default function VendasB2CPage() {
   const [startDate, setStartDate] = useState(() => {
@@ -38,31 +67,6 @@ export default function VendasB2CPage() {
     setStartDate(start);
     setEndDate(end);
   };
-
-  // Filtra dados pelo período selecionado
-  const filteredData = useMemo(() => {
-    if (!data || data.length === 0) return [];
-
-    return data.filter(item => {
-      if (!item.data_venda) return true;
-
-      let itemDate: Date;
-      if (item.data_venda instanceof Date) {
-        itemDate = item.data_venda;
-      } else if (typeof item.data_venda === 'string') {
-        const parts = item.data_venda.split('/');
-        if (parts.length === 3) {
-          itemDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-        } else {
-          itemDate = new Date(item.data_venda);
-        }
-      } else {
-        return true;
-      }
-
-      return itemDate >= startDate && itemDate <= endDate;
-    });
-  }, [data, startDate, endDate]);
 
   // Função para verificar se é renovação
   const isRenovacao = (tipo: string | undefined): boolean => {
@@ -88,7 +92,45 @@ export default function VendasB2CPage() {
            cancelStr === 'verdadeiro';
   };
 
-  // Separa novas matrículas e renovações
+  // Função para parsear data
+  const parseDate = (dateValue: Date | string | undefined): Date | null => {
+    if (!dateValue) return null;
+    if (dateValue instanceof Date) return dateValue;
+    if (typeof dateValue === 'string') {
+      const parts = dateValue.split('/');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+      return new Date(dateValue);
+    }
+    return null;
+  };
+
+  // Filtra dados pelo período selecionado
+  const filteredData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    return data.filter(item => {
+      const itemDate = parseDate(item.data_venda);
+      if (!itemDate) return true;
+      return itemDate >= startDate && itemDate <= endDate;
+    });
+  }, [data, startDate, endDate]);
+
+  // ALUNOS ATIVOS - Conta de TODA a planilha (não responde ao filtro de período)
+  // Aluno ativo = cancelamento FALSE
+  const totalAlunosAtivosGeral = useMemo(() => {
+    if (!data || data.length === 0) return 0;
+    return data.filter(item => !isCancelado(item.cancelamento)).length;
+  }, [data]);
+
+  // Total de cancelados (de toda a planilha)
+  const totalAlunosCanceladosGeral = useMemo(() => {
+    if (!data || data.length === 0) return 0;
+    return data.filter(item => isCancelado(item.cancelamento)).length;
+  }, [data]);
+
+  // Separa novas matrículas e renovações do período filtrado
   const { novasMatriculas, renovacoes } = useMemo(() => {
     const novas: VendaB2C[] = [];
     const renos: VendaB2C[] = [];
@@ -104,80 +146,58 @@ export default function VendasB2CPage() {
     return { novasMatriculas: novas, renovacoes: renos };
   }, [filteredData]);
 
-  // Separa alunos ativos e cancelados
-  const { alunosAtivos, alunosCancelados } = useMemo(() => {
-    const ativos: VendaB2C[] = [];
-    const cancelados: VendaB2C[] = [];
-
-    filteredData.forEach(item => {
-      if (isCancelado(item.cancelamento)) {
-        cancelados.push(item);
-      } else {
-        ativos.push(item);
-      }
-    });
-
-    return { alunosAtivos: ativos, alunosCancelados: cancelados };
-  }, [filteredData]);
-
-  // Calcula KPIs
+  // Calcula KPIs do período filtrado
   const kpis = useMemo(() => {
     const faturamentoTotal = filteredData.reduce((sum, item) => {
-      const valor = typeof item.faturamento === 'number' ? item.faturamento : 0;
-      return sum + valor;
+      return sum + parseValor(item.faturamento);
     }, 0);
 
     const faturamentoNovas = novasMatriculas.reduce((sum, item) => {
-      const valor = typeof item.faturamento === 'number' ? item.faturamento : 0;
-      return sum + valor;
+      return sum + parseValor(item.faturamento);
     }, 0);
 
     const faturamentoRenovacoes = renovacoes.reduce((sum, item) => {
-      const valor = typeof item.faturamento === 'number' ? item.faturamento : 0;
-      return sum + valor;
-    }, 0);
-
-    const faturamentoAtivos = alunosAtivos.reduce((sum, item) => {
-      const valor = typeof item.faturamento === 'number' ? item.faturamento : 0;
-      return sum + valor;
-    }, 0);
-
-    const faturamentoCancelados = alunosCancelados.reduce((sum, item) => {
-      const valor = typeof item.faturamento === 'number' ? item.faturamento : 0;
-      return sum + valor;
+      return sum + parseValor(item.faturamento);
     }, 0);
 
     const totalVendas = filteredData.length;
     const ticketMedio = totalVendas > 0 ? faturamentoTotal / totalVendas : 0;
 
+    // Taxa de cancelamento baseada no total geral
+    const totalGeral = totalAlunosAtivosGeral + totalAlunosCanceladosGeral;
+    const taxaCancelamento = totalGeral > 0 ? (totalAlunosCanceladosGeral / totalGeral) * 100 : 0;
+
     return {
       faturamentoTotal,
       faturamentoNovas,
       faturamentoRenovacoes,
-      faturamentoAtivos,
-      faturamentoCancelados,
       totalNovasMatriculas: novasMatriculas.length,
       totalRenovacoes: renovacoes.length,
-      totalAtivos: alunosAtivos.length,
-      totalCancelados: alunosCancelados.length,
       ticketMedio,
+      taxaCancelamento,
     };
-  }, [filteredData, novasMatriculas, renovacoes, alunosAtivos, alunosCancelados]);
+  }, [filteredData, novasMatriculas, renovacoes, totalAlunosAtivosGeral, totalAlunosCanceladosGeral]);
 
-  // Novas Matrículas por Produto (quantidade e valor) - apenas ativos
+  // Novas Matrículas por Produto (quantidade e valor)
   const novasMatriculasPorProduto = useMemo(() => {
     const grupos: Record<string, { quantidade: number; valor: number }> = {};
 
+    // Inicializa com todos os produtos da lista
+    PRODUTOS_LISTA.forEach(produto => {
+      grupos[produto] = { quantidade: 0, valor: 0 };
+    });
+
     novasMatriculas.filter(item => !isCancelado(item.cancelamento)).forEach(item => {
-      const produto = String(item.produto || 'Não informado');
+      const produto = String(item.produto || 'Outros');
       if (!grupos[produto]) {
         grupos[produto] = { quantidade: 0, valor: 0 };
       }
       grupos[produto].quantidade += 1;
-      grupos[produto].valor += typeof item.faturamento === 'number' ? item.faturamento : 0;
+      grupos[produto].valor += parseValor(item.faturamento);
     });
 
     return Object.entries(grupos)
+      .filter(([, dados]) => dados.quantidade > 0)
       .map(([produto, dados]) => ({
         produto,
         ...dados
@@ -185,68 +205,32 @@ export default function VendasB2CPage() {
       .sort((a, b) => b.valor - a.valor);
   }, [novasMatriculas]);
 
-  // Renovações por Produto (quantidade e valor) - apenas ativos
+  // Renovações por Produto (quantidade e valor)
   const renovacoesPorProduto = useMemo(() => {
     const grupos: Record<string, { quantidade: number; valor: number }> = {};
 
+    // Inicializa com todos os produtos da lista
+    PRODUTOS_LISTA.forEach(produto => {
+      grupos[produto] = { quantidade: 0, valor: 0 };
+    });
+
     renovacoes.filter(item => !isCancelado(item.cancelamento)).forEach(item => {
-      const produto = String(item.produto || 'Não informado');
+      const produto = String(item.produto || 'Outros');
       if (!grupos[produto]) {
         grupos[produto] = { quantidade: 0, valor: 0 };
       }
       grupos[produto].quantidade += 1;
-      grupos[produto].valor += typeof item.faturamento === 'number' ? item.faturamento : 0;
+      grupos[produto].valor += parseValor(item.faturamento);
     });
 
     return Object.entries(grupos)
+      .filter(([, dados]) => dados.quantidade > 0)
       .map(([produto, dados]) => ({
         produto,
         ...dados
       }))
       .sort((a, b) => b.valor - a.valor);
   }, [renovacoes]);
-
-  // Alunos Ativos por Produto
-  const ativosPorProduto = useMemo(() => {
-    const grupos: Record<string, { quantidade: number; valor: number }> = {};
-
-    alunosAtivos.forEach(item => {
-      const produto = String(item.produto || 'Não informado');
-      if (!grupos[produto]) {
-        grupos[produto] = { quantidade: 0, valor: 0 };
-      }
-      grupos[produto].quantidade += 1;
-      grupos[produto].valor += typeof item.faturamento === 'number' ? item.faturamento : 0;
-    });
-
-    return Object.entries(grupos)
-      .map(([produto, dados]) => ({
-        produto,
-        ...dados
-      }))
-      .sort((a, b) => b.quantidade - a.quantidade);
-  }, [alunosAtivos]);
-
-  // Alunos Cancelados por Produto
-  const canceladosPorProduto = useMemo(() => {
-    const grupos: Record<string, { quantidade: number; valor: number }> = {};
-
-    alunosCancelados.forEach(item => {
-      const produto = String(item.produto || 'Não informado');
-      if (!grupos[produto]) {
-        grupos[produto] = { quantidade: 0, valor: 0 };
-      }
-      grupos[produto].quantidade += 1;
-      grupos[produto].valor += typeof item.faturamento === 'number' ? item.faturamento : 0;
-    });
-
-    return Object.entries(grupos)
-      .map(([produto, dados]) => ({
-        produto,
-        ...dados
-      }))
-      .sort((a, b) => b.quantidade - a.quantidade);
-  }, [alunosCancelados]);
 
   // Agrupa por forma de pagamento
   const dadosPorPagamento = useMemo(() => {
@@ -275,7 +259,7 @@ export default function VendasB2CPage() {
         grupos[vendedor] = { vendas: 0, valor: 0 };
       }
       grupos[vendedor].vendas += 1;
-      grupos[vendedor].valor += typeof item.faturamento === 'number' ? item.faturamento : 0;
+      grupos[vendedor].valor += parseValor(item.faturamento);
     });
 
     return Object.entries(grupos).map(([vendedor, dados]) => ({
@@ -289,26 +273,18 @@ export default function VendasB2CPage() {
     const grupos: Record<string, { faturamento: number; matriculas: number; renovacoes: number }> = {};
 
     filteredData.forEach(item => {
-      let mes: string;
-      if (item.data_venda instanceof Date) {
-        mes = item.data_venda.toLocaleDateString('pt-BR', { month: 'short' });
-      } else if (typeof item.data_venda === 'string') {
-        const parts = item.data_venda.split('/');
-        if (parts.length >= 2) {
-          const monthNum = parseInt(parts[1]) - 1;
-          const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-          mes = monthNames[monthNum] || 'N/A';
-        } else {
-          mes = 'N/A';
-        }
-      } else {
-        mes = 'N/A';
+      const itemDate = parseDate(item.data_venda);
+      let mes: string = 'N/A';
+
+      if (itemDate) {
+        const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        mes = monthNames[itemDate.getMonth()];
       }
 
       if (!grupos[mes]) {
         grupos[mes] = { faturamento: 0, matriculas: 0, renovacoes: 0 };
       }
-      grupos[mes].faturamento += typeof item.faturamento === 'number' ? item.faturamento : 0;
+      grupos[mes].faturamento += parseValor(item.faturamento);
 
       if (isRenovacao(item.tipo_matricula)) {
         grupos[mes].renovacoes += 1;
@@ -323,20 +299,20 @@ export default function VendasB2CPage() {
     }));
   }, [filteredData]);
 
-  // Totais para tabelas de ativos
-  const totaisNovasAtivas = useMemo(() => {
+  // Totais para tabelas
+  const totaisNovas = useMemo(() => {
     const ativos = novasMatriculas.filter(item => !isCancelado(item.cancelamento));
     return {
       quantidade: ativos.length,
-      valor: ativos.reduce((sum, item) => sum + (typeof item.faturamento === 'number' ? item.faturamento : 0), 0)
+      valor: ativos.reduce((sum, item) => sum + parseValor(item.faturamento), 0)
     };
   }, [novasMatriculas]);
 
-  const totaisRenovacoesAtivas = useMemo(() => {
+  const totaisRenovacoes = useMemo(() => {
     const ativos = renovacoes.filter(item => !isCancelado(item.cancelamento));
     return {
       quantidade: ativos.length,
-      valor: ativos.reduce((sum, item) => sum + (typeof item.faturamento === 'number' ? item.faturamento : 0), 0)
+      valor: ativos.reduce((sum, item) => sum + parseValor(item.faturamento), 0)
     };
   }, [renovacoes]);
 
@@ -364,7 +340,7 @@ export default function VendasB2CPage() {
     <DashboardLayout>
       <ModuleContainer
         title="Vendas B2C"
-        description="Faturamento, matrículas, renovações e status de alunos"
+        description="Faturamento, matrículas e renovações"
         sourceUrl={sourceUrl || '#'}
         lastUpdated={lastUpdated || undefined}
         onRefresh={refresh}
@@ -392,7 +368,7 @@ export default function VendasB2CPage() {
           {/* KPIs Principais - Linha 1 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
-              title="Faturamento Total"
+              title="Faturamento Mensal"
               value={kpis.faturamentoTotal}
               format="currencyCompact"
               icon={<DollarSign className="w-6 h-6" />}
@@ -405,7 +381,7 @@ export default function VendasB2CPage() {
               format="number"
               icon={<UserPlus className="w-6 h-6" />}
               color="#3B82F6"
-              subtitle={`R$ ${(kpis.faturamentoNovas / 1000).toFixed(0)}K`}
+              subtitle={`R$ ${(kpis.faturamentoNovas / 1000).toFixed(1)}K`}
               loading={loading}
             />
             <KPICard
@@ -414,7 +390,7 @@ export default function VendasB2CPage() {
               format="number"
               icon={<RefreshCw className="w-6 h-6" />}
               color="#8B5CF6"
-              subtitle={`R$ ${(kpis.faturamentoRenovacoes / 1000).toFixed(0)}K`}
+              subtitle={`R$ ${(kpis.faturamentoRenovacoes / 1000).toFixed(1)}K`}
               loading={loading}
             />
             <KPICard
@@ -427,31 +403,32 @@ export default function VendasB2CPage() {
             />
           </div>
 
-          {/* KPIs - Linha 2: Alunos Ativos vs Cancelados */}
+          {/* KPIs - Linha 2: Alunos (Total Geral - não responde ao filtro) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
               title="Alunos Ativos"
-              value={kpis.totalAtivos}
+              value={totalAlunosAtivosGeral}
               format="number"
               icon={<UserCheck className="w-6 h-6" />}
               color="#10B981"
-              subtitle={`R$ ${(kpis.faturamentoAtivos / 1000).toFixed(0)}K`}
+              subtitle="Total geral (todos os meses)"
               loading={loading}
             />
             <KPICard
               title="Alunos Cancelados"
-              value={kpis.totalCancelados}
+              value={totalAlunosCanceladosGeral}
               format="number"
               icon={<UserX className="w-6 h-6" />}
               color="#EF4444"
-              subtitle={`R$ ${(kpis.faturamentoCancelados / 1000).toFixed(0)}K perdidos`}
+              subtitle="Total geral"
               loading={loading}
             />
             <KPICard
               title="Taxa de Cancelamento"
-              value={filteredData.length > 0 ? ((kpis.totalCancelados / filteredData.length) * 100).toFixed(1) + '%' : '0%'}
+              value={`${kpis.taxaCancelamento.toFixed(1)}%`}
               icon={<TrendingUp className="w-6 h-6" />}
-              color={kpis.totalCancelados / filteredData.length > 0.1 ? '#EF4444' : '#10B981'}
+              color={kpis.taxaCancelamento > 10 ? '#EF4444' : '#10B981'}
+              subtitle="Sobre base total"
               loading={loading}
             />
             <KPICard
@@ -465,11 +442,11 @@ export default function VendasB2CPage() {
             />
           </div>
 
-          {/* Novas Matrículas por Produto (apenas ativos) */}
+          {/* Novas Matrículas por Produto */}
           {novasMatriculasPorProduto.length > 0 && (
             <ModuleSection
               title="Novas Matrículas por Produto"
-              subtitle={`${totaisNovasAtivas.quantidade} matrículas ativas | R$ ${totaisNovasAtivas.valor.toLocaleString('pt-BR')}`}
+              subtitle={`${totaisNovas.quantidade} matrículas | R$ ${totaisNovas.valor.toLocaleString('pt-BR')}`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -502,10 +479,10 @@ export default function VendasB2CPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm font-semibold text-gray-900 text-right">
-                            R$ {item.valor.toLocaleString('pt-BR')}
+                            R$ {item.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500 text-right">
-                            R$ {item.quantidade > 0 ? Math.round(item.valor / item.quantidade).toLocaleString('pt-BR') : 0}
+                            R$ {item.quantidade > 0 ? (item.valor / item.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}
                           </td>
                         </tr>
                       ))}
@@ -516,13 +493,13 @@ export default function VendasB2CPage() {
                           TOTAL
                         </td>
                         <td className="px-6 py-3 text-center text-sm font-bold text-blue-900">
-                          {totaisNovasAtivas.quantidade}
+                          {totaisNovas.quantidade}
                         </td>
                         <td className="px-6 py-3 text-sm font-bold text-blue-900 text-right">
-                          R$ {totaisNovasAtivas.valor.toLocaleString('pt-BR')}
+                          R$ {totaisNovas.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </td>
                         <td className="px-6 py-3 text-sm font-bold text-blue-900 text-right">
-                          R$ {totaisNovasAtivas.quantidade > 0 ? Math.round(totaisNovasAtivas.valor / totaisNovasAtivas.quantidade).toLocaleString('pt-BR') : 0}
+                          R$ {totaisNovas.quantidade > 0 ? (totaisNovas.valor / totaisNovas.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}
                         </td>
                       </tr>
                     </tfoot>
@@ -532,11 +509,11 @@ export default function VendasB2CPage() {
             </ModuleSection>
           )}
 
-          {/* Renovações por Produto (apenas ativos) */}
+          {/* Renovações por Produto */}
           {renovacoesPorProduto.length > 0 && (
             <ModuleSection
               title="Renovações por Produto"
-              subtitle={`${totaisRenovacoesAtivas.quantidade} renovações ativas | R$ ${totaisRenovacoesAtivas.valor.toLocaleString('pt-BR')}`}
+              subtitle={`${totaisRenovacoes.quantidade} renovações | R$ ${totaisRenovacoes.valor.toLocaleString('pt-BR')}`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -569,10 +546,10 @@ export default function VendasB2CPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm font-semibold text-gray-900 text-right">
-                            R$ {item.valor.toLocaleString('pt-BR')}
+                            R$ {item.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500 text-right">
-                            R$ {item.quantidade > 0 ? Math.round(item.valor / item.quantidade).toLocaleString('pt-BR') : 0}
+                            R$ {item.quantidade > 0 ? (item.valor / item.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}
                           </td>
                         </tr>
                       ))}
@@ -583,71 +560,13 @@ export default function VendasB2CPage() {
                           TOTAL
                         </td>
                         <td className="px-6 py-3 text-center text-sm font-bold text-purple-900">
-                          {totaisRenovacoesAtivas.quantidade}
+                          {totaisRenovacoes.quantidade}
                         </td>
                         <td className="px-6 py-3 text-sm font-bold text-purple-900 text-right">
-                          R$ {totaisRenovacoesAtivas.valor.toLocaleString('pt-BR')}
+                          R$ {totaisRenovacoes.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </td>
                         <td className="px-6 py-3 text-sm font-bold text-purple-900 text-right">
-                          R$ {totaisRenovacoesAtivas.quantidade > 0 ? Math.round(totaisRenovacoesAtivas.valor / totaisRenovacoesAtivas.quantidade).toLocaleString('pt-BR') : 0}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              </div>
-            </ModuleSection>
-          )}
-
-          {/* Alunos Cancelados por Produto */}
-          {canceladosPorProduto.length > 0 && (
-            <ModuleSection
-              title="Cancelamentos por Produto"
-              subtitle={`${kpis.totalCancelados} cancelamentos | R$ ${kpis.faturamentoCancelados.toLocaleString('pt-BR')} perdidos`}
-            >
-              <div className="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-red-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-red-800 uppercase tracking-wider">
-                          Produto
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-semibold text-red-800 uppercase tracking-wider">
-                          Cancelados
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-semibold text-red-800 uppercase tracking-wider">
-                          Valor Perdido
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {canceladosPorProduto.map((item, i) => (
-                        <tr key={i} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                            {item.produto}
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            <span className="inline-flex items-center justify-center px-3 py-1 text-sm font-semibold text-red-800 bg-red-100 rounded-full">
-                              {item.quantidade}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-semibold text-red-600 text-right">
-                            R$ {item.valor.toLocaleString('pt-BR')}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="bg-red-50">
-                      <tr>
-                        <td className="px-6 py-3 text-sm font-bold text-red-900">
-                          TOTAL
-                        </td>
-                        <td className="px-6 py-3 text-center text-sm font-bold text-red-900">
-                          {kpis.totalCancelados}
-                        </td>
-                        <td className="px-6 py-3 text-sm font-bold text-red-900 text-right">
-                          R$ {kpis.faturamentoCancelados.toLocaleString('pt-BR')}
+                          R$ {totaisRenovacoes.quantidade > 0 ? (totaisRenovacoes.valor / totaisRenovacoes.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}
                         </td>
                       </tr>
                     </tfoot>
@@ -696,7 +615,7 @@ export default function VendasB2CPage() {
             {novasMatriculasPorProduto.length > 0 && (
               <ChartCard
                 title="Faturamento por Produto"
-                subtitle="Novas matrículas ativas"
+                subtitle="Novas matrículas"
               >
                 <BarChartComponent
                   data={novasMatriculasPorProduto.slice(0, 7)}
@@ -776,44 +695,43 @@ export default function VendasB2CPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {filteredData.slice(0, 10).map((venda, i) => (
-                        <tr key={i} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {venda.data_venda instanceof Date
-                              ? venda.data_venda.toLocaleDateString('pt-BR')
-                              : String(venda.data_venda || '-')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {String(venda.aluno_nome || venda.aluno_id || '-')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {String(venda.produto || '-')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              isRenovacao(venda.tipo_matricula)
-                                ? 'bg-purple-100 text-purple-800'
-                                : 'bg-blue-100 text-blue-800'
-                            }`}>
-                              {isRenovacao(venda.tipo_matricula) ? 'Renovação' : 'Novo'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {typeof venda.faturamento === 'number'
-                              ? `R$ ${venda.faturamento.toLocaleString('pt-BR')}`
-                              : '-'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              isCancelado(venda.cancelamento)
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-green-100 text-green-800'
-                            }`}>
-                              {isCancelado(venda.cancelamento) ? 'Cancelado' : 'Ativo'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredData.slice(0, 10).map((venda, i) => {
+                        const dataFormatada = parseDate(venda.data_venda);
+                        return (
+                          <tr key={i} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {dataFormatada ? dataFormatada.toLocaleDateString('pt-BR') : String(venda.data_venda || '-')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {String(venda.aluno_nome || venda.aluno_id || '-')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {String(venda.produto || '-')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                isRenovacao(venda.tipo_matricula)
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {isRenovacao(venda.tipo_matricula) ? 'Renovação' : 'Novo'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              R$ {parseValor(venda.faturamento).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                isCancelado(venda.cancelamento)
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-green-100 text-green-800'
+                              }`}>
+                                {isCancelado(venda.cancelamento) ? 'Cancelado' : 'Ativo'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

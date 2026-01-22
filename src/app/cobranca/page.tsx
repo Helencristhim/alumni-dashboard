@@ -4,23 +4,59 @@ import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ModuleContainer, ModuleSection } from '@/components/layout/ModuleContainer';
 import { KPICard } from '@/components/ui/KPICard';
-import { ChartCard, LineChart, BarChartComponent, AreaChartComponent } from '@/components/ui/Charts';
+import { ChartCard, BarChartComponent, AreaChartComponent } from '@/components/ui/Charts';
 import { DateFilter } from '@/components/ui/DateFilter';
-import { Receipt, TrendingDown, DollarSign, CheckCircle, AlertCircle, Settings } from 'lucide-react';
+import { Receipt, DollarSign, CheckCircle, AlertCircle, Settings, Percent, Calendar, Phone } from 'lucide-react';
 import { useSheetData } from '@/lib/hooks/useSheetData';
 import Link from 'next/link';
 
 interface TituloCobranca {
-  data_vencimento: Date | string;
-  aluno_nome?: string;
-  curso?: string;
-  valor?: number;
-  dias_atraso?: number;
-  status?: string;
+  nome?: string;
+  email?: string;
+  telefone?: string;
+  vencimento: Date | string;
+  cobranca_valor?: number;
+  valor_total_aberto?: number;
+  data_pagamento?: Date | string;
   valor_recuperado?: number;
-  acao_cobranca?: string;
+  data_ultimo_contato?: Date | string;
+  aluno?: string;
+  status?: string;
   [key: string]: unknown;
 }
+
+// Função para parsear valor
+const parseValor = (valor: unknown): number => {
+  if (typeof valor === 'number') return valor;
+  if (typeof valor === 'string') {
+    const limpo = valor.replace(/R\$\s*/gi, '').replace(/\./g, '').replace(',', '.').trim();
+    const num = parseFloat(limpo);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
+};
+
+// Função para parsear data
+const parseDate = (dateValue: Date | string | undefined): Date | null => {
+  if (!dateValue) return null;
+  if (dateValue instanceof Date) return dateValue;
+  if (typeof dateValue === 'string') {
+    const parts = dateValue.split('/');
+    if (parts.length === 3) {
+      return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    }
+    return new Date(dateValue);
+  }
+  return null;
+};
+
+// Função para extrair mês de uma data
+const getMonthFromDate = (dateValue: Date | string | undefined): string => {
+  const date = parseDate(dateValue);
+  if (!date) return 'N/A';
+  const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  return monthNames[date.getMonth()];
+};
 
 export default function CobrancaPage() {
   const [startDate, setStartDate] = useState(() => {
@@ -32,120 +68,142 @@ export default function CobrancaPage() {
 
   const { data, loading, error, lastUpdated, sourceUrl, refresh } = useSheetData<TituloCobranca>('cobranca');
 
+  // Também busca dados de vendas para calcular % de inadimplência
+  const vendasData = useSheetData<{ cancelamento?: boolean | string }>('vendas_b2c');
+
   const handleDateChange = (start: Date, end: Date) => {
     setStartDate(start);
     setEndDate(end);
   };
 
-  // Filtra dados pelo período selecionado
+  // Filtra dados pelo período de vencimento
   const filteredData = useMemo(() => {
     if (!data || data.length === 0) return [];
 
     return data.filter(item => {
-      if (!item.data_vencimento) return true;
-
-      let itemDate: Date;
-      if (item.data_vencimento instanceof Date) {
-        itemDate = item.data_vencimento;
-      } else if (typeof item.data_vencimento === 'string') {
-        const parts = item.data_vencimento.split('/');
-        if (parts.length === 3) {
-          itemDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-        } else {
-          itemDate = new Date(item.data_vencimento);
-        }
-      } else {
-        return true;
-      }
-
+      const itemDate = parseDate(item.vencimento);
+      if (!itemDate) return true;
       return itemDate >= startDate && itemDate <= endDate;
     });
   }, [data, startDate, endDate]);
 
+  // Valor total em aberto por mês (baseado no vencimento)
+  const valorAbertoMes = useMemo(() => {
+    const grupos: Record<string, number> = {};
+
+    data.forEach(item => {
+      const mes = getMonthFromDate(item.vencimento);
+      const valor = parseValor(item.valor_total_aberto);
+      grupos[mes] = (grupos[mes] || 0) + valor;
+    });
+
+    return Object.entries(grupos)
+      .map(([mes, valor]) => ({ mes, valor }))
+      .filter(item => item.valor > 0);
+  }, [data]);
+
+  // Valor total recuperado por mês (baseado na data de pagamento)
+  const valorRecuperadoMes = useMemo(() => {
+    const grupos: Record<string, number> = {};
+
+    data.forEach(item => {
+      if (!item.data_pagamento) return;
+      const mes = getMonthFromDate(item.data_pagamento);
+      const valor = parseValor(item.valor_recuperado);
+      grupos[mes] = (grupos[mes] || 0) + valor;
+    });
+
+    return Object.entries(grupos)
+      .map(([mes, valor]) => ({ mes, valor }))
+      .filter(item => item.valor > 0);
+  }, [data]);
+
   // Calcula KPIs
   const kpis = useMemo(() => {
-    if (filteredData.length === 0) {
-      return {
-        inadimplenciaValor: 0,
-        valorRecuperado: 0,
-        titulosAtrasados: 0,
-        titulosVencer: 0,
-      };
-    }
-
-    const atrasados = filteredData.filter(item => {
-      const diasAtraso = typeof item.dias_atraso === 'number' ? item.dias_atraso : 0;
-      return diasAtraso > 0;
-    });
-
-    const inadimplenciaValor = atrasados.reduce((sum, item) => {
-      const valor = typeof item.valor === 'number' ? item.valor : 0;
-      return sum + valor;
+    // Valor total em aberto (absoluto - soma de toda a coluna)
+    const inadimplenciaAbsoluta = data.reduce((sum, item) => {
+      return sum + parseValor(item.valor_total_aberto);
     }, 0);
 
-    const valorRecuperado = filteredData.reduce((sum, item) => {
-      const valor = typeof item.valor_recuperado === 'number' ? item.valor_recuperado : 0;
-      return sum + valor;
+    // Valor total recuperado
+    const valorRecuperado = data.reduce((sum, item) => {
+      return sum + parseValor(item.valor_recuperado);
     }, 0);
 
-    const aVencer = filteredData.filter(item => {
-      const diasAtraso = typeof item.dias_atraso === 'number' ? item.dias_atraso : 0;
-      return diasAtraso <= 0 && diasAtraso >= -5;
-    });
+    // % de inadimplência (alunos com pendência vs alunos ativos)
+    const alunosComPendencia = data.filter(item => parseValor(item.valor_total_aberto) > 0).length;
+    const totalAlunosAtivos = vendasData.data ? vendasData.data.filter(item => {
+      const cancelamento = item.cancelamento;
+      if (cancelamento === undefined || cancelamento === null) return true;
+      if (typeof cancelamento === 'boolean') return !cancelamento;
+      const cancelStr = String(cancelamento).toLowerCase().trim();
+      return cancelStr === 'false' || cancelStr === 'não' || cancelStr === 'nao' || cancelStr === 'n' || cancelStr === '0' || cancelStr === 'ativo';
+    }).length : 0;
+
+    const percentualInadimplencia = totalAlunosAtivos > 0
+      ? (alunosComPendencia / totalAlunosAtivos) * 100
+      : 0;
+
+    // Total de títulos em aberto
+    const titulosEmAberto = data.filter(item => parseValor(item.valor_total_aberto) > 0).length;
 
     return {
-      inadimplenciaValor,
+      inadimplenciaAbsoluta,
       valorRecuperado,
-      titulosAtrasados: atrasados.length,
-      titulosVencer: aVencer.length,
+      percentualInadimplencia,
+      titulosEmAberto,
+      alunosComPendencia,
+      totalAlunosAtivos,
     };
-  }, [filteredData]);
+  }, [data, vendasData.data]);
 
-  // Inadimplência por faixa de atraso
-  const inadimplenciaPorFaixa = useMemo(() => {
-    const faixas = [
-      { faixa: '1-15 dias', min: 1, max: 15, cor: '#F59E0B' },
-      { faixa: '16-30 dias', min: 16, max: 30, cor: '#F97316' },
-      { faixa: '31-60 dias', min: 31, max: 60, cor: '#EF4444' },
-      { faixa: '61-90 dias', min: 61, max: 90, cor: '#DC2626' },
-      { faixa: '+90 dias', min: 91, max: 9999, cor: '#991B1B' },
-    ];
+  // Comparativo mensal (aberto vs recuperado)
+  const comparativoMensal = useMemo(() => {
+    const meses: Record<string, { aberto: number; recuperado: number }> = {};
 
-    return faixas.map(faixa => {
-      const titulos = filteredData.filter(item => {
-        const dias = typeof item.dias_atraso === 'number' ? item.dias_atraso : 0;
-        return dias >= faixa.min && dias <= faixa.max;
-      });
-
-      const valor = titulos.reduce((sum, item) => {
-        return sum + (typeof item.valor === 'number' ? item.valor : 0);
-      }, 0);
-
-      return {
-        ...faixa,
-        valor,
-        quantidade: titulos.length,
-      };
+    // Valor em aberto por mês de vencimento
+    data.forEach(item => {
+      const mes = getMonthFromDate(item.vencimento);
+      if (!meses[mes]) meses[mes] = { aberto: 0, recuperado: 0 };
+      meses[mes].aberto += parseValor(item.valor_total_aberto);
     });
-  }, [filteredData]);
+
+    // Valor recuperado por mês de pagamento
+    data.forEach(item => {
+      if (!item.data_pagamento) return;
+      const mes = getMonthFromDate(item.data_pagamento);
+      if (!meses[mes]) meses[mes] = { aberto: 0, recuperado: 0 };
+      meses[mes].recuperado += parseValor(item.valor_recuperado);
+    });
+
+    return Object.entries(meses)
+      .map(([mes, dados]) => ({ mes, ...dados }))
+      .filter(item => item.aberto > 0 || item.recuperado > 0);
+  }, [data]);
 
   // Títulos em atraso (para tabela)
-  const titulosRecentes = useMemo(() => {
-    return filteredData
-      .filter(item => {
-        const dias = typeof item.dias_atraso === 'number' ? item.dias_atraso : 0;
-        return dias > 0;
+  const titulosEmAtraso = useMemo(() => {
+    return data
+      .filter(item => parseValor(item.valor_total_aberto) > 0)
+      .map(item => {
+        const vencimento = parseDate(item.vencimento);
+        const hoje = new Date();
+        const diasAtraso = vencimento ? Math.floor((hoje.getTime() - vencimento.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+        return {
+          nome: String(item.nome || item.aluno || 'N/A'),
+          email: String(item.email || '-'),
+          telefone: String(item.telefone || '-'),
+          vencimento: vencimento ? vencimento.toLocaleDateString('pt-BR') : '-',
+          valorAberto: parseValor(item.valor_total_aberto),
+          diasAtraso: diasAtraso > 0 ? diasAtraso : 0,
+          ultimoContato: parseDate(item.data_ultimo_contato)?.toLocaleDateString('pt-BR') || '-',
+          status: String(item.status || 'Pendente'),
+        };
       })
-      .map(item => ({
-        aluno: String(item.aluno_nome || 'N/A'),
-        curso: String(item.curso || 'N/A'),
-        valor: typeof item.valor === 'number' ? item.valor : 0,
-        diasAtraso: typeof item.dias_atraso === 'number' ? item.dias_atraso : 0,
-        status: String(item.status || 'Em cobrança'),
-      }))
       .sort((a, b) => b.diasAtraso - a.diasAtraso)
-      .slice(0, 5);
-  }, [filteredData]);
+      .slice(0, 10);
+  }, [data]);
 
   // Se houver erro de configuração
   if (error) {
@@ -187,11 +245,10 @@ export default function CobrancaPage() {
       >
         <div className="space-y-8">
           {/* Mensagem se não houver dados */}
-          {!loading && filteredData.length === 0 && (
+          {!loading && data.length === 0 && (
             <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-6 text-center">
               <p className="text-yellow-800">
-                Nenhum dado encontrado para o período selecionado.
-                {data.length > 0 && ` (${data.length} registros totais na planilha)`}
+                Nenhum dado encontrado na planilha de cobrança.
               </p>
             </div>
           )}
@@ -199,11 +256,12 @@ export default function CobrancaPage() {
           {/* KPIs Principais */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <KPICard
-              title="Inadimplência (R$)"
-              value={kpis.inadimplenciaValor}
+              title="Inadimplência (Absoluto)"
+              value={kpis.inadimplenciaAbsoluta}
               format="currencyCompact"
               icon={<AlertCircle className="w-6 h-6" />}
               color="#EF4444"
+              subtitle="Valor total em aberto"
               loading={loading}
             />
             <KPICard
@@ -212,149 +270,173 @@ export default function CobrancaPage() {
               format="currencyCompact"
               icon={<CheckCircle className="w-6 h-6" />}
               color="#10B981"
+              subtitle="Total recuperado"
               loading={loading}
             />
             <KPICard
-              title="Títulos Atrasados"
-              value={kpis.titulosAtrasados}
+              title="% Inadimplência"
+              value={`${kpis.percentualInadimplencia.toFixed(1)}%`}
+              icon={<Percent className="w-6 h-6" />}
+              color={kpis.percentualInadimplencia > 15 ? '#EF4444' : '#F59E0B'}
+              subtitle={`${kpis.alunosComPendencia} de ${kpis.totalAlunosAtivos} alunos`}
+              loading={loading || vendasData.loading}
+            />
+            <KPICard
+              title="Títulos em Aberto"
+              value={kpis.titulosEmAberto}
               format="number"
               icon={<Receipt className="w-6 h-6" />}
               color="#F59E0B"
-              loading={loading}
-            />
-            <KPICard
-              title="Total Registros"
-              value={data.length}
-              format="number"
-              icon={<TrendingDown className="w-6 h-6" />}
-              color="#3B82F6"
-              subtitle="Na planilha"
+              subtitle="Pendentes"
               loading={loading}
             />
           </div>
 
-          {/* Inadimplência por faixa de atraso */}
-          <ModuleSection
-            title="Inadimplência por Faixa de Atraso"
-            subtitle="Valor e quantidade de títulos"
-          >
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {inadimplenciaPorFaixa.map((faixa) => (
-                <div
-                  key={faixa.faixa}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 relative overflow-hidden"
-                >
-                  <div
-                    className="absolute top-0 left-0 h-1 w-full"
-                    style={{ backgroundColor: faixa.cor }}
-                  />
-                  <p className="text-sm font-medium text-gray-500">{faixa.faixa}</p>
-                  <p className="text-xl font-bold text-gray-900 mt-1">
-                    R$ {(faixa.valor / 1000).toFixed(0)}K
-                  </p>
-                  <p className="text-xs text-gray-400">{faixa.quantidade} títulos</p>
-                </div>
-              ))}
+          {/* Gráficos de evolução mensal */}
+          {(valorAbertoMes.length > 0 || valorRecuperadoMes.length > 0) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ChartCard
+                title="Valor Total em Aberto por Mês"
+                subtitle="Baseado no mês de vencimento"
+              >
+                <BarChartComponent
+                  data={valorAbertoMes}
+                  xKey="mes"
+                  yKey="valor"
+                  color="#EF4444"
+                  formatY="currency"
+                  height={280}
+                  loading={loading}
+                />
+              </ChartCard>
+
+              <ChartCard
+                title="Valor Recuperado por Mês"
+                subtitle="Baseado no mês de pagamento"
+              >
+                <BarChartComponent
+                  data={valorRecuperadoMes}
+                  xKey="mes"
+                  yKey="valor"
+                  color="#10B981"
+                  formatY="currency"
+                  height={280}
+                  loading={loading}
+                />
+              </ChartCard>
             </div>
-          </ModuleSection>
+          )}
 
-          {/* Gráficos */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Comparativo mensal */}
+          {comparativoMensal.length > 0 && (
             <ChartCard
-              title="Inadimplência por Faixa"
-              subtitle="Valor por período de atraso"
+              title="Comparativo Mensal: Em Aberto vs Recuperado"
+              subtitle="Evolução por mês"
             >
-              <BarChartComponent
-                data={inadimplenciaPorFaixa}
-                xKey="faixa"
-                yKey="valor"
-                color="#F59E0B"
-                formatY="currency"
-                height={280}
-                loading={loading}
-              />
-            </ChartCard>
-
-            <ChartCard
-              title="Quantidade de Títulos"
-              subtitle="Por faixa de atraso"
-            >
-              <BarChartComponent
-                data={inadimplenciaPorFaixa}
-                xKey="faixa"
-                yKey="quantidade"
+              <AreaChartComponent
+                data={comparativoMensal}
+                xKey="mes"
+                yKey="aberto"
                 color="#EF4444"
-                height={280}
+                formatY="currency"
+                height={300}
                 loading={loading}
               />
             </ChartCard>
-          </div>
+          )}
 
-          {/* Títulos em atraso */}
-          {titulosRecentes.length > 0 && (
+          {/* Títulos em Atraso */}
+          {titulosEmAtraso.length > 0 && (
             <ModuleSection
-              title="Títulos em Atraso - Atenção Prioritária"
-              subtitle="Principais casos para acompanhamento"
+              title="Títulos em Aberto - Prioridade de Cobrança"
+              subtitle={`${titulosEmAtraso.length} registros com pendência`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Aluno
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Curso
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Valor
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Dias Atraso
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {titulosRecentes.map((titulo, i) => (
-                      <tr key={i} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {titulo.aluno}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {titulo.curso}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          R$ {titulo.valor.toLocaleString('pt-BR')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`text-sm font-medium ${
-                            titulo.diasAtraso <= 15 ? 'text-yellow-600' :
-                            titulo.diasAtraso <= 30 ? 'text-orange-600' : 'text-red-600'
-                          }`}>
-                            {titulo.diasAtraso} dias
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            titulo.status.toLowerCase().includes('crític')
-                              ? 'bg-red-100 text-red-800'
-                              : titulo.status.toLowerCase().includes('negoci')
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {titulo.status}
-                          </span>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-orange-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-orange-800 uppercase tracking-wider">
+                          Aluno
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-orange-800 uppercase tracking-wider">
+                          Contato
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-orange-800 uppercase tracking-wider">
+                          Vencimento
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-orange-800 uppercase tracking-wider">
+                          Dias Atraso
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-semibold text-orange-800 uppercase tracking-wider">
+                          Valor em Aberto
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-orange-800 uppercase tracking-wider">
+                          Último Contato
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-orange-800 uppercase tracking-wider">
+                          Status
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {titulosEmAtraso.map((titulo, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {titulo.nome}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-xs text-gray-500">
+                              <div>{titulo.email}</div>
+                              <div className="flex items-center gap-1 mt-1">
+                                <Phone className="w-3 h-3" />
+                                {titulo.telefone}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {titulo.vencimento}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`text-sm font-medium ${
+                              titulo.diasAtraso <= 15 ? 'text-yellow-600' :
+                              titulo.diasAtraso <= 30 ? 'text-orange-600' : 'text-red-600'
+                            }`}>
+                              {titulo.diasAtraso > 0 ? `${titulo.diasAtraso} dias` : 'A vencer'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-red-600 text-right">
+                            R$ {titulo.valorAberto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {titulo.ultimoContato}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              titulo.status.toLowerCase().includes('pago')
+                                ? 'bg-green-100 text-green-800'
+                                : titulo.status.toLowerCase().includes('negoci')
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {titulo.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </ModuleSection>
           )}
+
+          {/* Total de registros */}
+          <div className="bg-gray-50 rounded-xl p-4 text-center">
+            <p className="text-sm text-gray-600">
+              Total de registros na planilha: <span className="font-semibold">{data.length}</span>
+            </p>
+          </div>
         </div>
       </ModuleContainer>
     </DashboardLayout>

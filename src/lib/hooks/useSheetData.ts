@@ -52,9 +52,12 @@ function parseValue(value: string): unknown {
     return null;
   }
 
-  const strValue = value.trim();
+  let strValue = value.trim();
 
-  // Tenta converter para número (formato brasileiro)
+  // Remove prefixo de moeda (R$, $, etc)
+  strValue = strValue.replace(/^R\$\s*/i, '').replace(/^\$\s*/, '').trim();
+
+  // Tenta converter para número (formato brasileiro: 3.576,00)
   if (/^-?[\d.,]+$/.test(strValue)) {
     // Remove pontos de milhar e troca vírgula por ponto
     const normalized = strValue.replace(/\./g, '').replace(',', '.');

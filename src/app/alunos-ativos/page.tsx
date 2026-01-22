@@ -4,11 +4,28 @@ import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ModuleContainer, ModuleSection } from '@/components/layout/ModuleContainer';
 import { KPICard } from '@/components/ui/KPICard';
-import { ChartCard, LineChart, BarChartComponent, PieChartComponent } from '@/components/ui/Charts';
-import { DateFilter } from '@/components/ui/DateFilter';
+import { ChartCard, BarChartComponent, PieChartComponent } from '@/components/ui/Charts';
 import { Users, DollarSign, GraduationCap, TrendingUp, AlertCircle, Settings } from 'lucide-react';
 import { useSheetData } from '@/lib/hooks/useSheetData';
 import Link from 'next/link';
+
+// Lista oficial de produtos/cursos
+const PRODUTOS_LISTA = [
+  'Espanhol 12 meses',
+  'Espanhol 6 meses',
+  'Inglês 12 meses - FLOW',
+  'Inglês 6 meses - FLOW',
+  'Inglês 12 meses',
+  'Inglês 10 meses',
+  'Inglês 09 meses',
+  'Inglês 06 meses',
+  'Inglês 03 meses',
+  'Inglês 01 mês',
+  'Aulas particulares',
+  'FAAP - Ribeirão',
+  'HDI - COPARTICIPACAO 30%',
+  'Imersão 01 mês',
+];
 
 interface AlunoAtivo {
   aluno_nome?: string;
@@ -22,20 +39,19 @@ interface AlunoAtivo {
   [key: string]: unknown;
 }
 
+// Função para parsear valor
+const parseValor = (valor: unknown): number => {
+  if (typeof valor === 'number') return valor;
+  if (typeof valor === 'string') {
+    const limpo = valor.replace(/R\$\s*/gi, '').replace(/\./g, '').replace(',', '.').trim();
+    const num = parseFloat(limpo);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
+};
+
 export default function AlunosAtivosPage() {
-  const [startDate, setStartDate] = useState(() => {
-    const date = new Date();
-    date.setDate(date.getDate() - 30);
-    return date;
-  });
-  const [endDate, setEndDate] = useState(new Date());
-
   const { data, loading, error, lastUpdated, sourceUrl, refresh } = useSheetData<AlunoAtivo>('alunos_ativos');
-
-  const handleDateChange = (start: Date, end: Date) => {
-    setStartDate(start);
-    setEndDate(end);
-  };
 
   // Filtra apenas alunos ativos
   const alunosAtivos = useMemo(() => {
@@ -43,7 +59,7 @@ export default function AlunosAtivosPage() {
 
     return data.filter(item => {
       const status = String(item.status || '').toLowerCase();
-      return status.includes('ativo') || status === '' || !item.status;
+      return status.includes('ativo') || status === '' || status === 'false' || !item.status;
     });
   }, [data]);
 
@@ -60,8 +76,7 @@ export default function AlunosAtivosPage() {
     const totalAlunos = alunosAtivos.length;
 
     const receitaRecorrente = alunosAtivos.reduce((sum, item) => {
-      const valor = typeof item.valor_mensalidade === 'number' ? item.valor_mensalidade : 0;
-      return sum + valor;
+      return sum + parseValor(item.valor_mensalidade);
     }, 0);
 
     const ticketMedio = totalAlunos > 0 ? receitaRecorrente / totalAlunos : 0;
@@ -77,20 +92,26 @@ export default function AlunosAtivosPage() {
   const alunosPorCurso = useMemo(() => {
     const cursos: Record<string, { alunos: number; receita: number }> = {};
 
+    // Inicializa com produtos da lista
+    PRODUTOS_LISTA.forEach(curso => {
+      cursos[curso] = { alunos: 0, receita: 0 };
+    });
+
     alunosAtivos.forEach(item => {
-      const curso = String(item.curso || 'Não informado');
+      const curso = String(item.curso || 'Outros');
       if (!cursos[curso]) {
         cursos[curso] = { alunos: 0, receita: 0 };
       }
       cursos[curso].alunos += 1;
-      cursos[curso].receita += typeof item.valor_mensalidade === 'number' ? item.valor_mensalidade : 0;
+      cursos[curso].receita += parseValor(item.valor_mensalidade);
     });
 
     return Object.entries(cursos)
+      .filter(([, dados]) => dados.alunos > 0)
       .map(([curso, dados]) => ({
         curso,
         ...dados,
-        ticket: dados.alunos > 0 ? Math.round(dados.receita / dados.alunos) : 0,
+        ticketMedio: dados.alunos > 0 ? Math.round(dados.receita / dados.alunos) : 0,
       }))
       .sort((a, b) => b.alunos - a.alunos);
   }, [alunosAtivos]);
@@ -157,13 +178,6 @@ export default function AlunosAtivosPage() {
         onRefresh={refresh}
         loading={loading}
         color="#06B6D4"
-        actions={
-          <DateFilter
-            startDate={startDate}
-            endDate={endDate}
-            onChange={handleDateChange}
-          />
-        }
       >
         <div className="space-y-8">
           {/* Mensagem se não houver dados */}
@@ -196,7 +210,7 @@ export default function AlunosAtivosPage() {
               loading={loading}
             />
             <KPICard
-              title="Ticket Médio"
+              title="Receita Média por Curso"
               value={kpis.ticketMedio}
               format="currency"
               icon={<TrendingUp className="w-6 h-6" />}
@@ -214,43 +228,111 @@ export default function AlunosAtivosPage() {
             />
           </div>
 
-          {/* Alunos por Curso - Cards */}
+          {/* Alunos Ativos por Curso - Tabela completa */}
           {alunosPorCurso.length > 0 && (
             <ModuleSection
               title="Alunos Ativos por Curso"
-              subtitle="Distribuição detalhada"
+              subtitle={`${kpis.totalAlunos} alunos em ${alunosPorCurso.length} cursos`}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {alunosPorCurso.slice(0, 8).map((curso) => (
-                  <div
-                    key={curso.curso}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-5"
-                  >
-                    <h4 className="text-sm font-medium text-gray-500 truncate" title={curso.curso}>
-                      {curso.curso.split(' – ')[0]}
-                    </h4>
-                    <div className="mt-3 flex items-baseline justify-between">
-                      <div>
-                        <p className="text-3xl font-bold text-gray-900">{curso.alunos}</p>
-                        <p className="text-xs text-gray-400">alunos</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-semibold text-cyan-600">
-                          R$ {(curso.receita / 1000).toFixed(0)}K
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          Ticket: R$ {curso.ticket}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-cyan-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-cyan-800 uppercase tracking-wider">
+                          Curso
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-semibold text-cyan-800 uppercase tracking-wider">
+                          Alunos
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-semibold text-cyan-800 uppercase tracking-wider">
+                          Receita Total
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-semibold text-cyan-800 uppercase tracking-wider">
+                          Receita Média
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-semibold text-cyan-800 uppercase tracking-wider">
+                          % do Total
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {alunosPorCurso.map((item, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                            {item.curso}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="inline-flex items-center justify-center px-3 py-1 text-sm font-semibold text-cyan-800 bg-cyan-100 rounded-full">
+                              {item.alunos}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm font-semibold text-gray-900 text-right">
+                            R$ {item.receita.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-cyan-600 font-medium text-right">
+                            R$ {item.ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <div className="w-16 bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="h-2 rounded-full bg-cyan-500"
+                                  style={{ width: `${kpis.totalAlunos > 0 ? (item.alunos / kpis.totalAlunos) * 100 : 0}%` }}
+                                />
+                              </div>
+                              <span className="text-sm text-gray-500">
+                                {kpis.totalAlunos > 0 ? ((item.alunos / kpis.totalAlunos) * 100).toFixed(1) : 0}%
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-cyan-50">
+                      <tr>
+                        <td className="px-6 py-3 text-sm font-bold text-cyan-900">
+                          TOTAL
+                        </td>
+                        <td className="px-6 py-3 text-center text-sm font-bold text-cyan-900">
+                          {kpis.totalAlunos}
+                        </td>
+                        <td className="px-6 py-3 text-sm font-bold text-cyan-900 text-right">
+                          R$ {kpis.receitaRecorrente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="px-6 py-3 text-sm font-bold text-cyan-900 text-right">
+                          R$ {kpis.ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="px-6 py-3 text-sm font-bold text-cyan-900 text-right">
+                          100%
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
             </ModuleSection>
           )}
 
           {/* Gráficos de distribuição */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {alunosPorCurso.length > 0 && (
+              <ChartCard
+                title="Alunos por Curso"
+                subtitle="Top cursos"
+              >
+                <BarChartComponent
+                  data={alunosPorCurso.slice(0, 7)}
+                  xKey="curso"
+                  yKey="alunos"
+                  color="#06B6D4"
+                  horizontal
+                  height={280}
+                  loading={loading}
+                />
+              </ChartCard>
+            )}
+
             {distribuicaoModalidade.length > 0 && (
               <ChartCard
                 title="Modalidade"
@@ -260,7 +342,7 @@ export default function AlunosAtivosPage() {
                   data={distribuicaoModalidade}
                   nameKey="name"
                   valueKey="value"
-                  height={250}
+                  height={280}
                   loading={loading}
                 />
               </ChartCard>
@@ -275,94 +357,29 @@ export default function AlunosAtivosPage() {
                   data={distribuicaoNivel}
                   nameKey="name"
                   valueKey="value"
-                  height={250}
-                  loading={loading}
-                />
-              </ChartCard>
-            )}
-
-            {alunosPorCurso.length > 0 && (
-              <ChartCard
-                title="Alunos por Curso"
-                subtitle="Ranking de cursos"
-              >
-                <BarChartComponent
-                  data={alunosPorCurso.slice(0, 5)}
-                  xKey="curso"
-                  yKey="alunos"
-                  color="#06B6D4"
-                  horizontal
-                  height={250}
+                  height={280}
                   loading={loading}
                 />
               </ChartCard>
             )}
           </div>
 
-          {/* Tabela de receita por curso */}
+          {/* Receita por Curso */}
           {alunosPorCurso.length > 0 && (
-            <ModuleSection
-              title="Receita Média por Curso"
-              subtitle="Ticket médio mensal"
+            <ChartCard
+              title="Receita Recorrente por Curso"
+              subtitle="Valor mensal"
             >
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Curso
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Alunos
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Receita Total
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Ticket Médio
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        % da Receita
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {alunosPorCurso.map((curso) => {
-                      const totalReceita = alunosPorCurso.reduce((sum, c) => sum + c.receita, 0);
-                      const percentual = totalReceita > 0 ? ((curso.receita / totalReceita) * 100).toFixed(1) : '0';
-
-                      return (
-                        <tr key={curso.curso} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {curso.curso}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {curso.alunos}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            R$ {curso.receita.toLocaleString('pt-BR')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-cyan-600 font-medium">
-                            R$ {curso.ticket.toLocaleString('pt-BR')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="h-2 rounded-full bg-cyan-500"
-                                  style={{ width: `${percentual}%` }}
-                                />
-                              </div>
-                              <span className="text-sm text-gray-500">{percentual}%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </ModuleSection>
+              <BarChartComponent
+                data={alunosPorCurso.slice(0, 10)}
+                xKey="curso"
+                yKey="receita"
+                color="#10B981"
+                formatY="currency"
+                height={300}
+                loading={loading}
+              />
+            </ChartCard>
           )}
         </div>
       </ModuleContainer>

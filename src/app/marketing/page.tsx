@@ -19,8 +19,20 @@ interface CampanhaMarketing {
   matriculas?: number;
   cpl?: number;
   cac?: number;
+  receita_gerada?: number;
   [key: string]: unknown;
 }
+
+// Função para parsear valor
+const parseValor = (valor: unknown): number => {
+  if (typeof valor === 'number') return valor;
+  if (typeof valor === 'string') {
+    const limpo = valor.replace(/R\$\s*/gi, '').replace(/\./g, '').replace(',', '.').trim();
+    const num = parseFloat(limpo);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
+};
 
 export default function MarketingPage() {
   const [startDate, setStartDate] = useState(() => {
@@ -71,23 +83,32 @@ export default function MarketingPage() {
         matriculasMarketing: 0,
         cplMedio: 0,
         cacMedio: 0,
+        receitaGerada: 0,
+        e2e: 0,
       };
     }
 
     const investimentoTotal = filteredData.reduce((sum, item) => {
-      return sum + (typeof item.investimento === 'number' ? item.investimento : 0);
+      return sum + parseValor(item.investimento);
     }, 0);
 
     const leadsGerados = filteredData.reduce((sum, item) => {
-      return sum + (typeof item.leads === 'number' ? item.leads : 0);
+      return sum + (typeof item.leads === 'number' ? item.leads : parseValor(item.leads));
     }, 0);
 
     const matriculasMarketing = filteredData.reduce((sum, item) => {
-      return sum + (typeof item.matriculas === 'number' ? item.matriculas : 0);
+      return sum + (typeof item.matriculas === 'number' ? item.matriculas : parseValor(item.matriculas));
+    }, 0);
+
+    const receitaGerada = filteredData.reduce((sum, item) => {
+      return sum + parseValor(item.receita_gerada);
     }, 0);
 
     const cplMedio = leadsGerados > 0 ? investimentoTotal / leadsGerados : 0;
     const cacMedio = matriculasMarketing > 0 ? investimentoTotal / matriculasMarketing : 0;
+
+    // E2E = (Receita Gerada / Investimento) * 100 - Return on Ad Spend
+    const e2e = investimentoTotal > 0 ? (receitaGerada / investimentoTotal) * 100 : 0;
 
     return {
       investimentoTotal,
@@ -95,6 +116,8 @@ export default function MarketingPage() {
       matriculasMarketing,
       cplMedio,
       cacMedio,
+      receitaGerada,
+      e2e,
     };
   }, [filteredData]);
 
@@ -199,7 +222,7 @@ export default function MarketingPage() {
           )}
 
           {/* KPIs Principais */}
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <KPICard
               title="Investimento Total"
               value={kpis.investimentoTotal}
@@ -238,6 +261,14 @@ export default function MarketingPage() {
               format="number"
               icon={<TrendingUp className="w-5 h-5" />}
               color="#8B5CF6"
+              loading={loading}
+            />
+            <KPICard
+              title="E2E (Lead → Receita)"
+              value={`${kpis.e2e.toFixed(0)}%`}
+              icon={<Megaphone className="w-5 h-5" />}
+              color={kpis.e2e >= 100 ? '#10B981' : '#F59E0B'}
+              subtitle={`R$ ${(kpis.receitaGerada / 1000).toFixed(1)}K receita`}
               loading={loading}
             />
           </div>
