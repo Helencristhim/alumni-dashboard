@@ -199,12 +199,18 @@ export default function ConfiguracoesPage() {
   const [loading, setLoading] = useState(true);
   const [testingConnection, setTestingConnection] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<Record<string, 'success' | 'error' | null>>({});
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Carrega configurações salvas do localStorage ao iniciar
   useEffect(() => {
+    if (isInitialized) return; // Evita múltiplas execuções
+
     const loadSavedConfig = () => {
       try {
         const savedConfig = localStorage.getItem(STORAGE_KEY);
+        const savedTime = localStorage.getItem(STORAGE_KEY + '_timestamp');
+
         if (savedConfig) {
           const parsed = JSON.parse(savedConfig);
           // Merge com initialModules para garantir que novos campos existam
@@ -213,16 +219,22 @@ export default function ConfiguracoesPage() {
             if (savedMod) {
               return {
                 ...initialMod,
-                ...savedMod,
+                sourceUrl: savedMod.sourceUrl || '',
+                sheetName: savedMod.sheetName || '',
+                enabled: savedMod.enabled !== undefined ? savedMod.enabled : true,
                 columns: initialMod.columns.map(initialCol => {
                   const savedCol = savedMod.columns?.find((c: { internal: string }) => c.internal === initialCol.internal);
-                  return savedCol ? { ...initialCol, external: savedCol.external } : initialCol;
+                  return savedCol ? { ...initialCol, external: savedCol.external || '' } : initialCol;
                 })
               };
             }
             return initialMod;
           });
           setModules(merged);
+
+          if (savedTime) {
+            setLastSaved(new Date(savedTime));
+          }
         } else {
           setModules(getInitialModules());
         }
@@ -231,10 +243,11 @@ export default function ConfiguracoesPage() {
         setModules(getInitialModules());
       }
       setLoading(false);
+      setIsInitialized(true);
     };
 
     loadSavedConfig();
-  }, []);
+  }, [isInitialized]);
 
   const handleModuleChange = (moduleId: string, field: string, value: string | boolean) => {
     setModules(prev => prev.map(mod =>
@@ -261,17 +274,37 @@ export default function ConfiguracoesPage() {
     setSaving(true);
 
     try {
+      // Prepara os dados para salvar (apenas campos necessários)
+      const dataToSave = modules.map(mod => ({
+        id: mod.id,
+        name: mod.name,
+        enabled: mod.enabled,
+        sourceUrl: mod.sourceUrl,
+        sheetName: mod.sheetName,
+        columns: mod.columns.map(col => ({
+          internal: col.internal,
+          external: col.external
+        }))
+      }));
+
       // Salva no localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(modules));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+
+      // Salva timestamp
+      const now = new Date();
+      localStorage.setItem(STORAGE_KEY + '_timestamp', now.toISOString());
+      setLastSaved(now);
 
       // Dispara evento para notificar outros componentes
       window.dispatchEvent(new CustomEvent('configUpdated', { detail: modules }));
 
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+
+      console.log('Configuração salva com sucesso:', dataToSave);
     } catch (error) {
       console.error('Erro ao salvar:', error);
-      alert('Erro ao salvar configurações');
+      alert('Erro ao salvar configurações. Verifique se o navegador permite localStorage.');
     }
 
     setSaving(false);
@@ -353,32 +386,39 @@ export default function ConfiguracoesPage() {
             </div>
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
-              saved
-                ? 'bg-green-500 text-white'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            } disabled:opacity-50`}
-          >
-            {saving ? (
-              <>
-                <RefreshCw className="w-5 h-5 animate-spin" />
-                Salvando...
-              </>
-            ) : saved ? (
-              <>
-                <CheckCircle className="w-5 h-5" />
-                Salvo!
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                Salvar Configurações
-              </>
+          <div className="flex items-center gap-4">
+            {lastSaved && (
+              <span className="text-sm text-gray-500">
+                Último salvamento: {lastSaved.toLocaleString('pt-BR')}
+              </span>
             )}
-          </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+                saved
+                  ? 'bg-green-500 text-white'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } disabled:opacity-50`}
+            >
+              {saving ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Salvando...
+                </>
+              ) : saved ? (
+                <>
+                  <CheckCircle className="w-5 h-5" />
+                  Salvo!
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Salvar Configurações
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Instruções */}
@@ -559,6 +599,33 @@ export default function ConfiguracoesPage() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Resumo do que está configurado */}
+                  {(module.sourceUrl || module.columns.some(c => c.external)) && (
+                    <div className="bg-gray-50 rounded-lg p-4 mt-4">
+                      <h5 className="text-sm font-medium text-gray-700 mb-2">Configuração Atual:</h5>
+                      <div className="text-xs text-gray-600 space-y-1">
+                        {module.sourceUrl && (
+                          <p><span className="font-medium">URL:</span> {module.sourceUrl.substring(0, 60)}...</p>
+                        )}
+                        {module.sheetName && (
+                          <p><span className="font-medium">Aba:</span> {module.sheetName}</p>
+                        )}
+                        {module.columns.filter(c => c.external).length > 0 && (
+                          <div className="mt-2">
+                            <p className="font-medium mb-1">Colunas mapeadas ({module.columns.filter(c => c.external).length}):</p>
+                            <div className="flex flex-wrap gap-1">
+                              {module.columns.filter(c => c.external).map(c => (
+                                <span key={c.internal} className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">
+                                  {c.label}: {c.external}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
