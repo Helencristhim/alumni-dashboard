@@ -295,10 +295,12 @@ export default function VendasB2CPage() {
 
   // KPIs do período
   const kpis = useMemo(() => {
-    // Faturamento total do período
-    const faturamentoTotal = dadosFiltradosPeriodo.reduce((sum, item) => {
-      return sum + getValor(item);
-    }, 0);
+    // Faturamento total do período - APENAS linhas com cancelamento = FALSE
+    const faturamentoTotal = dadosFiltradosPeriodo
+      .filter(item => !isCancelado(item))
+      .reduce((sum, item) => {
+        return sum + getValor(item);
+      }, 0);
 
     // Faturamento novas matrículas
     const faturamentoNovas = novasMatriculas.reduce((sum, item) => {
