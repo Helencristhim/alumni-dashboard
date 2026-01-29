@@ -108,6 +108,21 @@ const isConcluido = (status: string | undefined): boolean => {
   return statusLower === 'concluído' || statusLower === 'concluido' || statusLower.includes('concluído') || statusLower.includes('concluido');
 };
 
+// Helper para obter o valor recuperado (tenta várias variações do nome da coluna)
+const getValorRecuperado = (item: TituloCobranca): number => {
+  const record = item as Record<string, unknown>;
+  // Tenta várias variações do nome da coluna
+  const value = item.valor_recuperado ||
+                record['Valor Recuperado'] ||
+                record['valor recuperado'] ||
+                record['Valor recuperado'] ||
+                record['VALOR RECUPERADO'] ||
+                record['valorRecuperado'] ||
+                record['ValorRecuperado'] ||
+                0;
+  return parseValor(value);
+};
+
 export default function CobrancaPage() {
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
@@ -135,7 +150,7 @@ export default function CobrancaPage() {
 
     // Valor Recuperado = soma de todos os valores da coluna "valor recuperado"
     const valorRecuperado = data.reduce((sum, item) => {
-      return sum + parseValor(item.valor_recuperado);
+      return sum + getValorRecuperado(item);
     }, 0);
 
     // Títulos em Aberto = número de linhas com status "Em contato"
@@ -194,7 +209,7 @@ export default function CobrancaPage() {
       const mes = getMonthFromDate(item.data_pagamento);
       if (mes === 'N/A') return;
 
-      const valor = parseValor(item.valor_recuperado);
+      const valor = getValorRecuperado(item);
       grupos[mes] = (grupos[mes] || 0) + valor;
     });
 
@@ -220,7 +235,7 @@ export default function CobrancaPage() {
           telefone: String(item.telefone || '-'),
           vencimento: vencimento ? vencimento.toLocaleDateString('pt-BR') : '-',
           valorAberto: parseValor(item.valor_total_aberto),
-          valorRecuperado: parseValor(item.valor_recuperado),
+          valorRecuperado: getValorRecuperado(item),
           diasAtraso: diasAtraso > 0 ? diasAtraso : 0,
           ultimoContato: parseDate(item.data_ultimo_contato)?.toLocaleDateString('pt-BR') || '-',
           status: String(item.status || '-'),
@@ -246,7 +261,7 @@ export default function CobrancaPage() {
           vencimento: vencimento ? vencimento.toLocaleDateString('pt-BR') : '-',
           dataPagamento: dataPagamento ? dataPagamento.toLocaleDateString('pt-BR') : '-',
           valorAberto: parseValor(item.valor_total_aberto),
-          valorRecuperado: parseValor(item.valor_recuperado),
+          valorRecuperado: getValorRecuperado(item),
           diasAtraso: diasAtraso > 0 ? diasAtraso : 0,
           ultimoContato: parseDate(item.data_ultimo_contato)?.toLocaleDateString('pt-BR') || '-',
           status: String(item.status || '-'),
