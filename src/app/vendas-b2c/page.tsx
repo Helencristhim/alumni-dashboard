@@ -111,22 +111,20 @@ const parseValor = (valor: unknown): number => {
 };
 
 // Helper para obter valor de um item (tenta várias variações do nome da coluna)
+// Nome correto na planilha: valor_total
 const getValor = (item: VendaB2C): number => {
   const record = item as Record<string, unknown>;
-  // Tenta várias variações do nome da coluna
-  const value = parseValor(item.valor) ||
+  // Prioriza o nome correto da coluna: valor_total
+  const value = parseValor(record['valor_total']) ||  // Nome exato da coluna
+                parseValor(item.valor) ||
                 parseValor(item.faturamento) ||
+                parseValor(record['Valor_total']) ||
+                parseValor(record['Valor_Total']) ||
+                parseValor(record['VALOR_TOTAL']) ||
                 parseValor(record['Valor']) ||
                 parseValor(record['valor']) ||
-                parseValor(record['VALOR']) ||
                 parseValor(record['Faturamento']) ||
                 parseValor(record['faturamento']) ||
-                parseValor(record['FATURAMENTO']) ||
-                parseValor(record['valor_total']) ||
-                parseValor(record['Valor Total']) ||
-                parseValor(record['valor total']) ||
-                parseValor(record['Total']) ||
-                parseValor(record['total']) ||
                 0;
   return value;
 };
