@@ -101,6 +101,13 @@ const isEmContato = (status: string | undefined): boolean => {
   return statusLower === 'em contato' || statusLower === 'emcontato' || statusLower.includes('em contato');
 };
 
+// Função para verificar se status é "Concluído"
+const isConcluido = (status: string | undefined): boolean => {
+  if (!status) return false;
+  const statusLower = String(status).toLowerCase().trim();
+  return statusLower === 'concluído' || statusLower === 'concluido' || statusLower.includes('concluído') || statusLower.includes('concluido');
+};
+
 export default function CobrancaPage() {
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
@@ -213,12 +220,45 @@ export default function CobrancaPage() {
           telefone: String(item.telefone || '-'),
           vencimento: vencimento ? vencimento.toLocaleDateString('pt-BR') : '-',
           valorAberto: parseValor(item.valor_total_aberto),
+          valorRecuperado: parseValor(item.valor_recuperado),
           diasAtraso: diasAtraso > 0 ? diasAtraso : 0,
           ultimoContato: parseDate(item.data_ultimo_contato)?.toLocaleDateString('pt-BR') || '-',
           status: String(item.status || '-'),
         };
       })
       .sort((a, b) => b.diasAtraso - a.diasAtraso);
+  }, [data]);
+
+  // Títulos recuperados (para tabela) - apenas status "Concluído"
+  const titulosRecuperados = useMemo(() => {
+    return data
+      .filter(item => isConcluido(item.status))
+      .map(item => {
+        const vencimento = parseDate(item.vencimento);
+        const dataPagamento = parseDate(item.data_pagamento);
+        const hoje = new Date();
+        const diasAtraso = vencimento ? Math.floor((hoje.getTime() - vencimento.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+        return {
+          nome: String(item.nome || item.aluno || 'N/A'),
+          email: String(item.email || '-'),
+          telefone: String(item.telefone || '-'),
+          vencimento: vencimento ? vencimento.toLocaleDateString('pt-BR') : '-',
+          dataPagamento: dataPagamento ? dataPagamento.toLocaleDateString('pt-BR') : '-',
+          valorAberto: parseValor(item.valor_total_aberto),
+          valorRecuperado: parseValor(item.valor_recuperado),
+          diasAtraso: diasAtraso > 0 ? diasAtraso : 0,
+          ultimoContato: parseDate(item.data_ultimo_contato)?.toLocaleDateString('pt-BR') || '-',
+          status: String(item.status || '-'),
+        };
+      })
+      .sort((a, b) => {
+        // Ordena por data de pagamento mais recente
+        const dateA = parseDate(a.dataPagamento);
+        const dateB = parseDate(b.dataPagamento);
+        if (!dateA || !dateB) return 0;
+        return dateB.getTime() - dateA.getTime();
+      });
   }, [data]);
 
   // Se houver erro de configuração
@@ -403,6 +443,83 @@ export default function CobrancaPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                              {titulo.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </ModuleSection>
+          )}
+
+          {/* Títulos Recuperados - Status: Concluído */}
+          {titulosRecuperados.length > 0 && (
+            <ModuleSection
+              title="Títulos Recuperados - Status: Concluído"
+              subtitle={`${titulosRecuperados.length} registros com status "Concluído"`}
+            >
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-green-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
+                          Aluno
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
+                          Contato
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
+                          Vencimento
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
+                          Dias Atraso
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-semibold text-green-800 uppercase tracking-wider">
+                          Valor Recuperado
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
+                          Último Contato
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {titulosRecuperados.slice(0, 15).map((titulo, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {titulo.nome}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-xs text-gray-500">
+                              <div>{titulo.email}</div>
+                              <div className="flex items-center gap-1 mt-1">
+                                <Phone className="w-3 h-3" />
+                                {titulo.telefone}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {titulo.vencimento}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm font-medium text-gray-600">
+                              {titulo.diasAtraso > 0 ? `${titulo.diasAtraso} dias` : '-'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
+                            R$ {titulo.valorRecuperado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {titulo.ultimoContato}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
                               {titulo.status}
                             </span>
                           </td>
