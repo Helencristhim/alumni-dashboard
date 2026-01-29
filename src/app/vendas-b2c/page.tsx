@@ -369,6 +369,17 @@ export default function VendasB2CPage() {
       }
     });
 
+    // Verificar valores únicos de cancelamento no período
+    const cancelamentoValores: Record<string, number> = {};
+    dadosFiltradosPeriodo.forEach(item => {
+      const cancelVal = getCancelamentoValue(item);
+      const key = `${typeof cancelVal}:${String(cancelVal)}`;
+      cancelamentoValores[key] = (cancelamentoValores[key] || 0) + 1;
+    });
+
+    // Contar quantos têm cancelamento TRUE no período
+    const canceladosNoPeriodo = dadosFiltradosPeriodo.filter(item => isCancelado(item)).length;
+
     return {
       totalPlanilha,
       comDataValida,
@@ -377,7 +388,9 @@ export default function VendasB2CPage() {
       somaTotal,
       valoresZero: valoresEncontrados.filter(v => v === 0).length,
       semDataValida,
-      depoisDeHoje
+      depoisDeHoje,
+      cancelamentoValores: Object.entries(cancelamentoValores).map(([k, v]) => `${k}(${v})`).join(', '),
+      canceladosNoPeriodo
     };
   }, [data, dadosFiltradosPeriodo, dadosAtivosNoPeriodo, endDate]);
 
@@ -617,6 +630,8 @@ export default function VendasB2CPage() {
                 {debugInfo.depoisDeHoje.length > 0 && (
                   <li className="text-orange-600">Após período: {debugInfo.depoisDeHoje.join(', ')}</li>
                 )}
+                <li className="text-purple-600">Cancelados no período: {debugInfo.canceladosNoPeriodo}</li>
+                <li className="text-purple-600">Valores de cancelamento: {debugInfo.cancelamentoValores}</li>
               </ul>
             </div>
           )}
