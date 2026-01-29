@@ -472,17 +472,8 @@ export default function CobrancaPage() {
                         <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
                           Contato
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
-                          Vencimento
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
-                          Dias Atraso
-                        </th>
                         <th className="px-6 py-3 text-right text-xs font-semibold text-green-800 uppercase tracking-wider">
                           Valor Recuperado
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
-                          Último Contato
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
                           Status
@@ -504,19 +495,8 @@ export default function CobrancaPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {titulo.vencimento}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-medium text-gray-600">
-                              {titulo.diasAtraso > 0 ? `${titulo.diasAtraso} dias` : '-'}
-                            </span>
-                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
                             R$ {titulo.valorRecuperado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {titulo.ultimoContato}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
