@@ -145,19 +145,18 @@ const getFormaPagamento = (item: VendaB2C): string => {
 };
 
 // Helper para obter o valor do campo renovação (tenta várias variações do nome da coluna)
+// Nome da coluna na planilha: renovacao (valores: "Novo aluno" ou "Renovação")
 const getRenovacaoValue = (item: VendaB2C): string => {
   const record = item as Record<string, unknown>;
-  // Tenta várias variações do nome da coluna
-  const value = item.renovacao ||
-                item.tipo_matricula ||
+  // Tenta várias variações do nome da coluna - prioriza 'renovacao'
+  const value = record['renovacao'] ||
+                item.renovacao ||
                 record['Renovação'] ||
                 record['renovação'] ||
                 record['Renovacao'] ||
-                record['renovacao'] ||
+                item.tipo_matricula ||
                 record['RENOVAÇÃO'] ||
                 record['RENOVACAO'] ||
-                record['tipo'] ||
-                record['Tipo'] ||
                 '';
   return String(value).toLowerCase().trim();
 };
@@ -179,19 +178,21 @@ const isNovoAluno = (item: VendaB2C): boolean => {
 };
 
 // Helper para obter o valor do campo cancelamento (tenta várias variações do nome da coluna)
+// Nome da coluna na planilha: cancelamento (valores: TRUE/FALSE)
 const getCancelamentoValue = (item: VendaB2C): unknown => {
   const record = item as Record<string, unknown>;
-  // Tenta várias variações do nome da coluna
-  return item.cancelamento ??
+  // Tenta várias variações do nome da coluna - prioriza 'cancelamento'
+  return record['cancelamento'] ??
+         item.cancelamento ??
          item.cancelado ??
          record['Cancelamento'] ??
-         record['cancelamento'] ??
          record['Cancelado'] ??
          record['cancelado'] ??
          record['CANCELAMENTO'] ??
          record['CANCELADO'] ??
-         record['cancel'] ??
-         record['Cancel'] ??
+         record['status'] ??
+         record['Status'] ??
+         record['STATUS'] ??
          null;
 };
 
@@ -285,18 +286,22 @@ export default function VendasB2CPage() {
 
   // ==========================================
   // NOVAS MATRÍCULAS E RENOVAÇÕES - RESPONDEM AO FILTRO DE TEMPO
-  // Baseado no período selecionado
+  // Baseado no período selecionado E cancelamento = FALSE
   // ==========================================
 
-  // Separa novas matrículas e renovações do período filtrado
-  // IMPORTANTE: Usa checagem EXPLÍCITA do campo "renovação"
-  // - Novas matrículas: renovação = "novo aluno"
-  // - Renovações: renovação = "renovação" ou "Renovação"
+  // Primeiro: filtra dados do período que NÃO estão cancelados (cancelamento = FALSE)
+  const dadosAtivosNoPeriodo = useMemo(() => {
+    return dadosFiltradosPeriodo.filter(item => !isCancelado(item));
+  }, [dadosFiltradosPeriodo]);
+
+  // Separa novas matrículas e renovações dos dados ATIVOS do período
+  // - Novas matrículas: coluna "renovacao" = "Novo aluno"
+  // - Renovações: coluna "renovacao" = "Renovação" ou "renovacao"
   const { novasMatriculas, renovacoes } = useMemo(() => {
     const novas: VendaB2C[] = [];
     const renos: VendaB2C[] = [];
 
-    dadosFiltradosPeriodo.forEach(item => {
+    dadosAtivosNoPeriodo.forEach(item => {
       // Usa o helper que tenta várias variações do nome da coluna
       const renovacaoField = getRenovacaoValue(item);
 
@@ -305,43 +310,36 @@ export default function VendasB2CPage() {
         renos.push(item);
       }
       // Checa explicitamente se é novo aluno
-      else if (renovacaoField === 'novo aluno' || renovacaoField === 'novo' ||
-               renovacaoField === 'nova matrícula' || renovacaoField === 'nova matricula' ||
-               renovacaoField === '') {
-        // Se o campo está vazio, considera como novo aluno (comportamento padrão)
+      else if (renovacaoField === 'novo aluno') {
         novas.push(item);
       }
-      // Se não corresponde a nenhum, trata como novo aluno por padrão
-      else {
-        novas.push(item);
-      }
+      // Outros valores não são contados (nem como nova nem como renovação)
     });
 
     return { novasMatriculas: novas, renovacoes: renos };
-  }, [dadosFiltradosPeriodo]);
+  }, [dadosAtivosNoPeriodo]);
 
   // KPIs do período
   const kpis = useMemo(() => {
     // Faturamento total do período - APENAS linhas com cancelamento = FALSE
-    const faturamentoTotal = dadosFiltradosPeriodo
-      .filter(item => !isCancelado(item))
-      .reduce((sum, item) => {
-        return sum + getValor(item);
-      }, 0);
+    // Usa dadosAtivosNoPeriodo que já está filtrado
+    const faturamentoTotal = dadosAtivosNoPeriodo.reduce((sum, item) => {
+      return sum + getValor(item);
+    }, 0);
 
-    // Faturamento novas matrículas
+    // Faturamento novas matrículas (já filtrado por cancelamento=FALSE)
     const faturamentoNovas = novasMatriculas.reduce((sum, item) => {
       return sum + getValor(item);
     }, 0);
 
-    // Faturamento renovações
+    // Faturamento renovações (já filtrado por cancelamento=FALSE)
     const faturamentoRenovacoes = renovacoes.reduce((sum, item) => {
       return sum + getValor(item);
     }, 0);
 
-    // Ticket médio do período
-    const totalVendas = dadosFiltradosPeriodo.length;
-    const ticketMedio = totalVendas > 0 ? faturamentoTotal / totalVendas : 0;
+    // Ticket médio do período (baseado nos ativos)
+    const totalVendasAtivas = dadosAtivosNoPeriodo.length;
+    const ticketMedio = totalVendasAtivas > 0 ? faturamentoTotal / totalVendasAtivas : 0;
 
     return {
       faturamentoTotal,
@@ -351,7 +349,7 @@ export default function VendasB2CPage() {
       totalRenovacoes: renovacoes.length,
       ticketMedio,
     };
-  }, [dadosFiltradosPeriodo, novasMatriculas, renovacoes]);
+  }, [dadosAtivosNoPeriodo, novasMatriculas, renovacoes]);
 
   // Novas Matrículas por Produto (quantidade e valor)
   // Usa exatamente o que está na planilha, sem criar "Outros"
