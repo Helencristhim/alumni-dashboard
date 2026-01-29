@@ -25,22 +25,37 @@ interface TituloCobranca {
   [key: string]: unknown;
 }
 
-// Função para parsear valor (formato R$830.01 - ponto como decimal)
+// Função para parsear valor monetário
+// Suporta formatos:
+// - Brasileiro: R$ 1.234,56 (ponto separa milhares, vírgula decimal)
+// - Americano: R$1,080.00 (vírgula separa milhares, ponto decimal)
+// - Simples: 830.01 ou 830,01
 const parseValor = (valor: unknown): number => {
   if (typeof valor === 'number') return valor;
   if (typeof valor === 'string') {
     // Remove R$ e espaços
     let limpo = valor.replace(/R\$\s*/gi, '').trim();
 
-    // Se tem vírgula e ponto, assume formato brasileiro (1.234,56)
+    // Se tem vírgula E ponto, precisa determinar o formato
     if (limpo.includes(',') && limpo.includes('.')) {
-      limpo = limpo.replace(/\./g, '').replace(',', '.');
+      const lastComma = limpo.lastIndexOf(',');
+      const lastDot = limpo.lastIndexOf('.');
+
+      if (lastComma > lastDot) {
+        // Formato brasileiro: 1.234,56
+        // O último separador é vírgula = decimal
+        limpo = limpo.replace(/\./g, '').replace(',', '.');
+      } else {
+        // Formato americano: 1,080.00
+        // O último separador é ponto = decimal
+        limpo = limpo.replace(/,/g, '');
+      }
     }
-    // Se só tem vírgula, pode ser decimal brasileiro (830,01)
+    // Se só tem vírgula, é decimal brasileiro (830,01)
     else if (limpo.includes(',') && !limpo.includes('.')) {
       limpo = limpo.replace(',', '.');
     }
-    // Se só tem ponto, assume formato americano (830.01) - mantém como está
+    // Se só tem ponto, é formato americano (830.01) - mantém como está
 
     const num = parseFloat(limpo);
     return isNaN(num) ? 0 : num;

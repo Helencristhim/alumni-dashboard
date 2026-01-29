@@ -10,12 +10,12 @@ import { DollarSign, Users, ShoppingCart, TrendingUp, AlertCircle, Settings, Ref
 import { useSheetData } from '@/lib/hooks/useSheetData';
 import Link from 'next/link';
 
-// Lista oficial de produtos
+// Lista oficial de produtos - EXATAMENTE como na planilha (sem criar "Outros")
 const PRODUTOS_LISTA = [
   'Espanhol 12 meses',
-  'Espanhol 6 meses',
+  'Espanhol 06 meses',
   'Inglês 12 meses - FLOW',
-  'Inglês 6 meses - FLOW',
+  'Inglês 06 meses - FLOW',
   'Inglês 12 meses',
   'Inglês 10 meses',
   'Inglês 09 meses',
@@ -23,34 +23,170 @@ const PRODUTOS_LISTA = [
   'Inglês 03 meses',
   'Inglês 01 mês',
   'Aulas particulares',
+  'Teste de Proficiência',
   'FAAP - Ribeirão',
   'HDI - COPARTICIPACAO 30%',
   'Imersão 01 mês',
+  'Adesão FLOW',
 ];
 
+/**
+ * Interface da planilha de Vendas B2C
+ * Cada linha representa uma venda.
+ *
+ * Colunas esperadas:
+ * - Nome: nome do aluno
+ * - CPF/CNPJ: ID do aluno
+ * - data_venda: Data da venda (DD/MM/AAAA)
+ * - forma: Forma de pagamento (parcelado, recorrência, pix, boleto)
+ * - produto: Tipo de curso (da lista oficial)
+ * - fonte: Vendedor responsável
+ * - renovação: "novo aluno" ou "renovação"
+ * - cancelamento/cancelado: TRUE = cancelado, FALSE = ativo
+ * - valor/faturamento: Valor da venda (R$ 5.160,00)
+ */
 interface VendaB2C {
+  // Identificação do aluno
+  nome?: string;           // Coluna Nome
+  cpf_cnpj?: string;       // Coluna CPF/CNPJ
+  aluno_nome?: string;     // Alias
+  aluno_id?: string;       // Alias
+
+  // Data da venda
   data_venda: Date | string;
-  faturamento: number;
-  produto: string;
-  tipo_matricula?: string;
-  cancelamento?: boolean | string;
-  aluno_id?: string;
-  aluno_nome?: string;
+
+  // Forma de pagamento
+  forma?: string;
   forma_pagamento?: string;
-  parcelas?: number;
+
+  // Produto (da lista oficial)
+  produto: string;
+
+  // Vendedor
+  fonte?: string;
   vendedor?: string;
+
+  // Tipo: "novo aluno" ou "renovação"
+  renovacao?: string;
+  tipo_matricula?: string;
+
+  // Status: TRUE = cancelado, FALSE = ativo
+  cancelamento?: boolean | string;
+  cancelado?: boolean | string;
+
+  // Valor
+  valor?: number | string;
+  faturamento?: number | string;
+
   [key: string]: unknown;
 }
 
-// Função para parsear valor que pode vir como string "R$ 3.576,00"
+// Função para parsear valor monetário brasileiro (R$ 5.160,00)
 const parseValor = (valor: unknown): number => {
   if (typeof valor === 'number') return valor;
   if (typeof valor === 'string') {
-    const limpo = valor.replace(/R\$\s*/gi, '').replace(/\./g, '').replace(',', '.').trim();
+    // Remove R$ e espaços
+    let limpo = valor.replace(/R\$\s*/gi, '').trim();
+
+    // Verifica o formato: brasileiro (1.234,56) vs americano (1,234.56)
+    if (limpo.includes(',') && limpo.includes('.')) {
+      const lastComma = limpo.lastIndexOf(',');
+      const lastDot = limpo.lastIndexOf('.');
+      if (lastComma > lastDot) {
+        // Formato brasileiro: remove pontos, troca vírgula por ponto
+        limpo = limpo.replace(/\./g, '').replace(',', '.');
+      } else {
+        // Formato americano: remove vírgulas
+        limpo = limpo.replace(/,/g, '');
+      }
+    } else if (limpo.includes(',') && !limpo.includes('.')) {
+      // Só vírgula = decimal brasileiro (830,01)
+      limpo = limpo.replace(',', '.');
+    }
+
     const num = parseFloat(limpo);
     return isNaN(num) ? 0 : num;
   }
   return 0;
+};
+
+// Helper para obter valor de um item
+const getValor = (item: VendaB2C): number => {
+  return parseValor(item.valor) ||
+         parseValor(item.faturamento) ||
+         parseValor((item as Record<string, unknown>)['Valor']) ||
+         parseValor((item as Record<string, unknown>)['valor_total']) ||
+         0;
+};
+
+// Helper para obter nome do aluno
+const getNomeAluno = (item: VendaB2C): string => {
+  return String(item.nome || item.aluno_nome || item.aluno_id || '-').trim();
+};
+
+// Helper para obter vendedor (fonte)
+const getVendedor = (item: VendaB2C): string => {
+  return String(item.fonte || item.vendedor || 'Não informado').trim();
+};
+
+// Helper para obter forma de pagamento
+const getFormaPagamento = (item: VendaB2C): string => {
+  return String(item.forma || item.forma_pagamento || 'Não informado').trim();
+};
+
+// Função para verificar se é renovação (baseado no campo "renovação")
+// Valores esperados na planilha: "Renovação" ou "renovação"
+const isRenovacao = (item: VendaB2C): boolean => {
+  const renovacao = String(item.renovacao || item.tipo_matricula || '').toLowerCase().trim();
+  // Match exato para "renovação" (case-insensitive)
+  return renovacao === 'renovação' || renovacao === 'renovacao';
+};
+
+// Função para verificar se é novo aluno
+// Valores esperados na planilha: "novo aluno"
+const isNovoAluno = (item: VendaB2C): boolean => {
+  const renovacao = String(item.renovacao || item.tipo_matricula || '').toLowerCase().trim();
+  // Match exato para "novo aluno" (case-insensitive)
+  return renovacao === 'novo aluno' || renovacao === 'novo' || renovacao === 'nova matrícula' || renovacao === 'nova matricula';
+};
+
+// Função para verificar se está cancelado (TRUE = cancelado, FALSE = ativo)
+const isCancelado = (item: VendaB2C): boolean => {
+  const cancelamento = item.cancelamento ?? item.cancelado;
+  if (cancelamento === undefined || cancelamento === null) return false;
+  if (typeof cancelamento === 'boolean') return cancelamento;
+  const cancelStr = String(cancelamento).toLowerCase().trim();
+  return cancelStr === 'true' ||
+         cancelStr === 'sim' ||
+         cancelStr === 's' ||
+         cancelStr === '1' ||
+         cancelStr === 'cancelado' ||
+         cancelStr === 'verdadeiro';
+};
+
+// Função para parsear data (formato DD/MM/AAAA)
+const parseDate = (dateValue: Date | string | undefined): Date | null => {
+  if (!dateValue) return null;
+  if (dateValue instanceof Date) return dateValue;
+  if (typeof dateValue === 'string') {
+    const trimmed = dateValue.trim();
+    const parts = trimmed.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1;
+      let year = parseInt(parts[2]);
+      if (year < 100) {
+        year = year > 50 ? 1900 + year : 2000 + year;
+      }
+      const date = new Date(year, month, day);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    }
+    const parsed = new Date(trimmed);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+  return null;
 };
 
 export default function VendasB2CPage() {
@@ -68,104 +204,96 @@ export default function VendasB2CPage() {
     setEndDate(end);
   };
 
-  // Função para verificar se é renovação
-  const isRenovacao = (tipo: string | undefined): boolean => {
-    if (!tipo) return false;
-    const tipoLower = String(tipo).toLowerCase().trim();
-    return tipoLower.includes('renova') ||
-           tipoLower.includes('renovação') ||
-           tipoLower.includes('renovacao') ||
-           tipoLower === 'r' ||
-           tipoLower === 'ren';
-  };
-
-  // Função para verificar se está cancelado (TRUE = cancelado, FALSE = ativo)
-  const isCancelado = (cancelamento: boolean | string | undefined): boolean => {
-    if (cancelamento === undefined || cancelamento === null) return false;
-    if (typeof cancelamento === 'boolean') return cancelamento;
-    const cancelStr = String(cancelamento).toLowerCase().trim();
-    return cancelStr === 'true' ||
-           cancelStr === 'sim' ||
-           cancelStr === 's' ||
-           cancelStr === '1' ||
-           cancelStr === 'cancelado' ||
-           cancelStr === 'verdadeiro';
-  };
-
-  // Função para parsear data
-  const parseDate = (dateValue: Date | string | undefined): Date | null => {
-    if (!dateValue) return null;
-    if (dateValue instanceof Date) return dateValue;
-    if (typeof dateValue === 'string') {
-      const parts = dateValue.split('/');
-      if (parts.length === 3) {
-        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-      }
-      return new Date(dateValue);
-    }
-    return null;
-  };
-
-  // Filtra dados pelo período selecionado
-  const filteredData = useMemo(() => {
+  // Filtra dados pelo período selecionado (usando data_venda)
+  const dadosFiltradosPeriodo = useMemo(() => {
     if (!data || data.length === 0) return [];
 
     return data.filter(item => {
       const itemDate = parseDate(item.data_venda);
-      if (!itemDate) return true;
+      if (!itemDate) return false; // Exclui itens sem data válida
       return itemDate >= startDate && itemDate <= endDate;
     });
   }, [data, startDate, endDate]);
 
-  // ALUNOS ATIVOS - Conta de TODA a planilha (não responde ao filtro de período)
-  // Aluno ativo = cancelamento FALSE
-  const totalAlunosAtivosGeral = useMemo(() => {
+  // ==========================================
+  // ALUNOS ATIVOS/CANCELADOS - NÃO RESPONDEM AO FILTRO DE TEMPO
+  // Baseado em TODA a planilha
+  // ==========================================
+
+  // Alunos ativos = cancelamento FALSE (toda a planilha)
+  const totalAlunosAtivos = useMemo(() => {
     if (!data || data.length === 0) return 0;
-    return data.filter(item => !isCancelado(item.cancelamento)).length;
+    return data.filter(item => !isCancelado(item)).length;
   }, [data]);
 
-  // Total de cancelados (de toda a planilha)
-  const totalAlunosCanceladosGeral = useMemo(() => {
+  // Alunos cancelados = cancelamento TRUE (toda a planilha)
+  const totalAlunosCancelados = useMemo(() => {
     if (!data || data.length === 0) return 0;
-    return data.filter(item => isCancelado(item.cancelamento)).length;
+    return data.filter(item => isCancelado(item)).length;
   }, [data]);
+
+  // Taxa de cancelamento
+  const taxaCancelamento = useMemo(() => {
+    const total = data.length;
+    return total > 0 ? (totalAlunosCancelados / total) * 100 : 0;
+  }, [data.length, totalAlunosCancelados]);
+
+  // ==========================================
+  // NOVAS MATRÍCULAS E RENOVAÇÕES - RESPONDEM AO FILTRO DE TEMPO
+  // Baseado no período selecionado
+  // ==========================================
 
   // Separa novas matrículas e renovações do período filtrado
+  // IMPORTANTE: Usa checagem EXPLÍCITA do campo "renovação"
+  // - Novas matrículas: renovação = "novo aluno"
+  // - Renovações: renovação = "renovação" ou "Renovação"
   const { novasMatriculas, renovacoes } = useMemo(() => {
     const novas: VendaB2C[] = [];
     const renos: VendaB2C[] = [];
 
-    filteredData.forEach(item => {
-      if (isRenovacao(item.tipo_matricula)) {
+    dadosFiltradosPeriodo.forEach(item => {
+      const renovacaoField = String(item.renovacao || item.tipo_matricula || '').toLowerCase().trim();
+
+      // Checa explicitamente se é renovação
+      if (renovacaoField === 'renovação' || renovacaoField === 'renovacao') {
         renos.push(item);
-      } else {
+      }
+      // Checa explicitamente se é novo aluno
+      else if (renovacaoField === 'novo aluno' || renovacaoField === 'novo' ||
+               renovacaoField === 'nova matrícula' || renovacaoField === 'nova matricula' ||
+               renovacaoField === '') {
+        // Se o campo está vazio, considera como novo aluno (comportamento padrão)
+        novas.push(item);
+      }
+      // Se não corresponde a nenhum, trata como novo aluno por padrão
+      else {
         novas.push(item);
       }
     });
 
     return { novasMatriculas: novas, renovacoes: renos };
-  }, [filteredData]);
+  }, [dadosFiltradosPeriodo]);
 
-  // Calcula KPIs do período filtrado
+  // KPIs do período
   const kpis = useMemo(() => {
-    const faturamentoTotal = filteredData.reduce((sum, item) => {
-      return sum + parseValor(item.faturamento);
+    // Faturamento total do período
+    const faturamentoTotal = dadosFiltradosPeriodo.reduce((sum, item) => {
+      return sum + getValor(item);
     }, 0);
 
+    // Faturamento novas matrículas
     const faturamentoNovas = novasMatriculas.reduce((sum, item) => {
-      return sum + parseValor(item.faturamento);
+      return sum + getValor(item);
     }, 0);
 
+    // Faturamento renovações
     const faturamentoRenovacoes = renovacoes.reduce((sum, item) => {
-      return sum + parseValor(item.faturamento);
+      return sum + getValor(item);
     }, 0);
 
-    const totalVendas = filteredData.length;
+    // Ticket médio do período
+    const totalVendas = dadosFiltradosPeriodo.length;
     const ticketMedio = totalVendas > 0 ? faturamentoTotal / totalVendas : 0;
-
-    // Taxa de cancelamento baseada no total geral
-    const totalGeral = totalAlunosAtivosGeral + totalAlunosCanceladosGeral;
-    const taxaCancelamento = totalGeral > 0 ? (totalAlunosCanceladosGeral / totalGeral) * 100 : 0;
 
     return {
       faturamentoTotal,
@@ -174,105 +302,103 @@ export default function VendasB2CPage() {
       totalNovasMatriculas: novasMatriculas.length,
       totalRenovacoes: renovacoes.length,
       ticketMedio,
-      taxaCancelamento,
     };
-  }, [filteredData, novasMatriculas, renovacoes, totalAlunosAtivosGeral, totalAlunosCanceladosGeral]);
+  }, [dadosFiltradosPeriodo, novasMatriculas, renovacoes]);
 
   // Novas Matrículas por Produto (quantidade e valor)
+  // Usa exatamente o que está na planilha, sem criar "Outros"
   const novasMatriculasPorProduto = useMemo(() => {
     const grupos: Record<string, { quantidade: number; valor: number }> = {};
 
-    // Inicializa com todos os produtos da lista
-    PRODUTOS_LISTA.forEach(produto => {
-      grupos[produto] = { quantidade: 0, valor: 0 };
-    });
+    novasMatriculas.forEach(item => {
+      const produto = String(item.produto || '').trim();
+      if (!produto) return; // Ignora produtos vazios
 
-    novasMatriculas.filter(item => !isCancelado(item.cancelamento)).forEach(item => {
-      const produto = String(item.produto || 'Outros');
       if (!grupos[produto]) {
         grupos[produto] = { quantidade: 0, valor: 0 };
       }
       grupos[produto].quantidade += 1;
-      grupos[produto].valor += parseValor(item.faturamento);
+      grupos[produto].valor += getValor(item);
     });
 
     return Object.entries(grupos)
-      .filter(([, dados]) => dados.quantidade > 0)
       .map(([produto, dados]) => ({
         produto,
         ...dados
       }))
-      .sort((a, b) => b.valor - a.valor);
+      .sort((a, b) => b.quantidade - a.quantidade);
   }, [novasMatriculas]);
 
-  // Renovações por Produto (quantidade e valor)
+  // Renovações por Produto
   const renovacoesPorProduto = useMemo(() => {
     const grupos: Record<string, { quantidade: number; valor: number }> = {};
 
-    // Inicializa com todos os produtos da lista
-    PRODUTOS_LISTA.forEach(produto => {
-      grupos[produto] = { quantidade: 0, valor: 0 };
-    });
+    renovacoes.forEach(item => {
+      const produto = String(item.produto || '').trim();
+      if (!produto) return;
 
-    renovacoes.filter(item => !isCancelado(item.cancelamento)).forEach(item => {
-      const produto = String(item.produto || 'Outros');
       if (!grupos[produto]) {
         grupos[produto] = { quantidade: 0, valor: 0 };
       }
       grupos[produto].quantidade += 1;
-      grupos[produto].valor += parseValor(item.faturamento);
+      grupos[produto].valor += getValor(item);
     });
 
     return Object.entries(grupos)
-      .filter(([, dados]) => dados.quantidade > 0)
       .map(([produto, dados]) => ({
         produto,
         ...dados
       }))
-      .sort((a, b) => b.valor - a.valor);
+      .sort((a, b) => b.quantidade - a.quantidade);
   }, [renovacoes]);
 
   // Agrupa por forma de pagamento
   const dadosPorPagamento = useMemo(() => {
     const grupos: Record<string, number> = {};
 
-    filteredData.forEach(item => {
-      const pagamento = String(item.forma_pagamento || 'Não informado');
+    dadosFiltradosPeriodo.forEach(item => {
+      const pagamento = getFormaPagamento(item);
       grupos[pagamento] = (grupos[pagamento] || 0) + 1;
     });
 
     const total = Object.values(grupos).reduce((sum, val) => sum + val, 0);
 
-    return Object.entries(grupos).map(([name, count]) => ({
-      name,
-      value: total > 0 ? Math.round((count / total) * 100) : 0
-    }));
-  }, [filteredData]);
+    return Object.entries(grupos)
+      .map(([name, count]) => ({
+        name,
+        value: total > 0 ? Math.round((count / total) * 100) : 0,
+        count
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [dadosFiltradosPeriodo]);
 
-  // Agrupa por vendedor
+  // Top Vendedores (usando coluna "fonte")
+  // Mostra TODOS os vendedores encontrados
   const dadosPorVendedor = useMemo(() => {
     const grupos: Record<string, { vendas: number; valor: number }> = {};
 
-    filteredData.forEach(item => {
-      const vendedor = String(item.vendedor || 'Não informado');
+    dadosFiltradosPeriodo.forEach(item => {
+      const vendedor = getVendedor(item);
       if (!grupos[vendedor]) {
         grupos[vendedor] = { vendas: 0, valor: 0 };
       }
       grupos[vendedor].vendas += 1;
-      grupos[vendedor].valor += parseValor(item.faturamento);
+      grupos[vendedor].valor += getValor(item);
     });
 
-    return Object.entries(grupos).map(([vendedor, dados]) => ({
-      vendedor,
-      ...dados
-    })).sort((a, b) => b.vendas - a.vendas).slice(0, 10);
-  }, [filteredData]);
+    return Object.entries(grupos)
+      .map(([vendedor, dados]) => ({
+        vendedor,
+        ...dados
+      }))
+      .sort((a, b) => b.vendas - a.vendas);
+  }, [dadosFiltradosPeriodo]);
 
-  // Dados para gráfico de evolução mensal
+  // Evolução mensal
   const evolucaoMensal = useMemo(() => {
     const grupos: Record<string, { faturamento: number; matriculas: number; renovacoes: number }> = {};
 
-    filteredData.forEach(item => {
+    dadosFiltradosPeriodo.forEach(item => {
       const itemDate = parseDate(item.data_venda);
       let mes: string = 'N/A';
 
@@ -284,9 +410,9 @@ export default function VendasB2CPage() {
       if (!grupos[mes]) {
         grupos[mes] = { faturamento: 0, matriculas: 0, renovacoes: 0 };
       }
-      grupos[mes].faturamento += parseValor(item.faturamento);
+      grupos[mes].faturamento += getValor(item);
 
-      if (isRenovacao(item.tipo_matricula)) {
+      if (isRenovacao(item)) {
         grupos[mes].renovacoes += 1;
       } else {
         grupos[mes].matriculas += 1;
@@ -297,39 +423,49 @@ export default function VendasB2CPage() {
       mes,
       ...dados
     }));
-  }, [filteredData]);
+  }, [dadosFiltradosPeriodo]);
 
   // Totais para tabelas
-  const totaisNovas = useMemo(() => {
-    const ativos = novasMatriculas.filter(item => !isCancelado(item.cancelamento));
-    return {
-      quantidade: ativos.length,
-      valor: ativos.reduce((sum, item) => sum + parseValor(item.faturamento), 0)
-    };
-  }, [novasMatriculas]);
+  const totaisNovas = useMemo(() => ({
+    quantidade: novasMatriculas.length,
+    valor: novasMatriculas.reduce((sum, item) => sum + getValor(item), 0)
+  }), [novasMatriculas]);
 
-  const totaisRenovacoes = useMemo(() => {
-    const ativos = renovacoes.filter(item => !isCancelado(item.cancelamento));
-    return {
-      quantidade: ativos.length,
-      valor: ativos.reduce((sum, item) => sum + parseValor(item.faturamento), 0)
-    };
-  }, [renovacoes]);
+  const totaisRenovacoes = useMemo(() => ({
+    quantidade: renovacoes.length,
+    valor: renovacoes.reduce((sum, item) => sum + getValor(item), 0)
+  }), [renovacoes]);
 
-  // Se houver erro de configuração, mostra mensagem amigável
+  // Vendas recentes (últimas 10 do período)
+  const vendasRecentes = useMemo(() => {
+    return dadosFiltradosPeriodo
+      .map(item => ({
+        ...item,
+        data_parsed: parseDate(item.data_venda),
+        valor_numerico: getValor(item),
+        nome_aluno: getNomeAluno(item),
+      }))
+      .sort((a, b) => {
+        if (!a.data_parsed || !b.data_parsed) return 0;
+        return b.data_parsed.getTime() - a.data_parsed.getTime();
+      })
+      .slice(0, 10);
+  }, [dadosFiltradosPeriodo]);
+
+  // Se houver erro de configuração
   if (error) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-96 text-center">
           <AlertCircle className="w-16 h-16 text-orange-400 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Configuração Necessária</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Configuracao Necessaria</h2>
           <p className="text-gray-500 mb-6 max-w-md">{error}</p>
           <Link
             href="/configuracoes"
             className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
           >
             <Settings className="w-5 h-5" />
-            Ir para Configurações
+            Ir para Configuracoes
           </Link>
         </div>
       </DashboardLayout>
@@ -340,7 +476,7 @@ export default function VendasB2CPage() {
     <DashboardLayout>
       <ModuleContainer
         title="Vendas B2C"
-        description="Faturamento, matrículas e renovações"
+        description="Faturamento, matriculas e renovacoes"
         sourceUrl={sourceUrl || '#'}
         lastUpdated={lastUpdated || undefined}
         onRefresh={refresh}
@@ -356,27 +492,28 @@ export default function VendasB2CPage() {
       >
         <div className="space-y-8">
           {/* Mensagem se não houver dados */}
-          {!loading && filteredData.length === 0 && (
+          {!loading && dadosFiltradosPeriodo.length === 0 && (
             <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-6 text-center">
               <p className="text-yellow-800">
-                Nenhum dado encontrado para o período selecionado.
+                Nenhum dado encontrado para o periodo selecionado.
                 {data.length > 0 && ` (${data.length} registros totais na planilha)`}
               </p>
             </div>
           )}
 
-          {/* KPIs Principais - Linha 1 */}
+          {/* KPIs - Linha 1: Periodo filtrado */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
-              title="Faturamento Mensal"
+              title="Faturamento Total"
               value={kpis.faturamentoTotal}
               format="currencyCompact"
               icon={<DollarSign className="w-6 h-6" />}
               color="#10B981"
+              subtitle="Periodo selecionado"
               loading={loading}
             />
             <KPICard
-              title="Novas Matrículas"
+              title="Novas Matriculas"
               value={kpis.totalNovasMatriculas}
               format="number"
               icon={<UserPlus className="w-6 h-6" />}
@@ -385,7 +522,7 @@ export default function VendasB2CPage() {
               loading={loading}
             />
             <KPICard
-              title="Renovações"
+              title="Renovacoes"
               value={kpis.totalRenovacoes}
               format="number"
               icon={<RefreshCw className="w-6 h-6" />}
@@ -394,40 +531,41 @@ export default function VendasB2CPage() {
               loading={loading}
             />
             <KPICard
-              title="Ticket Médio"
+              title="Ticket Medio"
               value={kpis.ticketMedio}
               format="currency"
               icon={<ShoppingCart className="w-6 h-6" />}
               color="#F59E0B"
+              subtitle="Periodo selecionado"
               loading={loading}
             />
           </div>
 
-          {/* KPIs - Linha 2: Alunos (Total Geral - não responde ao filtro) */}
+          {/* KPIs - Linha 2: Alunos (NAO respondem ao filtro) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
               title="Alunos Ativos"
-              value={totalAlunosAtivosGeral}
+              value={totalAlunosAtivos}
               format="number"
               icon={<UserCheck className="w-6 h-6" />}
               color="#10B981"
-              subtitle="Total geral (todos os meses)"
+              subtitle="Total geral (cancelamento=FALSE)"
               loading={loading}
             />
             <KPICard
               title="Alunos Cancelados"
-              value={totalAlunosCanceladosGeral}
+              value={totalAlunosCancelados}
               format="number"
               icon={<UserX className="w-6 h-6" />}
               color="#EF4444"
-              subtitle="Total geral"
+              subtitle="Total geral (cancelamento=TRUE)"
               loading={loading}
             />
             <KPICard
               title="Taxa de Cancelamento"
-              value={`${kpis.taxaCancelamento.toFixed(1)}%`}
+              value={`${taxaCancelamento.toFixed(1)}%`}
               icon={<TrendingUp className="w-6 h-6" />}
-              color={kpis.taxaCancelamento > 10 ? '#EF4444' : '#10B981'}
+              color={taxaCancelamento > 10 ? '#EF4444' : '#10B981'}
               subtitle="Sobre base total"
               loading={loading}
             />
@@ -445,8 +583,8 @@ export default function VendasB2CPage() {
           {/* Novas Matrículas por Produto */}
           {novasMatriculasPorProduto.length > 0 && (
             <ModuleSection
-              title="Novas Matrículas por Produto"
-              subtitle={`${totaisNovas.quantidade} matrículas | R$ ${totaisNovas.valor.toLocaleString('pt-BR')}`}
+              title="Novas Matriculas por Produto"
+              subtitle={`${totaisNovas.quantidade} matriculas | R$ ${totaisNovas.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -463,7 +601,7 @@ export default function VendasB2CPage() {
                           Valor Total
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-semibold text-blue-800 uppercase tracking-wider">
-                          Ticket Médio
+                          Ticket Medio
                         </th>
                       </tr>
                     </thead>
@@ -512,8 +650,8 @@ export default function VendasB2CPage() {
           {/* Renovações por Produto */}
           {renovacoesPorProduto.length > 0 && (
             <ModuleSection
-              title="Renovações por Produto"
-              subtitle={`${totaisRenovacoes.quantidade} renovações | R$ ${totaisRenovacoes.valor.toLocaleString('pt-BR')}`}
+              title="Renovacoes por Produto"
+              subtitle={`${totaisRenovacoes.quantidade} renovacoes | R$ ${totaisRenovacoes.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -530,7 +668,7 @@ export default function VendasB2CPage() {
                           Valor Total
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-semibold text-purple-800 uppercase tracking-wider">
-                          Ticket Médio
+                          Ticket Medio
                         </th>
                       </tr>
                     </thead>
@@ -580,8 +718,8 @@ export default function VendasB2CPage() {
           {evolucaoMensal.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ChartCard
-                title="Faturamento por Período"
-                subtitle="Distribuição no período selecionado"
+                title="Faturamento por Periodo"
+                subtitle="Distribuicao no periodo selecionado"
               >
                 <AreaChartComponent
                   data={evolucaoMensal}
@@ -595,8 +733,8 @@ export default function VendasB2CPage() {
               </ChartCard>
 
               <ChartCard
-                title="Matrículas vs Renovações"
-                subtitle="Por período"
+                title="Matriculas vs Renovacoes"
+                subtitle="Por periodo"
               >
                 <BarChartComponent
                   data={evolucaoMensal}
@@ -615,7 +753,7 @@ export default function VendasB2CPage() {
             {novasMatriculasPorProduto.length > 0 && (
               <ChartCard
                 title="Faturamento por Produto"
-                subtitle="Novas matrículas"
+                subtitle="Novas matriculas"
               >
                 <BarChartComponent
                   data={novasMatriculasPorProduto.slice(0, 7)}
@@ -633,7 +771,7 @@ export default function VendasB2CPage() {
             {dadosPorPagamento.length > 0 && (
               <ChartCard
                 title="Formas de Pagamento"
-                subtitle="Distribuição percentual"
+                subtitle="Distribuicao percentual"
               >
                 <PieChartComponent
                   data={dadosPorPagamento}
@@ -648,10 +786,10 @@ export default function VendasB2CPage() {
             {dadosPorVendedor.length > 0 && (
               <ChartCard
                 title="Top Vendedores"
-                subtitle="Por número de vendas"
+                subtitle={`${dadosPorVendedor.length} vendedores encontrados`}
               >
                 <BarChartComponent
-                  data={dadosPorVendedor.slice(0, 6)}
+                  data={dadosPorVendedor.slice(0, 10)}
                   xKey="vendedor"
                   yKey="vendas"
                   color="#8B5CF6"
@@ -664,10 +802,10 @@ export default function VendasB2CPage() {
           </div>
 
           {/* Tabela de vendas recentes */}
-          {filteredData.length > 0 && (
+          {vendasRecentes.length > 0 && (
             <ModuleSection
               title="Vendas Recentes"
-              subtitle={`Últimos ${Math.min(10, filteredData.length)} registros`}
+              subtitle={`Ultimos ${vendasRecentes.length} registros do periodo`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -686,7 +824,7 @@ export default function VendasB2CPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Tipo
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Valor
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -695,43 +833,40 @@ export default function VendasB2CPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {filteredData.slice(0, 10).map((venda, i) => {
-                        const dataFormatada = parseDate(venda.data_venda);
-                        return (
-                          <tr key={i} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {dataFormatada ? dataFormatada.toLocaleDateString('pt-BR') : String(venda.data_venda || '-')}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {String(venda.aluno_nome || venda.aluno_id || '-')}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {String(venda.produto || '-')}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                isRenovacao(venda.tipo_matricula)
-                                  ? 'bg-purple-100 text-purple-800'
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}>
-                                {isRenovacao(venda.tipo_matricula) ? 'Renovação' : 'Novo'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              R$ {parseValor(venda.faturamento).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                isCancelado(venda.cancelamento)
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-green-100 text-green-800'
-                              }`}>
-                                {isCancelado(venda.cancelamento) ? 'Cancelado' : 'Ativo'}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {vendasRecentes.map((venda, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {venda.data_parsed ? venda.data_parsed.toLocaleDateString('pt-BR') : '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {venda.nome_aluno}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {String(venda.produto || '-')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              isRenovacao(venda)
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {isRenovacao(venda) ? 'Renovacao' : 'Novo'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                            R$ {venda.valor_numerico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              isCancelado(venda)
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-green-100 text-green-800'
+                            }`}>
+                              {isCancelado(venda) ? 'Cancelado' : 'Ativo'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
