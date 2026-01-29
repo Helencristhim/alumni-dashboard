@@ -344,15 +344,42 @@ export default function VendasB2CPage() {
       valoresEncontrados.push(valor);
     });
 
+    // Encontrar registros sem data válida que podem ser de Janeiro
+    const semDataValida: string[] = [];
+    data.forEach((item, index) => {
+      const record = item as Record<string, unknown>;
+      const dataVenda = item.data_venda || record['data_venda'];
+      const parsed = parseDate(item.data_venda);
+      if (!parsed && dataVenda) {
+        // Mostra os primeiros 5 que têm algo no campo data_venda mas não parseou
+        if (semDataValida.length < 5) {
+          semDataValida.push(`Linha ${index + 2}: "${String(dataVenda).substring(0, 20)}"`);
+        }
+      }
+    });
+
+    // Verificar se existem datas depois de hoje que estão sendo excluídas
+    const depoisDeHoje: string[] = [];
+    data.forEach((item, index) => {
+      const parsed = parseDate(item.data_venda);
+      if (parsed && parsed > endDate) {
+        if (depoisDeHoje.length < 3) {
+          depoisDeHoje.push(`Linha ${index + 2}: ${parsed.toLocaleDateString('pt-BR')}`);
+        }
+      }
+    });
+
     return {
       totalPlanilha,
       comDataValida,
       noPeriodo,
       ativosNoPeriodo,
       somaTotal,
-      valoresZero: valoresEncontrados.filter(v => v === 0).length
+      valoresZero: valoresEncontrados.filter(v => v === 0).length,
+      semDataValida,
+      depoisDeHoje
     };
-  }, [data, dadosFiltradosPeriodo, dadosAtivosNoPeriodo]);
+  }, [data, dadosFiltradosPeriodo, dadosAtivosNoPeriodo, endDate]);
 
   // KPIs do período
   const kpis = useMemo(() => {
@@ -578,12 +605,18 @@ export default function VendasB2CPage() {
               <p className="font-bold text-blue-800 mb-2">DEBUG - Diagnóstico:</p>
               <ul className="text-blue-700 space-y-1">
                 <li>Total na planilha: {debugInfo.totalPlanilha}</li>
-                <li>Com data válida: {debugInfo.comDataValida}</li>
+                <li>Com data válida: {debugInfo.comDataValida} (sem data válida: {debugInfo.totalPlanilha - debugInfo.comDataValida})</li>
                 <li>No período selecionado: {debugInfo.noPeriodo}</li>
                 <li>Ativos no período (cancelamento=FALSE): {debugInfo.ativosNoPeriodo}</li>
                 <li>Registros com valor = 0: {debugInfo.valoresZero}</li>
                 <li className="font-bold">Soma calculada: R$ {debugInfo.somaTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</li>
                 <li>Período: {startDate.toLocaleDateString('pt-BR')} até {endDate.toLocaleDateString('pt-BR')}</li>
+                {debugInfo.semDataValida.length > 0 && (
+                  <li className="text-red-600">Sem data válida: {debugInfo.semDataValida.join(', ')}</li>
+                )}
+                {debugInfo.depoisDeHoje.length > 0 && (
+                  <li className="text-orange-600">Após período: {debugInfo.depoisDeHoje.join(', ')}</li>
+                )}
               </ul>
             </div>
           )}
