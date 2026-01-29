@@ -328,6 +328,32 @@ export default function VendasB2CPage() {
     return { novasMatriculas: novas, renovacoes: renos };
   }, [dadosAtivosNoPeriodo]);
 
+  // DEBUG: Informações para diagnóstico
+  const debugInfo = useMemo(() => {
+    const totalPlanilha = data.length;
+    const comDataValida = data.filter(item => parseDate(item.data_venda) !== null).length;
+    const noPeriodo = dadosFiltradosPeriodo.length;
+    const ativosNoPeriodo = dadosAtivosNoPeriodo.length;
+
+    // Soma detalhada
+    let somaTotal = 0;
+    const valoresEncontrados: number[] = [];
+    dadosAtivosNoPeriodo.forEach(item => {
+      const valor = getValor(item);
+      somaTotal += valor;
+      valoresEncontrados.push(valor);
+    });
+
+    return {
+      totalPlanilha,
+      comDataValida,
+      noPeriodo,
+      ativosNoPeriodo,
+      somaTotal,
+      valoresZero: valoresEncontrados.filter(v => v === 0).length
+    };
+  }, [data, dadosFiltradosPeriodo, dadosAtivosNoPeriodo]);
+
   // KPIs do período
   const kpis = useMemo(() => {
     // Faturamento total do período - APENAS linhas com cancelamento = FALSE
@@ -546,6 +572,22 @@ export default function VendasB2CPage() {
         }
       >
         <div className="space-y-8">
+          {/* DEBUG: Informações de diagnóstico */}
+          {!loading && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
+              <p className="font-bold text-blue-800 mb-2">DEBUG - Diagnóstico:</p>
+              <ul className="text-blue-700 space-y-1">
+                <li>Total na planilha: {debugInfo.totalPlanilha}</li>
+                <li>Com data válida: {debugInfo.comDataValida}</li>
+                <li>No período selecionado: {debugInfo.noPeriodo}</li>
+                <li>Ativos no período (cancelamento=FALSE): {debugInfo.ativosNoPeriodo}</li>
+                <li>Registros com valor = 0: {debugInfo.valoresZero}</li>
+                <li className="font-bold">Soma calculada: R$ {debugInfo.somaTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</li>
+                <li>Período: {startDate.toLocaleDateString('pt-BR')} até {endDate.toLocaleDateString('pt-BR')}</li>
+              </ul>
+            </div>
+          )}
+
           {/* Mensagem se não houver dados */}
           {!loading && dadosFiltradosPeriodo.length === 0 && (
             <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-6 text-center">
