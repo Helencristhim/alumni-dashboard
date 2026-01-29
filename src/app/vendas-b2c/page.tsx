@@ -110,13 +110,25 @@ const parseValor = (valor: unknown): number => {
   return 0;
 };
 
-// Helper para obter valor de um item
+// Helper para obter valor de um item (tenta várias variações do nome da coluna)
 const getValor = (item: VendaB2C): number => {
-  return parseValor(item.valor) ||
-         parseValor(item.faturamento) ||
-         parseValor((item as Record<string, unknown>)['Valor']) ||
-         parseValor((item as Record<string, unknown>)['valor_total']) ||
-         0;
+  const record = item as Record<string, unknown>;
+  // Tenta várias variações do nome da coluna
+  const value = parseValor(item.valor) ||
+                parseValor(item.faturamento) ||
+                parseValor(record['Valor']) ||
+                parseValor(record['valor']) ||
+                parseValor(record['VALOR']) ||
+                parseValor(record['Faturamento']) ||
+                parseValor(record['faturamento']) ||
+                parseValor(record['FATURAMENTO']) ||
+                parseValor(record['valor_total']) ||
+                parseValor(record['Valor Total']) ||
+                parseValor(record['valor total']) ||
+                parseValor(record['Total']) ||
+                parseValor(record['total']) ||
+                0;
+  return value;
 };
 
 // Helper para obter nome do aluno
@@ -168,9 +180,26 @@ const isNovoAluno = (item: VendaB2C): boolean => {
   return renovacao === 'novo aluno' || renovacao === 'novo' || renovacao === 'nova matrícula' || renovacao === 'nova matricula';
 };
 
+// Helper para obter o valor do campo cancelamento (tenta várias variações do nome da coluna)
+const getCancelamentoValue = (item: VendaB2C): unknown => {
+  const record = item as Record<string, unknown>;
+  // Tenta várias variações do nome da coluna
+  return item.cancelamento ??
+         item.cancelado ??
+         record['Cancelamento'] ??
+         record['cancelamento'] ??
+         record['Cancelado'] ??
+         record['cancelado'] ??
+         record['CANCELAMENTO'] ??
+         record['CANCELADO'] ??
+         record['cancel'] ??
+         record['Cancel'] ??
+         null;
+};
+
 // Função para verificar se está cancelado (TRUE = cancelado, FALSE = ativo)
 const isCancelado = (item: VendaB2C): boolean => {
-  const cancelamento = item.cancelamento ?? item.cancelado;
+  const cancelamento = getCancelamentoValue(item);
   if (cancelamento === undefined || cancelamento === null) return false;
   if (typeof cancelamento === 'boolean') return cancelamento;
   const cancelStr = String(cancelamento).toLowerCase().trim();
