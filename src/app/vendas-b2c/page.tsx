@@ -525,7 +525,7 @@ export default function VendasB2CPage() {
             <KPICard
               title="Faturamento Total"
               value={kpis.faturamentoTotal}
-              format="currencyCompact"
+              format="currency"
               icon={<DollarSign className="w-6 h-6" />}
               color="#10B981"
               subtitle="Periodo selecionado"

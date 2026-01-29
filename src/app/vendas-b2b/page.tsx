@@ -222,7 +222,7 @@ export default function VendasB2BPage() {
             <KPICard
               title="Receita Contratada"
               value={kpis.receitaContratada}
-              format="currencyCompact"
+              format="currency"
               icon={<DollarSign className="w-6 h-6" />}
               color="#10B981"
               loading={loading}
@@ -230,7 +230,7 @@ export default function VendasB2BPage() {
             <KPICard
               title="Pipeline Ativo"
               value={kpis.pipelineAtivo}
-              format="currencyCompact"
+              format="currency"
               icon={<Target className="w-6 h-6" />}
               color="#8B5CF6"
               loading={loading}

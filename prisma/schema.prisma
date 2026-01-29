@@ -1,0 +1,157 @@
+// Schema Prisma - Alumni Dashboard RBAC
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// USER & AUTHENTICATION
+// ============================================================
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  cargo        String    // Job title (Diretor, Analista, etc.)
+  role         Role      @relation(fields: [roleId], references: [id])
+  roleId       String
+  isActive     Boolean   @default(true)
+  isDemoUser   Boolean   @default(false) // Flag para usuarios demo migrados
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime?
+
+  // Relations
+  sessions     Session[]
+  activityLogs ActivityLog[]
+  createdBy    User?     @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdById  String?
+  usersCreated User[]    @relation("UserCreatedBy")
+
+  @@index([email])
+  @@index([roleId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+
+  @@index([userId])
+  @@index([token])
+}
+
+// ============================================================
+// RBAC - ROLES & PERMISSIONS
+// ============================================================
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique // ADM, Investidor, Customer Care, Marketing
+  displayName String   // Nome para exibicao
+  description String?
+  isSystem    Boolean  @default(false) // Roles do sistema nao podem ser deletados
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g., "module:vendas-b2c:view", "admin:users:manage"
+  name        String   // Nome legivel
+  description String?
+  category    String   // "module", "admin", "activity"
+
+  // Relations
+  roles RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+// ============================================================
+// ACTIVITY MONITORING
+// ============================================================
+
+model ModuleDataSnapshot {
+  id           String   @id @default(cuid())
+  moduleId     String   @unique // vendas_b2c, vendas_b2b, etc.
+  contentHash  String   // SHA-256 do conteudo da planilha
+  rowCount     Int
+  lastModified DateTime @default(now())
+  sourceUrl    String?
+
+  @@index([moduleId])
+}
+
+model ActivityLog {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  moduleId    String?      // vendas_b2c, marketing, etc.
+  description String
+  metadata    Json?        // Dados adicionais (hash antigo, novo, etc.)
+  userId      String?
+  user        User?        @relation(fields: [userId], references: [id])
+  ipAddress   String?
+  createdAt   DateTime     @default(now())
+
+  @@index([moduleId, createdAt])
+  @@index([type, createdAt])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+enum ActivityType {
+  DATA_UPDATED    // Dados da planilha foram alterados
+  DATA_NO_CHANGE  // Verificacao diaria nao encontrou alteracoes
+  DATA_REFRESH    // Refresh manual ou automatico executado
+  DATA_ERROR      // Erro ao buscar dados
+  USER_LOGIN      // Usuario fez login
+  USER_LOGOUT     // Usuario fez logout
+  USER_CREATED    // Novo usuario criado
+  USER_UPDATED    // Usuario atualizado
+  USER_DELETED    // Usuario desativado
+  ROLE_CHANGED    // Role do usuario alterado
+  CONFIG_CHANGED  // Configuracao do dashboard alterada
+}
+
+// ============================================================
+// SCHEDULED TASKS TRACKING
+// ============================================================
+
+model ScheduledTaskRun {
+  id           String   @id @default(cuid())
+  taskName     String   // "refresh_all_data", "daily_check"
+  startedAt    DateTime @default(now())
+  completedAt  DateTime?
+  status       String   // "running", "completed", "failed"
+  result       Json?    // Resultados por modulo
+  errorMessage String?
+
+  @@index([taskName, startedAt])
+  @@index([status])
+}

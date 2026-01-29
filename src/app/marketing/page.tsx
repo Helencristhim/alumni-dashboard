@@ -226,7 +226,7 @@ export default function MarketingPage() {
             <KPICard
               title="Investimento Total"
               value={kpis.investimentoTotal}
-              format="currencyCompact"
+              format="currency"
               icon={<DollarSign className="w-5 h-5" />}
               color="#EC4899"
               loading={loading}

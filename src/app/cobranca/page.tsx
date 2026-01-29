@@ -118,8 +118,11 @@ export default function CobrancaPage() {
 
   // Calcula KPIs
   const kpis = useMemo(() => {
-    // Inadimplência (Absoluto) = soma de todos os valores da coluna "valor total em aberto"
-    const inadimplenciaAbsoluta = data.reduce((sum, item) => {
+    // Filtra apenas registros com status "Em contato"
+    const registrosEmContato = data.filter(item => isEmContato(item.status));
+
+    // Valor Total em Aberto = soma APENAS dos registros com status "Em contato"
+    const valorTotalAberto = registrosEmContato.reduce((sum, item) => {
       return sum + parseValor(item.valor_total_aberto);
     }, 0);
 
@@ -129,10 +132,10 @@ export default function CobrancaPage() {
     }, 0);
 
     // Títulos em Aberto = número de linhas com status "Em contato"
-    const titulosEmAberto = data.filter(item => isEmContato(item.status)).length;
+    const titulosEmAberto = registrosEmContato.length;
 
     return {
-      inadimplenciaAbsoluta,
+      valorTotalAberto,
       valorRecuperado,
       titulosEmAberto,
     };
@@ -269,21 +272,21 @@ export default function CobrancaPage() {
           {/* KPIs Principais */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <KPICard
-              title="Inadimplência (Absoluto)"
-              value={kpis.inadimplenciaAbsoluta}
-              format="currencyCompact"
+              title="Valor Total em Aberto"
+              value={kpis.valorTotalAberto}
+              format="currency"
               icon={<AlertCircle className="w-6 h-6" />}
               color="#EF4444"
-              subtitle="Soma de Valor Total em Aberto"
+              subtitle="Status: Em contato"
               loading={loading}
             />
             <KPICard
               title="Valor Recuperado"
               value={kpis.valorRecuperado}
-              format="currencyCompact"
+              format="currency"
               icon={<CheckCircle className="w-6 h-6" />}
               color="#10B981"
-              subtitle="Soma de Valor Recuperado"
+              subtitle="Soma total recuperado"
               loading={loading}
             />
             <KPICard
@@ -423,8 +426,8 @@ export default function CobrancaPage() {
               </p>
               <p>
                 Taxa de recuperação: <span className="font-semibold text-green-600">
-                  {kpis.inadimplenciaAbsoluta > 0
-                    ? ((kpis.valorRecuperado / (kpis.inadimplenciaAbsoluta + kpis.valorRecuperado)) * 100).toFixed(1)
+                  {kpis.valorTotalAberto > 0
+                    ? ((kpis.valorRecuperado / (kpis.valorTotalAberto + kpis.valorRecuperado)) * 100).toFixed(1)
                     : 0}%
                 </span>
               </p>

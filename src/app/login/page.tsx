@@ -1,18 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
-// Usuários de demonstração (em produção usar banco de dados)
-const DEMO_USERS = [
-  { email: 'investidor@alumni.com', password: 'Alumni@2024', name: 'Investidor', role: 'admin' },
-  { email: 'ceo@alumni.com', password: 'Alumni@2024', name: 'CEO', role: 'admin' },
-  { email: 'viewer@alumni.com', password: 'Alumni@2024', name: 'Visualizador', role: 'viewer' },
+// Credenciais de demonstração (exibidas para facilitar testes)
+const DEMO_CREDENTIALS = [
+  { email: 'adm@alumni.com', password: 'Alumni@2024', role: 'Administrador' },
+  { email: 'investidor@alumni.com', password: 'Alumni@2024', role: 'Investidor' },
+  { email: 'customercare@alumni.com', password: 'Alumni@2024', role: 'Customer Care' },
+  { email: 'marketing@alumni.com', password: 'Alumni@2024', role: 'Marketing' },
 ];
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,29 +28,44 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    // Simula delay de autenticação
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    // Verifica credenciais
-    const user = DEMO_USERS.find(
-      u => u.email === email && u.password === password
-    );
+      const data = await response.json();
 
-    if (user) {
-      // Salva token simples (em produção usar JWT)
-      localStorage.setItem('auth_token', btoa(JSON.stringify({
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        exp: Date.now() + 24 * 60 * 60 * 1000 // 24 horas
-      })));
+      if (response.ok && data.success) {
+        // Salva dados no localStorage para compatibilidade com código existente
+        localStorage.setItem('auth_token', btoa(JSON.stringify({
+          email: data.user.email,
+          name: data.user.name,
+          role: data.user.role,
+          cargo: data.user.cargo,
+          exp: Date.now() + 24 * 60 * 60 * 1000 // 24 horas
+        })));
 
-      router.push('/');
-    } else {
-      setError('E-mail ou senha inválidos');
+        // Redirecionar para página solicitada ou home
+        router.push(redirect);
+      } else {
+        setError(data.error || 'Erro ao fazer login');
+      }
+    } catch (err) {
+      console.error('Erro no login:', err);
+      setError('Erro de conexão. Tente novamente.');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setLoading(false);
+  const fillCredentials = (email: string, password: string) => {
+    setEmail(email);
+    setPassword(password);
+    setError('');
   };
 
   return (
@@ -138,7 +157,7 @@ export default function LoginPage() {
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5\" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
@@ -155,9 +174,24 @@ export default function LoginPage() {
             <p className="text-xs text-gray-500 text-center mb-3">
               Credenciais de demonstração:
             </p>
-            <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 font-mono">
-              <p>investidor@alumni.com</p>
-              <p>Alumni@2024</p>
+            <div className="space-y-2">
+              {DEMO_CREDENTIALS.map((cred) => (
+                <button
+                  key={cred.email}
+                  type="button"
+                  onClick={() => fillCredentials(cred.email, cred.password)}
+                  className="w-full bg-gray-50 hover:bg-gray-100 rounded-lg p-2 text-left transition-colors"
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs font-mono text-gray-600">
+                      {cred.email}
+                    </div>
+                    <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                      {cred.role}
+                    </span>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -168,5 +202,21 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+function LoginLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginLoading />}>
+      <LoginForm />
+    </Suspense>
   );
 }
