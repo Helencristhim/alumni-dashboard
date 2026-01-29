@@ -134,10 +134,28 @@ const getFormaPagamento = (item: VendaB2C): string => {
   return String(item.forma || item.forma_pagamento || 'Não informado').trim();
 };
 
+// Helper para obter o valor do campo renovação (tenta várias variações do nome da coluna)
+const getRenovacaoValue = (item: VendaB2C): string => {
+  const record = item as Record<string, unknown>;
+  // Tenta várias variações do nome da coluna
+  const value = item.renovacao ||
+                item.tipo_matricula ||
+                record['Renovação'] ||
+                record['renovação'] ||
+                record['Renovacao'] ||
+                record['renovacao'] ||
+                record['RENOVAÇÃO'] ||
+                record['RENOVACAO'] ||
+                record['tipo'] ||
+                record['Tipo'] ||
+                '';
+  return String(value).toLowerCase().trim();
+};
+
 // Função para verificar se é renovação (baseado no campo "renovação")
 // Valores esperados na planilha: "Renovação" ou "renovação"
 const isRenovacao = (item: VendaB2C): boolean => {
-  const renovacao = String(item.renovacao || item.tipo_matricula || '').toLowerCase().trim();
+  const renovacao = getRenovacaoValue(item);
   // Match exato para "renovação" (case-insensitive)
   return renovacao === 'renovação' || renovacao === 'renovacao';
 };
@@ -145,7 +163,7 @@ const isRenovacao = (item: VendaB2C): boolean => {
 // Função para verificar se é novo aluno
 // Valores esperados na planilha: "novo aluno"
 const isNovoAluno = (item: VendaB2C): boolean => {
-  const renovacao = String(item.renovacao || item.tipo_matricula || '').toLowerCase().trim();
+  const renovacao = getRenovacaoValue(item);
   // Match exato para "novo aluno" (case-insensitive)
   return renovacao === 'novo aluno' || renovacao === 'novo' || renovacao === 'nova matrícula' || renovacao === 'nova matricula';
 };
@@ -252,7 +270,8 @@ export default function VendasB2CPage() {
     const renos: VendaB2C[] = [];
 
     dadosFiltradosPeriodo.forEach(item => {
-      const renovacaoField = String(item.renovacao || item.tipo_matricula || '').toLowerCase().trim();
+      // Usa o helper que tenta várias variações do nome da coluna
+      const renovacaoField = getRenovacaoValue(item);
 
       // Checa explicitamente se é renovação
       if (renovacaoField === 'renovação' || renovacaoField === 'renovacao') {

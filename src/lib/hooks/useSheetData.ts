@@ -61,9 +61,18 @@ function parseValue(value: string): unknown {
   if (/^-?[\d.,]+$/.test(strValue)) {
     let normalized = strValue;
 
-    // Se tem vírgula e ponto, assume formato brasileiro (1.234,56)
+    // Se tem vírgula E ponto, precisa determinar o formato
     if (strValue.includes(',') && strValue.includes('.')) {
-      normalized = strValue.replace(/\./g, '').replace(',', '.');
+      const lastComma = strValue.lastIndexOf(',');
+      const lastDot = strValue.lastIndexOf('.');
+
+      if (lastComma > lastDot) {
+        // Formato brasileiro: 1.234,56 (vírgula é o decimal)
+        normalized = strValue.replace(/\./g, '').replace(',', '.');
+      } else {
+        // Formato americano: 1,080.00 (ponto é o decimal)
+        normalized = strValue.replace(/,/g, '');
+      }
     }
     // Se só tem vírgula, pode ser decimal brasileiro (830,01)
     else if (strValue.includes(',') && !strValue.includes('.')) {
