@@ -114,17 +114,25 @@ const parseValor = (valor: unknown): number => {
 // Nome correto na planilha: valor_total
 const getValor = (item: VendaB2C): number => {
   const record = item as Record<string, unknown>;
-  // Prioriza o nome correto da coluna: valor_total
-  const value = parseValor(record['valor_total']) ||  // Nome exato da coluna
+
+  // Busca case-insensitive por 'valor_total' ou 'valor total'
+  const keys = Object.keys(record);
+  const valorTotalKey = keys.find(k =>
+    k.toLowerCase() === 'valor_total' ||
+    k.toLowerCase() === 'valor total' ||
+    k.toLowerCase() === 'valortotal'
+  );
+
+  if (valorTotalKey) {
+    const val = parseValor(record[valorTotalKey]);
+    if (val > 0) return val;
+  }
+
+  // Fallbacks
+  const value = parseValor(record['valor_total']) ||
+                parseValor(record['Valor_total']) ||
                 parseValor(item.valor) ||
                 parseValor(item.faturamento) ||
-                parseValor(record['Valor_total']) ||
-                parseValor(record['Valor_Total']) ||
-                parseValor(record['VALOR_TOTAL']) ||
-                parseValor(record['Valor']) ||
-                parseValor(record['valor']) ||
-                parseValor(record['Faturamento']) ||
-                parseValor(record['faturamento']) ||
                 0;
   return value;
 };
@@ -145,18 +153,24 @@ const getFormaPagamento = (item: VendaB2C): string => {
 };
 
 // Helper para obter o valor do campo renovação (tenta várias variações do nome da coluna)
-// Nome da coluna na planilha: renovacao (valores: "Novo aluno" ou "Renovação")
+// Nome da coluna na planilha: renovacao (valores: "Novo Aluno" ou "Renovação")
 const getRenovacaoValue = (item: VendaB2C): string => {
   const record = item as Record<string, unknown>;
-  // Tenta várias variações do nome da coluna - prioriza 'renovacao'
+
+  // Busca case-insensitive por 'renovacao' ou 'renovação'
+  const keys = Object.keys(record);
+  const renovacaoKey = keys.find(k =>
+    k.toLowerCase() === 'renovacao' ||
+    k.toLowerCase() === 'renovação'
+  );
+
+  if (renovacaoKey && record[renovacaoKey]) {
+    return String(record[renovacaoKey]).toLowerCase().trim();
+  }
+
+  // Fallbacks
   const value = record['renovacao'] ||
                 item.renovacao ||
-                record['Renovação'] ||
-                record['renovação'] ||
-                record['Renovacao'] ||
-                item.tipo_matricula ||
-                record['RENOVAÇÃO'] ||
-                record['RENOVACAO'] ||
                 '';
   return String(value).toLowerCase().trim();
 };
@@ -181,18 +195,22 @@ const isNovoAluno = (item: VendaB2C): boolean => {
 // Nome da coluna na planilha: cancelamento (valores: TRUE/FALSE)
 const getCancelamentoValue = (item: VendaB2C): unknown => {
   const record = item as Record<string, unknown>;
-  // Tenta várias variações do nome da coluna - prioriza 'cancelamento'
+
+  // Busca case-insensitive por 'cancelamento'
+  const keys = Object.keys(record);
+  const cancelamentoKey = keys.find(k =>
+    k.toLowerCase() === 'cancelamento' ||
+    k.toLowerCase() === 'cancelado'
+  );
+
+  if (cancelamentoKey) {
+    return record[cancelamentoKey];
+  }
+
+  // Fallbacks
   return record['cancelamento'] ??
          item.cancelamento ??
          item.cancelado ??
-         record['Cancelamento'] ??
-         record['Cancelado'] ??
-         record['cancelado'] ??
-         record['CANCELAMENTO'] ??
-         record['CANCELADO'] ??
-         record['status'] ??
-         record['Status'] ??
-         record['STATUS'] ??
          null;
 };
 
