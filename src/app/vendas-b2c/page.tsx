@@ -295,8 +295,8 @@ export default function VendasB2CPage() {
   }, [dadosFiltradosPeriodo]);
 
   // Separa novas matrículas e renovações dos dados ATIVOS do período
-  // - Novas matrículas: coluna "renovacao" = "Novo aluno"
-  // - Renovações: coluna "renovacao" = "Renovação" ou "renovacao"
+  // - Novas matrículas: coluna "renovacao" = "Novo Aluno"
+  // - Renovações: coluna "renovacao" = "Renovação"
   const { novasMatriculas, renovacoes } = useMemo(() => {
     const novas: VendaB2C[] = [];
     const renos: VendaB2C[] = [];
@@ -305,15 +305,15 @@ export default function VendasB2CPage() {
       // Usa o helper que tenta várias variações do nome da coluna
       const renovacaoField = getRenovacaoValue(item);
 
-      // Checa explicitamente se é renovação
-      if (renovacaoField === 'renovação' || renovacaoField === 'renovacao') {
+      // Checa se é renovação (valor exato: "renovação")
+      if (renovacaoField === 'renovação') {
         renos.push(item);
       }
-      // Checa explicitamente se é novo aluno
+      // Checa se é novo aluno (valor exato: "novo aluno")
       else if (renovacaoField === 'novo aluno') {
         novas.push(item);
       }
-      // Outros valores não são contados (nem como nova nem como renovação)
+      // Outros valores não são contados
     });
 
     return { novasMatriculas: novas, renovacoes: renos };
