@@ -128,6 +128,21 @@ const getValorRecuperado = (item: TituloCobranca): number => {
   return parseValor(value);
 };
 
+// Helper para obter a data de pagamento (tenta várias variações do nome da coluna)
+const getDataPagamento = (item: TituloCobranca): Date | null => {
+  const record = item as Record<string, unknown>;
+  // Tenta várias variações do nome da coluna
+  const value = record['Data de pagamento'] ||  // Nome exato da coluna
+                item.data_pagamento ||
+                record['Data de Pagamento'] ||
+                record['data de pagamento'] ||
+                record['DATA DE PAGAMENTO'] ||
+                record['dataPagamento'] ||
+                record['DataPagamento'] ||
+                null;
+  return parseDate(value as Date | string | undefined);
+};
+
 export default function CobrancaPage() {
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
@@ -249,13 +264,13 @@ export default function CobrancaPage() {
       .sort((a, b) => b.diasAtraso - a.diasAtraso);
   }, [data]);
 
-  // Títulos recuperados (para tabela) - apenas status "Concluído"
+  // Títulos recuperados (para tabela) - apenas status "Concluído" ou "Pago"
   const titulosRecuperados = useMemo(() => {
     return data
       .filter(item => isConcluido(item.status))
       .map(item => {
         const vencimento = parseDate(item.vencimento);
-        const dataPagamento = parseDate(item.data_pagamento);
+        const dataPagamento = getDataPagamento(item);
         const hoje = new Date();
         const diasAtraso = vencimento ? Math.floor((hoje.getTime() - vencimento.getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
@@ -265,6 +280,7 @@ export default function CobrancaPage() {
           telefone: String(item.telefone || '-'),
           vencimento: vencimento ? vencimento.toLocaleDateString('pt-BR') : '-',
           dataPagamento: dataPagamento ? dataPagamento.toLocaleDateString('pt-BR') : '-',
+          dataPagamentoDate: dataPagamento,
           valorAberto: parseValor(item.valor_total_aberto),
           valorRecuperado: getValorRecuperado(item),
           diasAtraso: diasAtraso > 0 ? diasAtraso : 0,
@@ -274,10 +290,8 @@ export default function CobrancaPage() {
       })
       .sort((a, b) => {
         // Ordena por data de pagamento mais recente
-        const dateA = parseDate(a.dataPagamento);
-        const dateB = parseDate(b.dataPagamento);
-        if (!dateA || !dateB) return 0;
-        return dateB.getTime() - dateA.getTime();
+        if (!a.dataPagamentoDate || !b.dataPagamentoDate) return 0;
+        return b.dataPagamentoDate.getTime() - a.dataPagamentoDate.getTime();
       });
   }, [data]);
 
@@ -479,7 +493,7 @@ export default function CobrancaPage() {
           {titulosRecuperados.length > 0 && (
             <ModuleSection
               title="Títulos Recuperados - Status: Concluído"
-              subtitle={`${titulosRecuperados.length} registros com status "Concluído"`}
+              subtitle={`${titulosRecuperados.length} registros com status "Concluído" ou "Pago"`}
             >
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -491,6 +505,9 @@ export default function CobrancaPage() {
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
                           Contato
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">
+                          Data de Pagamento
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-semibold text-green-800 uppercase tracking-wider">
                           Valor Recuperado
@@ -514,6 +531,9 @@ export default function CobrancaPage() {
                                 {titulo.telefone}
                               </div>
                             </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {titulo.dataPagamento}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
                             R$ {titulo.valorRecuperado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
