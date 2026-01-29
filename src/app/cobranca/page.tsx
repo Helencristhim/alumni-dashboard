@@ -101,21 +101,26 @@ const isEmContato = (status: string | undefined): boolean => {
   return statusLower === 'em contato' || statusLower === 'emcontato' || statusLower.includes('em contato');
 };
 
-// Função para verificar se status é "Concluído"
+// Função para verificar se status é "Concluído" ou "Pago"
 const isConcluido = (status: string | undefined): boolean => {
   if (!status) return false;
   const statusLower = String(status).toLowerCase().trim();
-  return statusLower === 'concluído' || statusLower === 'concluido' || statusLower.includes('concluído') || statusLower.includes('concluido');
+  return statusLower === 'concluído' ||
+         statusLower === 'concluido' ||
+         statusLower === 'pago' ||
+         statusLower.includes('concluído') ||
+         statusLower.includes('concluido') ||
+         statusLower.includes('pago');
 };
 
 // Helper para obter o valor recuperado (tenta várias variações do nome da coluna)
 const getValorRecuperado = (item: TituloCobranca): number => {
   const record = item as Record<string, unknown>;
-  // Tenta várias variações do nome da coluna
-  const value = item.valor_recuperado ||
+  // Tenta várias variações do nome da coluna - "Valor recuperado" é o nome correto
+  const value = record['Valor recuperado'] ||  // Nome exato da coluna
+                item.valor_recuperado ||
                 record['Valor Recuperado'] ||
                 record['valor recuperado'] ||
-                record['Valor recuperado'] ||
                 record['VALOR RECUPERADO'] ||
                 record['valorRecuperado'] ||
                 record['ValorRecuperado'] ||
