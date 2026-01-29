@@ -110,31 +110,29 @@ const parseValor = (valor: unknown): number => {
   return 0;
 };
 
-// Helper para obter valor de um item (tenta várias variações do nome da coluna)
+// Helper para obter valor de um item
 // Nome correto na planilha: valor_total
 const getValor = (item: VendaB2C): number => {
   const record = item as Record<string, unknown>;
 
-  // Busca case-insensitive por 'valor_total' ou 'valor total'
-  const keys = Object.keys(record);
-  const valorTotalKey = keys.find(k =>
-    k.toLowerCase() === 'valor_total' ||
-    k.toLowerCase() === 'valor total' ||
-    k.toLowerCase() === 'valortotal'
-  );
-
-  if (valorTotalKey) {
-    const val = parseValor(record[valorTotalKey]);
-    if (val > 0) return val;
+  // Percorre todas as chaves procurando valor_total
+  for (const key of Object.keys(record)) {
+    const keyLower = key.toLowerCase();
+    if (keyLower === 'valor_total' || keyLower === 'valor total') {
+      const val = record[key];
+      // Se já é número, retorna diretamente
+      if (typeof val === 'number') return val;
+      // Se é string, faz parse
+      if (typeof val === 'string') return parseValor(val);
+    }
   }
 
-  // Fallbacks
-  const value = parseValor(record['valor_total']) ||
-                parseValor(record['Valor_total']) ||
-                parseValor(item.valor) ||
-                parseValor(item.faturamento) ||
-                0;
-  return value;
+  // Fallback: tenta propriedades diretas
+  if (typeof record['valor_total'] === 'number') return record['valor_total'] as number;
+  if (typeof item.valor === 'number') return item.valor;
+  if (typeof item.faturamento === 'number') return item.faturamento as number;
+
+  return 0;
 };
 
 // Helper para obter nome do aluno
@@ -191,27 +189,20 @@ const isNovoAluno = (item: VendaB2C): boolean => {
   return renovacao === 'novo aluno' || renovacao === 'novo' || renovacao === 'nova matrícula' || renovacao === 'nova matricula';
 };
 
-// Helper para obter o valor do campo cancelamento (tenta várias variações do nome da coluna)
+// Helper para obter o valor do campo cancelamento
 // Nome da coluna na planilha: cancelamento (valores: TRUE/FALSE)
 const getCancelamentoValue = (item: VendaB2C): unknown => {
   const record = item as Record<string, unknown>;
 
-  // Busca case-insensitive por 'cancelamento'
-  const keys = Object.keys(record);
-  const cancelamentoKey = keys.find(k =>
-    k.toLowerCase() === 'cancelamento' ||
-    k.toLowerCase() === 'cancelado'
-  );
-
-  if (cancelamentoKey) {
-    return record[cancelamentoKey];
+  // Percorre todas as chaves procurando cancelamento
+  for (const key of Object.keys(record)) {
+    const keyLower = key.toLowerCase();
+    if (keyLower === 'cancelamento' || keyLower === 'cancelado') {
+      return record[key];
+    }
   }
 
-  // Fallbacks
-  return record['cancelamento'] ??
-         item.cancelamento ??
-         item.cancelado ??
-         null;
+  return null;
 };
 
 // Função para verificar se está cancelado (TRUE = cancelado, FALSE = ativo)
