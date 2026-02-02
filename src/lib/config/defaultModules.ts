@@ -120,7 +120,7 @@ export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
       id: 'cobranca',
       name: 'Cobranca',
       sourceUrl: COBRANCA_URL,
-      sheetName: 'Sheet1',
+      sheetName: '09/25',
       columns: [
         { internal: 'data', external: 'Data' },
         { internal: 'aluno_nome', external: 'Nome' },
