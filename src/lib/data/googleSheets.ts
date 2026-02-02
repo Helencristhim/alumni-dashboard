@@ -56,19 +56,19 @@ export async function fetchGoogleSheetData(
 }
 
 /**
- * Parser de CSV simples
+ * Parser de CSV robusto que suporta valores com quebras de linha
  */
 function parseCSV(csvText: string): Record<string, unknown>[] {
-  const lines = csvText.split('\n').filter(line => line.trim());
-  if (lines.length < 2) return [];
+  const rows = parseCSVRows(csvText);
+  if (rows.length < 2) return [];
 
   // Primeira linha são os headers
-  const headers = parseCSVLine(lines[0]);
+  const headers = rows[0];
 
   // Restante são os dados
   const data: Record<string, unknown>[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = parseCSVLine(lines[i]);
+  for (let i = 1; i < rows.length; i++) {
+    const values = rows[i];
     const row: Record<string, unknown> = {};
 
     headers.forEach((header, index) => {
@@ -82,33 +82,62 @@ function parseCSV(csvText: string): Record<string, unknown>[] {
 }
 
 /**
- * Parse de uma linha CSV respeitando aspas
+ * Parse de CSV completo que suporta valores com quebras de linha dentro de aspas
  */
-function parseCSVLine(line: string): string[] {
-  const result: string[] = [];
-  let current = '';
+function parseCSVRows(csvText: string): string[][] {
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentValue = '';
   let inQuotes = false;
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
+  for (let i = 0; i < csvText.length; i++) {
+    const char = csvText[i];
+    const nextChar = csvText[i + 1];
 
     if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
+      if (inQuotes && nextChar === '"') {
+        // Escaped quote
+        currentValue += '"';
         i++;
       } else {
+        // Toggle quote mode
         inQuotes = !inQuotes;
       }
     } else if (char === ',' && !inQuotes) {
-      result.push(current.trim());
-      current = '';
+      // End of field
+      currentRow.push(currentValue.trim());
+      currentValue = '';
+    } else if ((char === '\n' || (char === '\r' && nextChar === '\n')) && !inQuotes) {
+      // End of row (handle both \n and \r\n)
+      if (char === '\r') i++; // Skip \n in \r\n
+      currentRow.push(currentValue.trim());
+      if (currentRow.some(v => v !== '')) { // Skip empty rows
+        rows.push(currentRow);
+      }
+      currentRow = [];
+      currentValue = '';
+    } else if (char === '\r' && !inQuotes) {
+      // Handle standalone \r as line ending
+      currentRow.push(currentValue.trim());
+      if (currentRow.some(v => v !== '')) {
+        rows.push(currentRow);
+      }
+      currentRow = [];
+      currentValue = '';
     } else {
-      current += char;
+      currentValue += char;
     }
   }
 
-  result.push(current.trim());
-  return result;
+  // Don't forget the last row
+  if (currentValue || currentRow.length > 0) {
+    currentRow.push(currentValue.trim());
+    if (currentRow.some(v => v !== '')) {
+      rows.push(currentRow);
+    }
+  }
+
+  return rows;
 }
 
 /**
