@@ -70,6 +70,9 @@ export interface VendaB2C {
   parcelas: number;
   valor_total: number;
   cancelamento: boolean;
+  data_cancelamento: string | null;
+  tipo_cancelamento: string | null; // "7 dias" | "Depois de 7 dias" | "-"
+  razao_cancelamento: string | null;
 }
 
 // Vendas B2B

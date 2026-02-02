@@ -98,13 +98,23 @@ export default function VendasB2CPage() {
 
           const valorTotal = Number(item.valor_total) || 0;
 
+          // Processa data de cancelamento
+          const rawDataCancelamento = item.data_cancelamento as unknown;
+          let dataCancelamento: string | null = null;
+          if (typeof rawDataCancelamento === 'string' && rawDataCancelamento !== '-' && rawDataCancelamento.trim()) {
+            dataCancelamento = rawDataCancelamento;
+          }
+
           return {
             ...item,
             _rowIndex: index + 2, // +2 porque linha 1 é header
             data_venda: dataVenda,
             valor_total: valorTotal,
             parcelas: Number(item.parcelas) || 0,
-            cancelamento: cancelamentoValue === true || cancelamentoValue === 'TRUE' || cancelamentoValue === 'true'
+            cancelamento: cancelamentoValue === true || cancelamentoValue === 'TRUE' || cancelamentoValue === 'true',
+            data_cancelamento: dataCancelamento,
+            tipo_cancelamento: item.tipo_cancelamento && item.tipo_cancelamento !== '-' ? item.tipo_cancelamento : null,
+            razao_cancelamento: item.razao_cancelamento && item.razao_cancelamento !== '-' ? item.razao_cancelamento : null
           };
         });
         setData(processedData);
@@ -195,6 +205,35 @@ export default function VendasB2CPage() {
       const endNum = endYear * 10000 + endMonth * 100 + endDay;
 
       return itemNum >= startNum && itemNum <= endNum;
+    });
+  }, [dadosValidos, startDate, endDate]);
+
+  // Cancelamentos de 7 dias no período selecionado
+  const cancelamentos7Dias = useMemo(() => {
+    // Filtra apenas cancelamentos com tipo "7 dias" e data_cancelamento no período
+    return dadosValidos.filter(item => {
+      // Deve ser um cancelamento
+      if (!item.cancelamento) return false;
+
+      // Deve ser do tipo "7 dias"
+      if (item.tipo_cancelamento !== '7 dias') return false;
+
+      // Verifica se tem data de cancelamento válida
+      const rawDataCancel = item.data_cancelamento;
+      if (!rawDataCancel || typeof rawDataCancel !== 'string') return false;
+
+      // Parse da data de cancelamento (DD/MM/YYYY)
+      const match = rawDataCancel.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) return false;
+
+      const [, day, month, year] = match.map(Number);
+
+      // Compara com o período selecionado
+      const cancelNum = year * 10000 + (month - 1) * 100 + day;
+      const startNum = startDate.getFullYear() * 10000 + startDate.getMonth() * 100 + startDate.getDate();
+      const endNum = endDate.getFullYear() * 10000 + endDate.getMonth() * 100 + endDate.getDate();
+
+      return cancelNum >= startNum && cancelNum <= endNum;
     });
   }, [dadosValidos, startDate, endDate]);
 
@@ -397,6 +436,59 @@ export default function VendasB2CPage() {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Cancelamentos de 7 dias */}
+        {cancelamentos7Dias.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                  <XCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-red-900">Cancelamentos de 7 dias</h3>
+                  <p className="text-sm text-red-600">
+                    {cancelamentos7Dias.length} cancelamento{cancelamentos7Dias.length > 1 ? 's' : ''} no período selecionado
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-red-700">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    cancelamentos7Dias.reduce((sum, v) => sum + v.valor_total, 0)
+                  )}
+                </p>
+                <p className="text-sm text-red-500">valor perdido</p>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-red-200">
+                    <th className="text-left py-2 px-3 font-medium text-red-800">Nome</th>
+                    <th className="text-left py-2 px-3 font-medium text-red-800">Produto</th>
+                    <th className="text-left py-2 px-3 font-medium text-red-800">Data Cancelamento</th>
+                    <th className="text-left py-2 px-3 font-medium text-red-800">Razão</th>
+                    <th className="text-right py-2 px-3 font-medium text-red-800">Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cancelamentos7Dias.map((item, index) => (
+                    <tr key={index} className="border-b border-red-100 hover:bg-red-100/50">
+                      <td className="py-2 px-3 text-red-900">{item.nome}</td>
+                      <td className="py-2 px-3 text-red-700">{item.produto}</td>
+                      <td className="py-2 px-3 text-red-700">{item.data_cancelamento}</td>
+                      <td className="py-2 px-3 text-red-600">{item.razao_cancelamento || '-'}</td>
+                      <td className="py-2 px-3 text-right text-red-700 font-medium">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor_total)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

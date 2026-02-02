@@ -37,6 +37,9 @@ vendas_b2c:
     parcelas: "parcelas"
     valor_total: "valor_total"
     cancelamento: "cancelamento"
+    data_cancelamento: "data_cancelamento"
+    tipo_cancelamento: "tipo_cancelamento"
+    razao_cancelamento: "razao_cancelamento"
 
   # Produtos rastreados neste módulo
   produtos:
