@@ -60,16 +60,16 @@ export interface DashboardConfig {
 
 // Vendas B2C
 export interface VendaB2C {
+  documento: string;
+  nome: string;
   data_venda: Date;
-  faturamento: number;
-  produto: string;
-  aluno_id: string;
-  aluno_nome: string;
   forma_pagamento: string;
-  parcelas: number;
-  status: string;
+  produto: string;
   vendedor: string;
-  origem_lead: string;
+  tipo_matricula: string; // "Renovação" | "Novo Aluno"
+  parcelas: number;
+  valor_total: number;
+  cancelamento: boolean;
 }
 
 // Vendas B2B

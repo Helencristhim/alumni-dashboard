@@ -21,33 +21,41 @@ vendas_b2c:
 
   # Fonte de dados
   source:
-    type: "google_sheets"  # Opções: google_sheets | excel | csv
-    url: "https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit"
-    sheet_name: "Vendas B2C"
-    # Para Excel local, use: path: "./data/vendas_b2c.xlsx"
+    type: "google_sheets"
+    url: "https://docs.google.com/spreadsheets/d/1YBBwUQHOlOCNmpSA8hdGLKZYpbq4Pwbo3I3tx8U7dW8/edit"
+    sheet_name: "Vendas"
 
-  # Mapeamento de colunas (adapte ao nome real da sua planilha)
+  # Mapeamento de colunas (nome_interno: nome_na_planilha)
   column_mapping:
-    data_venda: "Data"
-    faturamento: "Valor_Total"
-    produto: "Produto"
-    aluno_id: "ID_Aluno"
-    aluno_nome: "Nome_Aluno"
-    forma_pagamento: "Forma_Pagamento"
-    parcelas: "Qtd_Parcelas"
-    status: "Status_Venda"
-    vendedor: "Vendedor"
-    origem_lead: "Origem"
+    documento: "cpf/cnpj"
+    nome: "Nome"
+    data_venda: "data_venda"
+    forma_pagamento: "forma"
+    produto: "produto"
+    vendedor: "fonte"
+    tipo_matricula: "renovacao"
+    parcelas: "parcelas"
+    valor_total: "valor_total"
+    cancelamento: "cancelamento"
 
   # Produtos rastreados neste módulo
   produtos:
-    - "Particular presencial – inglês"
-    - "Particular online – inglês"
-    - "Particular online – espanhol"
-    - "Conexion – espanhol"
-    - "Community – inglês"
-    - "Community Flow – inglês"
-    - "Imersão – inglês"
+    - "Espanhol 12 meses"
+    - "Espanhol 06 meses"
+    - "Inglês 12 meses - FLOW"
+    - "Inglês 06 meses - FLOW"
+    - "Inglês 12 meses"
+    - "Inglês 10 meses"
+    - "Inglês 09 meses"
+    - "Inglês 06 meses"
+    - "Inglês 03 meses"
+    - "Inglês 01 mês"
+    - "Aulas particulares"
+    - "Teste de Proficiência"
+    - "FAAP - Ribeirão"
+    - "HDI - COPARTICIPACAO 30%"
+    - "Imersão 01 mês"
+    - "Adesão FLOW"
 
 # ============================================================
 # MÓDULO 2 - VENDAS B2B
