@@ -19,8 +19,10 @@ import type {
 } from '@/types';
 
 // Cache de dados por módulo
+// NOTA: Cache desabilitado temporariamente para garantir dados frescos
+// Em serverless (Vercel), o cache em memória não é compartilhado entre instâncias
 const dataCache: Map<string, { data: unknown[]; timestamp: number }> = new Map();
-const CACHE_DURATION = 15 * 60 * 1000; // 15 minutos
+const CACHE_DURATION = 0; // Cache desabilitado para debug - era 15 * 60 * 1000
 
 type ModuleName = 'vendas_b2c' | 'vendas_b2b' | 'customer_care' | 'cancelamentos' | 'cobranca' | 'alunos_ativos' | 'marketing';
 

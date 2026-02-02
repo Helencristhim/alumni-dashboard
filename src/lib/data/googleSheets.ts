@@ -38,8 +38,9 @@ export async function fetchGoogleSheetData(
     const sheetId = extractSheetId(url);
     const exportUrl = buildExportUrl(sheetId, sheetName);
 
+    // Desabilita cache para garantir dados frescos
     const response = await fetch(exportUrl, {
-      next: { revalidate: 900 } // Cache por 15 minutos
+      cache: 'no-store'
     });
 
     if (!response.ok) {

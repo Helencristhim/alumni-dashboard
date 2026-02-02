@@ -33,6 +33,19 @@ interface ApiResponse {
   };
 }
 
+// Helper function para verificar se uma venda é ativa (não cancelada)
+function isVendaAtiva(v: VendaComIndice): boolean {
+  const cancel = v.cancelamento;
+  // É ativo se cancelamento é falsy (false, null, undefined, '', 0)
+  // Mas também precisa verificar string "FALSE" caso não tenha sido convertido
+  if (cancel === false || cancel === null || cancel === undefined) return true;
+  if (typeof cancel === 'string') {
+    const lowerCancel = (cancel as string).toLowerCase();
+    if (lowerCancel === 'false' || lowerCancel === 'não' || lowerCancel === 'nao' || lowerCancel === '') return true;
+  }
+  return false;
+}
+
 export default function VendasB2CPage() {
   const [data, setData] = useState<VendaComIndice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,8 +70,15 @@ export default function VendasB2CPage() {
     try {
       setLoading(true);
       setError(null);
-      const url = `/api/data/vendas-b2c${refresh ? '?refresh=true' : ''}`;
-      const response = await fetch(url);
+      // Adiciona timestamp para evitar cache do navegador
+      const url = `/api/data/vendas-b2c?refresh=true&_t=${Date.now()}`;
+      const response = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       const result: ApiResponse = await response.json();
 
       if (result.success && result.data?.data) {
@@ -180,13 +200,20 @@ export default function VendasB2CPage() {
 
   // KPIs calculados
   const kpis = useMemo(() => {
-    const vendasAtivas = filteredData.filter(v => !v.cancelamento);
-    const totalCancelamentos = filteredData.filter(v => v.cancelamento).length;
+    // Filtra vendas ativas usando helper function
+    const vendasAtivas = filteredData.filter(isVendaAtiva);
+    const totalCancelamentos = filteredData.length - vendasAtivas.length;
     const totalRegistros = filteredData.length; // Total incluindo cancelamentos (para taxa)
     const totalMatriculas = vendasAtivas.length; // Apenas matrículas ativas (FALSE)
     const receitaTotal = vendasAtivas.reduce((sum, v) => sum + v.valor_total, 0);
     const ticketMedio = vendasAtivas.length > 0 ? receitaTotal / vendasAtivas.length : 0;
     const taxaCancelamento = totalRegistros > 0 ? (totalCancelamentos / totalRegistros) * 100 : 0;
+
+    // Debug log
+    console.log('[DEBUG KPI] Total filtrado:', totalRegistros);
+    console.log('[DEBUG KPI] Ativos:', totalMatriculas);
+    console.log('[DEBUG KPI] Cancelados:', totalCancelamentos);
+    console.log('[DEBUG KPI] Receita:', receitaTotal);
 
     return {
       receitaTotal,
@@ -199,7 +226,7 @@ export default function VendasB2CPage() {
 
   // Dados por produto
   const dadosPorProduto = useMemo(() => {
-    const vendasAtivas = filteredData.filter(v => !v.cancelamento);
+    const vendasAtivas = filteredData.filter(isVendaAtiva);
     const porProduto: Record<string, { matriculas: number; valor: number }> = {};
 
     vendasAtivas.forEach(v => {
@@ -221,7 +248,7 @@ export default function VendasB2CPage() {
 
   // Dados temporais (por mês)
   const dadosTemporais = useMemo(() => {
-    const vendasAtivas = filteredData.filter(v => !v.cancelamento);
+    const vendasAtivas = filteredData.filter(isVendaAtiva);
     const porMes: Record<string, { mes: string; valor: number; matriculas: number }> = {};
 
     vendasAtivas.forEach(v => {
@@ -243,7 +270,7 @@ export default function VendasB2CPage() {
 
   // Dados por vendedor
   const dadosPorVendedor = useMemo(() => {
-    const vendasAtivas = filteredData.filter(v => !v.cancelamento);
+    const vendasAtivas = filteredData.filter(isVendaAtiva);
     const porVendedor: Record<string, { vendedor: string; valor: number; matriculas: number }> = {};
 
     vendasAtivas.forEach(v => {
@@ -260,7 +287,7 @@ export default function VendasB2CPage() {
 
   // Dados Novos vs Renovação
   const dadosRenovacao = useMemo(() => {
-    const vendasAtivas = filteredData.filter(v => !v.cancelamento);
+    const vendasAtivas = filteredData.filter(isVendaAtiva);
     const novos = vendasAtivas.filter(v => v.tipo_matricula === 'Novo Aluno');
     const renovacoes = vendasAtivas.filter(v => v.tipo_matricula === 'Renovação');
 
@@ -272,7 +299,7 @@ export default function VendasB2CPage() {
 
   // Dados por forma de pagamento
   const dadosFormaPagamento = useMemo(() => {
-    const vendasAtivas = filteredData.filter(v => !v.cancelamento);
+    const vendasAtivas = filteredData.filter(isVendaAtiva);
     const porForma: Record<string, number> = {};
 
     vendasAtivas.forEach(v => {
