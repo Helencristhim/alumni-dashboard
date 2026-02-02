@@ -164,19 +164,19 @@ export default function VendasB2CPage() {
   // KPIs calculados
   const kpis = useMemo(() => {
     const vendasAtivas = filteredData.filter(v => !v.cancelamento);
-    const totalMatriculas = filteredData.length;
     const totalCancelamentos = filteredData.filter(v => v.cancelamento).length;
+    const totalRegistros = filteredData.length; // Total incluindo cancelamentos (para taxa)
+    const totalMatriculas = vendasAtivas.length; // Apenas matrículas ativas (FALSE)
     const receitaTotal = vendasAtivas.reduce((sum, v) => sum + v.valor_total, 0);
     const ticketMedio = vendasAtivas.length > 0 ? receitaTotal / vendasAtivas.length : 0;
-    const taxaCancelamento = totalMatriculas > 0 ? (totalCancelamentos / totalMatriculas) * 100 : 0;
+    const taxaCancelamento = totalRegistros > 0 ? (totalCancelamentos / totalRegistros) * 100 : 0;
 
     return {
       receitaTotal,
       totalMatriculas,
       ticketMedio,
       taxaCancelamento,
-      totalCancelamentos,
-      vendasAtivas: vendasAtivas.length
+      totalCancelamentos
     };
   }, [filteredData]);
 
@@ -364,7 +364,7 @@ export default function VendasB2CPage() {
             format="currency"
             icon={<DollarSign className="w-6 h-6" />}
             color="#10B981"
-            subtitle={`${kpis.vendasAtivas} vendas ativas`}
+            subtitle="Vendas ativas no período"
             loading={loading}
           />
           <KPICard
@@ -373,7 +373,7 @@ export default function VendasB2CPage() {
             format="number"
             icon={<Users className="w-6 h-6" />}
             color="#3B82F6"
-            subtitle="No período selecionado"
+            subtitle="Apenas ativas (sem cancelamentos)"
             loading={loading}
           />
           <KPICard
