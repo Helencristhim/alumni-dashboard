@@ -208,6 +208,34 @@ export default function VendasB2CPage() {
     });
   }, [dadosValidos, startDate, endDate]);
 
+  // Conta cancelamentos de 7 dias no período
+  const cancelamentos7DiasCount = useMemo(() => {
+    return dadosValidos.filter(item => {
+      // Deve ser um cancelamento
+      if (!item.cancelamento) return false;
+
+      // Deve ser do tipo "7 dias"
+      if (item.tipo_cancelamento !== '7 dias') return false;
+
+      // Verifica se tem data de cancelamento válida
+      const rawDataCancel = item.data_cancelamento;
+      if (!rawDataCancel || typeof rawDataCancel !== 'string') return false;
+
+      // Parse da data de cancelamento (DD/MM/YYYY)
+      const match = rawDataCancel.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) return false;
+
+      const [, day, month, year] = match.map(Number);
+
+      // Compara com o período selecionado
+      const cancelNum = year * 10000 + (month - 1) * 100 + day;
+      const startNum = startDate.getFullYear() * 10000 + startDate.getMonth() * 100 + startDate.getDate();
+      const endNum = endDate.getFullYear() * 10000 + endDate.getMonth() * 100 + endDate.getDate();
+
+      return cancelNum >= startNum && cancelNum <= endNum;
+    }).length;
+  }, [dadosValidos, startDate, endDate]);
+
   // KPIs calculados
   const kpis = useMemo(() => {
     // Filtra vendas ativas usando helper function
@@ -407,6 +435,23 @@ export default function VendasB2CPage() {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Indicador de Cancelamentos de 7 dias */}
+        {cancelamentos7DiasCount > 0 && (
+          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <XCircle className="w-5 h-5 text-red-600" />
+            <div>
+              <span className="font-semibold text-red-900">{cancelamentos7DiasCount}</span>
+              <span className="text-red-700 ml-1">cancelamento{cancelamentos7DiasCount > 1 ? 's' : ''} de 7 dias no período</span>
+            </div>
+            <a
+              href="/cancelamentos"
+              className="ml-auto text-sm text-red-600 hover:text-red-800 font-medium"
+            >
+              Ver detalhes →
+            </a>
           </div>
         )}
 
