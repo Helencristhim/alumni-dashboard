@@ -202,6 +202,7 @@ alunos_ativos:
     aluno_nome: "NOME"
     email: "EMAIL"
     produto: "PRODUTO"
+    tipo: "TIPO"  # Valores: B2B, B2C, BOLSISTA
     data_inicio: "INÍCIO"
     data_fim: "FIM"
     status: "STATUS"  # Valores: Ativo, Inativo, Cancelado

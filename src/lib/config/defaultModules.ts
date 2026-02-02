@@ -148,6 +148,7 @@ export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
         { internal: 'aluno_nome', external: 'NOME' },
         { internal: 'email', external: 'EMAIL' },
         { internal: 'produto', external: 'PRODUTO' },
+        { internal: 'tipo', external: 'TIPO' },
         { internal: 'data_inicio', external: 'INÍCIO' },
         { internal: 'data_fim', external: 'FIM' },
         { internal: 'status', external: 'STATUS' },

@@ -157,6 +157,7 @@ const getInitialModules = (): ModuleConfig[] => [
       { internal: 'aluno_nome', label: 'Nome do Aluno', external: '', required: true },
       { internal: 'email', label: 'E-mail', external: '', required: false },
       { internal: 'produto', label: 'Produto/Curso', external: '', required: true },
+      { internal: 'tipo', label: 'Tipo (B2B, B2C, BOLSISTA)', external: '', required: false },
       { internal: 'data_inicio', label: 'Data de Início', external: '', required: false },
       { internal: 'data_fim', label: 'Data de Fim', external: '', required: false },
       { internal: 'status', label: 'Status (Ativo, Inativo, Cancelado)', external: '', required: true },
