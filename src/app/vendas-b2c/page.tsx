@@ -49,17 +49,28 @@ export default function VendasB2CPage() {
       const result: ApiResponse = await response.json();
 
       if (result.success && result.data?.data) {
-        // Converte datas string para Date objects
-        const processedData = result.data.data.map(item => {
-          const cancelamentoValue = item.cancelamento as unknown;
-          return {
-            ...item,
-            data_venda: new Date(item.data_venda),
-            valor_total: Number(item.valor_total) || 0,
-            parcelas: Number(item.parcelas) || 0,
-            cancelamento: cancelamentoValue === true || cancelamentoValue === 'TRUE' || cancelamentoValue === 'true'
-          };
-        });
+        // Converte e filtra dados válidos
+        const processedData = result.data.data
+          .map(item => {
+            const cancelamentoValue = item.cancelamento as unknown;
+            const dataVenda = new Date(item.data_venda);
+            const valorTotal = Number(item.valor_total) || 0;
+
+            return {
+              ...item,
+              data_venda: dataVenda,
+              valor_total: valorTotal,
+              parcelas: Number(item.parcelas) || 0,
+              cancelamento: cancelamentoValue === true || cancelamentoValue === 'TRUE' || cancelamentoValue === 'true'
+            };
+          })
+          // Filtra linhas inválidas (sem data ou sem valor)
+          .filter(item => {
+            const hasValidDate = item.data_venda instanceof Date && !isNaN(item.data_venda.getTime());
+            const hasValidValue = item.valor_total > 0;
+            const hasValidProduct = item.produto && item.produto.trim() !== '';
+            return hasValidDate && hasValidValue && hasValidProduct;
+          });
         setData(processedData);
       } else {
         setError('Erro ao carregar dados');
