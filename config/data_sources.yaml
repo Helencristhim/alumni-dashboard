@@ -239,9 +239,12 @@ acompanhamento:
     inicio: "INICIO"
     fim: "FIM"
     levelling: "LEVELLING"
+    data_levelling: "Obs1"  # Data do Levelling
     nivel: "NIVEL"
     acesso: "ACESSO"
+    data_acesso: "Obs2"  # Data do Acesso
     onboarding: "ONBOARDING"
+    data_onboarding: "Obs3"  # Data do Onboarding
     primeira_aula: "1 AULA"
     data_primeira_aula: "DATA 1 AULA"
     fup1: "1 FUP(7 dias)"

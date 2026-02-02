@@ -29,9 +29,12 @@ interface AcompanhamentoAluno {
   inicio?: Date | string;
   fim?: Date | string;
   levelling?: boolean | string;
+  data_levelling?: Date | string;  // Obs1
   nivel?: string;
   acesso?: boolean | string;
+  data_acesso?: Date | string;  // Obs2
   onboarding?: boolean | string;
+  data_onboarding?: Date | string;  // Obs3
   primeira_aula?: boolean | string;
   data_primeira_aula?: Date | string;
   fup1?: boolean | string;
@@ -415,25 +418,40 @@ export default function AcompanhamentoPage() {
                             {String(item.nivel || '-')}
                           </td>
                           <td className="px-4 py-3 text-center">
-                            {isChecked(item.levelling) ? (
-                              <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                            ) : (
-                              <div className="w-5 h-5 border-2 border-gray-300 rounded mx-auto" />
-                            )}
+                            <div className="flex flex-col items-center">
+                              {isChecked(item.levelling) ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : (
+                                <div className="w-5 h-5 border-2 border-gray-300 rounded" />
+                              )}
+                              {item.data_levelling && (
+                                <span className="text-xs text-gray-500 mt-1">{String(item.data_levelling)}</span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-center">
-                            {isChecked(item.onboarding) ? (
-                              <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                            ) : (
-                              <div className="w-5 h-5 border-2 border-gray-300 rounded mx-auto" />
-                            )}
+                            <div className="flex flex-col items-center">
+                              {isChecked(item.onboarding) ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : (
+                                <div className="w-5 h-5 border-2 border-gray-300 rounded" />
+                              )}
+                              {item.data_onboarding && (
+                                <span className="text-xs text-gray-500 mt-1">{String(item.data_onboarding)}</span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-center">
-                            {isChecked(item.primeira_aula) ? (
-                              <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                            ) : (
-                              <div className="w-5 h-5 border-2 border-gray-300 rounded mx-auto" />
-                            )}
+                            <div className="flex flex-col items-center">
+                              {isChecked(item.primeira_aula) ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : (
+                                <div className="w-5 h-5 border-2 border-gray-300 rounded" />
+                              )}
+                              {item.data_primeira_aula && (
+                                <span className="text-xs text-gray-500 mt-1">{String(item.data_primeira_aula)}</span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-center">
                             {isChecked(item.fup1) ? (
