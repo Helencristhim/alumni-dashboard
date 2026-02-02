@@ -144,12 +144,9 @@ export interface AlunoAtivo {
   email: string;
   curso: string;
   data_matricula: Date;
-  valor_mensalidade: number;
-  status: 'Ativo' | 'Trancado' | 'Formado';
+  data_fim: Date | null;
+  status: 'Ativo' | 'Inativo' | 'Cancelado';
   nivel: string;
-  professor: string;
-  horario: string;
-  modalidade: 'Presencial' | 'Online';
 }
 
 // Marketing
