@@ -490,7 +490,7 @@ export default function VendasB2CPage() {
             format="percentage"
             icon={<XCircle className="w-6 h-6" />}
             color="#EF4444"
-            subtitle={`${kpis.totalCancelamentos} cancelamentos`}
+            subtitle={`${kpis.totalCancelamentos} cancelamentos | ${cancelamentos7DiasCount} de 7 dias`}
             loading={loading}
           />
         </div>
