@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ModuleContainer, ModuleSection } from '@/components/layout/ModuleContainer';
 import { KPICard } from '@/components/ui/KPICard';
 import { ChartCard, BarChartComponent, PieChartComponent } from '@/components/ui/Charts';
 import { DateFilter } from '@/components/ui/DateFilter';
-import { UserX, TrendingDown, DollarSign, AlertTriangle, AlertCircle, Settings, Users, Percent, ShieldCheck, Undo2 } from 'lucide-react';
+import { UserX, TrendingDown, DollarSign, AlertTriangle, AlertCircle, Settings, Users, Percent, ShieldCheck, Undo2, XCircle } from 'lucide-react';
 import { useSheetData } from '@/lib/hooks/useSheetData';
 import Link from 'next/link';
+import type { VendaB2C } from '@/types';
 
 // Lista oficial de produtos/cursos (atualizada)
 const PRODUTOS_LISTA = [
@@ -124,6 +125,30 @@ export default function CancelamentosPage() {
 
   const { data, loading, error, lastUpdated, sourceUrl, refresh } = useSheetData<Cancelamento>('cancelamentos');
 
+  // Dados de vendas B2C para cancelamentos de 7 dias
+  const [vendasData, setVendasData] = useState<VendaB2C[]>([]);
+  const [vendasLoading, setVendasLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVendasData = async () => {
+      try {
+        setVendasLoading(true);
+        const response = await fetch(`/api/data/vendas-b2c?refresh=true&_t=${Date.now()}`, {
+          cache: 'no-store'
+        });
+        const result = await response.json();
+        if (result.success && result.data?.data) {
+          setVendasData(result.data.data);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar dados de vendas:', err);
+      } finally {
+        setVendasLoading(false);
+      }
+    };
+    fetchVendasData();
+  }, []);
+
   const handleDateChange = (start: Date, end: Date) => {
     setStartDate(start);
     setEndDate(end);
@@ -156,6 +181,37 @@ export default function CancelamentosPage() {
       return itemDate >= startDate && itemDate <= endDate;
     });
   }, [data, startDate, endDate]);
+
+  // ==========================================
+  // CANCELAMENTOS DE 7 DIAS (da planilha de vendas B2C)
+  // ==========================================
+  const cancelamentos7Dias = useMemo(() => {
+    if (!vendasData || vendasData.length === 0) return [];
+
+    return vendasData.filter(item => {
+      // Deve ser um cancelamento
+      const cancelamento = item.cancelamento as unknown;
+      const isCancelled = cancelamento === true || cancelamento === 'TRUE' || cancelamento === 'true';
+      if (!isCancelled) return false;
+
+      // Deve ser do tipo "7 dias"
+      if (item.tipo_cancelamento !== '7 dias') return false;
+
+      // Verifica se tem data de cancelamento válida
+      const rawDataCancel = item.data_cancelamento;
+      if (!rawDataCancel || typeof rawDataCancel !== 'string') return false;
+
+      // Parse da data de cancelamento (DD/MM/YYYY)
+      const match = rawDataCancel.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) return false;
+
+      const [, day, month, year] = match.map(Number);
+      const cancelDate = new Date(year, month - 1, day);
+
+      // Compara com o período selecionado
+      return cancelDate >= startDate && cancelDate <= endDate;
+    });
+  }, [vendasData, startDate, endDate]);
 
   // ==========================================
   // KPIs DO PERÍODO FILTRADO
@@ -371,6 +427,59 @@ export default function CancelamentosPage() {
         }
       >
         <div className="space-y-8">
+          {/* Cancelamentos de 7 dias (da planilha de vendas B2C) */}
+          {!vendasLoading && cancelamentos7Dias.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <XCircle className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-red-900">Cancelamentos de 7 dias</h3>
+                    <p className="text-sm text-red-600">
+                      {cancelamentos7Dias.length} cancelamento{cancelamentos7Dias.length > 1 ? 's' : ''} no período selecionado
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-red-700">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                      cancelamentos7Dias.reduce((sum, v) => sum + (Number(v.valor_total) || 0), 0)
+                    )}
+                  </p>
+                  <p className="text-sm text-red-500">valor perdido</p>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-red-200">
+                      <th className="text-left py-2 px-3 font-medium text-red-800">Nome</th>
+                      <th className="text-left py-2 px-3 font-medium text-red-800">Produto</th>
+                      <th className="text-left py-2 px-3 font-medium text-red-800">Data Cancelamento</th>
+                      <th className="text-left py-2 px-3 font-medium text-red-800">Razão</th>
+                      <th className="text-right py-2 px-3 font-medium text-red-800">Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cancelamentos7Dias.map((item, index) => (
+                      <tr key={index} className="border-b border-red-100 hover:bg-red-100/50">
+                        <td className="py-2 px-3 text-red-900">{item.nome}</td>
+                        <td className="py-2 px-3 text-red-700">{item.produto}</td>
+                        <td className="py-2 px-3 text-red-700">{item.data_cancelamento}</td>
+                        <td className="py-2 px-3 text-red-600">{item.razao_cancelamento || '-'}</td>
+                        <td className="py-2 px-3 text-right text-red-700 font-medium">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(item.valor_total) || 0)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* Mensagem se não houver dados */}
           {!loading && filteredData.length === 0 && (
             <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-6 text-center">
