@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { getDefaultModuleConfig, type ModuleDefaultConfig } from '@/lib/config/defaultModules';
 
 interface ModuleConfig {
   id: string;
@@ -19,6 +20,40 @@ interface UseSheetDataResult<T> {
 }
 
 const STORAGE_KEY = 'alumni_dashboard_config';
+
+// Parser CSV que lida com quebras de linha dentro de campos entre aspas
+function parseCSVWithMultilineFields(csvText: string): string[] {
+  const lines: string[] = [];
+  let currentLine = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const char = csvText[i];
+
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      currentLine += char;
+    } else if (char === '\n' && !inQuotes) {
+      // Fim de linha real (fora de aspas)
+      if (currentLine.trim()) {
+        lines.push(currentLine);
+      }
+      currentLine = '';
+    } else if (char === '\r') {
+      // Ignora \r (Windows line endings)
+      continue;
+    } else {
+      currentLine += char;
+    }
+  }
+
+  // Adiciona ultima linha se existir
+  if (currentLine.trim()) {
+    lines.push(currentLine);
+  }
+
+  return lines;
+}
 
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
@@ -128,25 +163,43 @@ export function useSheetData<T>(moduleId: string): UseSheetDataResult<T> {
     setError(null);
 
     try {
-      // Carrega configuração do localStorage
-      const savedConfig = localStorage.getItem(STORAGE_KEY);
-      if (!savedConfig) {
-        setError('Configuração não encontrada. Vá em Configurações e configure a planilha.');
-        setLoading(false);
-        return;
+      let moduleConfig: ModuleConfig | null = null;
+
+      // PRIORIDADE 1: Configuracao padrao (env vars do Vercel)
+      // Isso garante que a config do Vercel SEMPRE seja usada se existir
+      const defaultConfig = getDefaultModuleConfig(moduleId);
+      if (defaultConfig && defaultConfig.sourceUrl) {
+        moduleConfig = {
+          id: defaultConfig.id,
+          sourceUrl: defaultConfig.sourceUrl,
+          sheetName: defaultConfig.sheetName,
+          columns: defaultConfig.columns,
+        };
+        console.log(`[useSheetData] Usando configuracao do Vercel para ${moduleId}: aba "${defaultConfig.sheetName}"`);
       }
 
-      const modules: ModuleConfig[] = JSON.parse(savedConfig);
-      const moduleConfig = modules.find(m => m.id === moduleId);
+      // PRIORIDADE 2: localStorage (fallback se nao tem env var)
+      if (!moduleConfig || !moduleConfig.sourceUrl) {
+        const savedConfig = localStorage.getItem(STORAGE_KEY);
+        if (savedConfig) {
+          const modules: ModuleConfig[] = JSON.parse(savedConfig);
+          const localConfig = modules.find(m => m.id === moduleId);
+          if (localConfig && localConfig.sourceUrl) {
+            moduleConfig = localConfig;
+            console.log(`[useSheetData] Usando configuracao local para ${moduleId}`);
+          }
+        }
+      }
 
+      // Se ainda nao tem config, mostra erro
       if (!moduleConfig) {
-        setError(`Módulo "${moduleId}" não encontrado na configuração.`);
+        setError(`Módulo "${moduleId}" não encontrado. Configure em Configurações ou defina NEXT_PUBLIC_SHEET_${moduleId.toUpperCase()} no Vercel.`);
         setLoading(false);
         return;
       }
 
       if (!moduleConfig.sourceUrl) {
-        setError('URL da planilha não configurada. Vá em Configurações e insira a URL.');
+        setError('URL da planilha não configurada. Vá em Configurações ou defina a variável de ambiente no Vercel.');
         setLoading(false);
         return;
       }
@@ -174,7 +227,9 @@ export function useSheetData<T>(moduleId: string): UseSheetDataResult<T> {
       }
 
       const csvText = await response.text();
-      const lines = csvText.split('\n').filter(line => line.trim());
+
+      // Parser CSV que lida com quebras de linha dentro de campos entre aspas
+      const lines = parseCSVWithMultilineFields(csvText);
 
       if (lines.length < 2) {
         setError('Planilha vazia ou sem dados.');

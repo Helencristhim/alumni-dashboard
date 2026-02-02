@@ -16,8 +16,11 @@ import {
   Link2,
   Table,
   HelpCircle,
-  Loader2
+  Loader2,
+  CloudOff,
+  Cloud
 } from 'lucide-react';
+import { getDefaultModuleConfigs } from '@/lib/config/defaultModules';
 
 interface ModuleConfig {
   id: string;
@@ -201,6 +204,7 @@ export default function ConfiguracoesPage() {
   const [connectionStatus, setConnectionStatus] = useState<Record<string, 'success' | 'error' | null>>({});
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [envModules, setEnvModules] = useState<string[]>([]);
 
   // Carrega configurações salvas do localStorage ao iniciar
   useEffect(() => {
@@ -211,32 +215,52 @@ export default function ConfiguracoesPage() {
         const savedConfig = localStorage.getItem(STORAGE_KEY);
         const savedTime = localStorage.getItem(STORAGE_KEY + '_timestamp');
 
-        if (savedConfig) {
-          const parsed = JSON.parse(savedConfig);
-          // Merge com initialModules para garantir que novos campos existam
-          const merged = getInitialModules().map(initialMod => {
-            const savedMod = parsed.find((s: ModuleConfig) => s.id === initialMod.id);
-            if (savedMod) {
-              return {
-                ...initialMod,
-                sourceUrl: savedMod.sourceUrl || '',
-                sheetName: savedMod.sheetName || '',
-                enabled: savedMod.enabled !== undefined ? savedMod.enabled : true,
-                columns: initialMod.columns.map(initialCol => {
-                  const savedCol = savedMod.columns?.find((c: { internal: string }) => c.internal === initialCol.internal);
-                  return savedCol ? { ...initialCol, external: savedCol.external || '' } : initialCol;
-                })
-              };
-            }
-            return initialMod;
-          });
-          setModules(merged);
+        // Carrega defaults das variaveis de ambiente
+        const envDefaults = getDefaultModuleConfigs();
+        const modulesFromEnv: string[] = [];
 
-          if (savedTime) {
-            setLastSaved(new Date(savedTime));
+        // Merge: localStorage > env vars > initial modules
+        const merged = getInitialModules().map(initialMod => {
+          const savedMod = savedConfig ? JSON.parse(savedConfig).find((s: ModuleConfig) => s.id === initialMod.id) : null;
+          const envMod = envDefaults.find(e => e.id === initialMod.id);
+
+          // Se tem no localStorage, usa localStorage
+          if (savedMod && savedMod.sourceUrl) {
+            return {
+              ...initialMod,
+              sourceUrl: savedMod.sourceUrl || '',
+              sheetName: savedMod.sheetName || '',
+              enabled: savedMod.enabled !== undefined ? savedMod.enabled : true,
+              columns: initialMod.columns.map(initialCol => {
+                const savedCol = savedMod.columns?.find((c: { internal: string }) => c.internal === initialCol.internal);
+                return savedCol ? { ...initialCol, external: savedCol.external || '' } : initialCol;
+              })
+            };
           }
-        } else {
-          setModules(getInitialModules());
+
+          // Se nao tem localStorage mas tem env var, usa env var
+          if (envMod && envMod.sourceUrl) {
+            modulesFromEnv.push(initialMod.id);
+            return {
+              ...initialMod,
+              sourceUrl: envMod.sourceUrl,
+              sheetName: envMod.sheetName || initialMod.sheetName,
+              enabled: true,
+              columns: initialMod.columns.map(initialCol => {
+                const envCol = envMod.columns?.find(c => c.internal === initialCol.internal);
+                return envCol ? { ...initialCol, external: envCol.external || '' } : initialCol;
+              })
+            };
+          }
+
+          return initialMod;
+        });
+
+        setEnvModules(modulesFromEnv);
+        setModules(merged);
+
+        if (savedTime) {
+          setLastSaved(new Date(savedTime));
         }
       } catch (error) {
         console.error('Erro ao carregar configurações:', error);
@@ -421,12 +445,34 @@ export default function ConfiguracoesPage() {
           </div>
         </div>
 
+        {/* Aviso sobre persistencia */}
+        <div className="bg-green-50 border border-green-100 rounded-xl p-5">
+          <div className="flex gap-3">
+            <Cloud className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-green-800">
+              <p className="font-medium mb-2">Configuracao Persistente (Recomendado)</p>
+              <p className="text-green-700">
+                Para nao perder as configuracoes entre deploys, configure as URLs no <strong>Vercel</strong>:
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-green-700 mt-2">
+                <li>Va em <strong>Vercel &gt; Settings &gt; Environment Variables</strong></li>
+                <li>Adicione a variavel: <code className="bg-green-100 px-1 rounded">NEXT_PUBLIC_SHEET_VENDAS_B2C</code></li>
+                <li>Cole a URL completa da planilha como valor</li>
+                <li>Faca o redeploy do projeto</li>
+              </ol>
+              <p className="mt-2 text-green-600 text-xs">
+                Variaveis disponiveis: NEXT_PUBLIC_SHEET_VENDAS_B2C, NEXT_PUBLIC_SHEET_VENDAS_B2B, NEXT_PUBLIC_SHEET_CUSTOMER_CARE, etc.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Instruções */}
         <div className="bg-blue-50 border border-blue-100 rounded-xl p-5">
           <div className="flex gap-3">
             <HelpCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-blue-800">
-              <p className="font-medium mb-2">Como configurar:</p>
+              <p className="font-medium mb-2">Configuracao Local (temporaria):</p>
               <ol className="list-decimal list-inside space-y-1 text-blue-700">
                 <li>Cole a <strong>URL completa</strong> da sua planilha Google Sheets</li>
                 <li>Informe o <strong>nome da aba</strong> que contém os dados</li>
@@ -462,8 +508,19 @@ export default function ConfiguracoesPage() {
                     <div className="flex items-center gap-3">
                       <h3 className="font-semibold text-gray-900">{module.name}</h3>
                       {module.sourceUrl && (
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
-                          Configurado
+                        <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
+                          envModules.includes(module.id)
+                            ? 'text-blue-600 bg-blue-50'
+                            : 'text-gray-400 bg-gray-100'
+                        }`}>
+                          {envModules.includes(module.id) ? (
+                            <>
+                              <Cloud className="w-3 h-3" />
+                              Vercel
+                            </>
+                          ) : (
+                            'Local'
+                          )}
                         </span>
                       )}
                       {connectionStatus[module.id] === 'success' && (
