@@ -155,19 +155,28 @@ export default function CancelamentosPage() {
   };
 
   // ==========================================
-  // TAXA DE CANCELAMENTO GERAL (não responde ao filtro de período)
+  // TAXA DE CANCELAMENTO GERAL (baseado na aba Vendas - não responde ao filtro)
   // ==========================================
   const taxaCancelamentoGeral = useMemo(() => {
-    if (!data || data.length === 0) return { taxa: 0, cancelados: 0, retidos: 0, total: 0 };
+    if (!vendasData || vendasData.length === 0) return { taxa: 0, cancelados: 0, total: 0 };
 
-    const cancelados = data.filter(item => isCancelado(item.status)).length;
-    const retidos = data.filter(item => isRetido(item.status)).length;
-    const total = data.length;
+    // Filtra apenas registros com data válida (exclui linhas vazias)
+    const registrosValidos = vendasData.filter(item => {
+      const dataVenda = item.data_venda as unknown;
+      return dataVenda && typeof dataVenda === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dataVenda);
+    });
 
+    // Conta cancelados (cancelamento = TRUE)
+    const cancelados = registrosValidos.filter(item => {
+      const cancel = item.cancelamento as unknown;
+      return cancel === true || cancel === 'TRUE' || cancel === 'true';
+    }).length;
+
+    const total = registrosValidos.length;
     const taxa = total > 0 ? (cancelados / total) * 100 : 0;
 
-    return { taxa, cancelados, retidos, total };
-  }, [data]);
+    return { taxa, cancelados, total };
+  }, [vendasData]);
 
   // ==========================================
   // DADOS FILTRADOS POR PERÍODO (usa data_cancelamento)
@@ -490,15 +499,15 @@ export default function CancelamentosPage() {
             </div>
           )}
 
-          {/* KPIs - Linha 1: Taxa Geral (não responde ao filtro) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* KPIs - Linha 1: Taxa Geral (baseado na aba Vendas - não responde ao filtro) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <KPICard
               title="Taxa de Cancelamento Geral"
               value={`${taxaCancelamentoGeral.taxa.toFixed(1)}%`}
               icon={<Percent className="w-6 h-6" />}
               color={taxaCancelamentoGeral.taxa > 10 ? '#EF4444' : '#10B981'}
-              subtitle="Base total (todos os meses)"
-              loading={loading}
+              subtitle="Baseado na aba Vendas"
+              loading={vendasLoading}
             />
             <KPICard
               title="Total Cancelados"
@@ -506,26 +515,17 @@ export default function CancelamentosPage() {
               format="number"
               icon={<UserX className="w-6 h-6" />}
               color="#EF4444"
-              subtitle="Base total"
-              loading={loading}
+              subtitle={`de ${taxaCancelamentoGeral.total} matrículas`}
+              loading={vendasLoading}
             />
             <KPICard
-              title="Total Retenções"
-              value={taxaCancelamentoGeral.retidos}
-              format="number"
-              icon={<ShieldCheck className="w-6 h-6" />}
-              color="#10B981"
-              subtitle="Base total"
-              loading={loading}
-            />
-            <KPICard
-              title="Total Registros"
+              title="Total de Matrículas"
               value={taxaCancelamentoGeral.total}
               format="number"
               icon={<Users className="w-6 h-6" />}
               color="#6B7280"
-              subtitle="Na planilha"
-              loading={loading}
+              subtitle="Na aba Vendas"
+              loading={vendasLoading}
             />
           </div>
 
