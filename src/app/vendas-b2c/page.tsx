@@ -65,7 +65,27 @@ export default function VendasB2CPage() {
         // Converte dados
         const processedData = result.data.data.map((item, index) => {
           const cancelamentoValue = item.cancelamento as unknown;
-          const dataVenda = new Date(item.data_venda);
+
+          // Trata a data corretamente (pode vir como string ISO ou objeto serializado)
+          let dataVenda: Date;
+          const rawDate = item.data_venda as unknown;
+          if (typeof rawDate === 'string') {
+            // Se for string ISO (2026-01-15T00:00:00.000Z), converte
+            // Se for string brasileira (15/01/2026), também converte
+            if (rawDate.includes('T')) {
+              // String ISO - ajusta para evitar problema de fuso horário
+              dataVenda = new Date(rawDate);
+            } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(rawDate)) {
+              // String brasileira DD/MM/YYYY
+              const [day, month, year] = rawDate.split('/').map(Number);
+              dataVenda = new Date(year, month - 1, day);
+            } else {
+              dataVenda = new Date(rawDate);
+            }
+          } else {
+            dataVenda = new Date(rawDate as string);
+          }
+
           const valorTotal = Number(item.valor_total) || 0;
 
           return {
@@ -133,13 +153,13 @@ export default function VendasB2CPage() {
     return problemas;
   }, [data]);
 
-  // Filtra apenas dados válidos para cálculos
+  // Filtra dados com data válida para cálculos
+  // Nota: Valor 0 e produto vazio são notificados como inconsistência,
+  // mas são incluídos nos cálculos (apenas data inválida exclui do filtro temporal)
   const dadosValidos = useMemo(() => {
     return data.filter(item => {
       const hasValidDate = item.data_venda instanceof Date && !isNaN(item.data_venda.getTime());
-      const hasValidValue = item.valor_total > 0;
-      const hasValidProduct = item.produto && item.produto.trim() !== '';
-      return hasValidDate && hasValidValue && hasValidProduct;
+      return hasValidDate;
     });
   }, [data]);
 
