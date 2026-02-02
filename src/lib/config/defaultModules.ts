@@ -24,16 +24,30 @@ const VENDAS_B2C_COLUMNS = [
   { internal: 'vendedor', external: 'vendedor' },
 ];
 
-// Carrega configuracoes das variaveis de ambiente ou usa valores padrao
+// ============================================================
+// URLS HARDCODED - SALVAS NO CÓDIGO PARA PERSISTIR ENTRE DEPLOYS
+// Para alterar uma URL, edite aqui e faça commit
+// ============================================================
+const HARDCODED_URLS = {
+  VENDAS_B2C: 'https://docs.google.com/spreadsheets/d/1YBBwUQHOlOCNmpSA8hdGLKZYpbq4Pwbo3I3tx8U7dW8/edit',
+  VENDAS_B2B: '',
+  CUSTOMER_CARE: '',
+  CANCELAMENTOS: 'https://docs.google.com/spreadsheets/d/1YBBwUQHOlOCNmpSA8hdGLKZYpbq4Pwbo3I3tx8U7dW8/edit',
+  COBRANCA: 'https://docs.google.com/spreadsheets/d/1R5mBFA8_BjKO-xkMwOVSROBhJxx3bB10uSjiXhDEjPA/edit',
+  ALUNOS_ATIVOS: '',
+  MARKETING: '',
+};
+
+// Carrega configuracoes: env vars (prioridade) > hardcoded > vazio
 export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
-  // URLs das planilhas - definidas em variaveis de ambiente do Vercel
-  const VENDAS_B2C_URL = process.env.NEXT_PUBLIC_SHEET_VENDAS_B2C || '';
-  const VENDAS_B2B_URL = process.env.NEXT_PUBLIC_SHEET_VENDAS_B2B || '';
-  const CUSTOMER_CARE_URL = process.env.NEXT_PUBLIC_SHEET_CUSTOMER_CARE || '';
-  const CANCELAMENTOS_URL = process.env.NEXT_PUBLIC_SHEET_CANCELAMENTOS || '';
-  const COBRANCA_URL = process.env.NEXT_PUBLIC_SHEET_COBRANCA || '';
-  const ALUNOS_ATIVOS_URL = process.env.NEXT_PUBLIC_SHEET_ALUNOS_ATIVOS || '';
-  const MARKETING_URL = process.env.NEXT_PUBLIC_SHEET_MARKETING || '';
+  // URLs das planilhas - env vars tem prioridade, depois hardcoded
+  const VENDAS_B2C_URL = process.env.NEXT_PUBLIC_SHEET_VENDAS_B2C || HARDCODED_URLS.VENDAS_B2C;
+  const VENDAS_B2B_URL = process.env.NEXT_PUBLIC_SHEET_VENDAS_B2B || HARDCODED_URLS.VENDAS_B2B;
+  const CUSTOMER_CARE_URL = process.env.NEXT_PUBLIC_SHEET_CUSTOMER_CARE || HARDCODED_URLS.CUSTOMER_CARE;
+  const CANCELAMENTOS_URL = process.env.NEXT_PUBLIC_SHEET_CANCELAMENTOS || HARDCODED_URLS.CANCELAMENTOS;
+  const COBRANCA_URL = process.env.NEXT_PUBLIC_SHEET_COBRANCA || HARDCODED_URLS.COBRANCA;
+  const ALUNOS_ATIVOS_URL = process.env.NEXT_PUBLIC_SHEET_ALUNOS_ATIVOS || HARDCODED_URLS.ALUNOS_ATIVOS;
+  const MARKETING_URL = process.env.NEXT_PUBLIC_SHEET_MARKETING || HARDCODED_URLS.MARKETING;
 
   return [
     {
@@ -88,35 +102,40 @@ export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
       sourceUrl: CANCELAMENTOS_URL,
       sheetName: 'Cancelamentos',
       columns: [
+        { internal: 'documento', external: 'cpf/cnpj' },
         { internal: 'nome', external: 'nome' },
-        { internal: 'id_aluno', external: 'id_aluno' },
-        { internal: 'data_matricula', external: 'data_matricula' },
-        { internal: 'status', external: 'status' },
-        { internal: 'data_cancelamento', external: 'data_cancelamento' },
-        { internal: 'razao_cancelamento', external: 'razao' },
-        { internal: 'valor_total_curso', external: 'valor_total' },
-        { internal: 'valor_estornado', external: 'valor_estornado' },
-        { internal: 'valor_retido', external: 'valor_retido' },
+        { internal: 'data_venda', external: 'data_venda' },
         { internal: 'produto', external: 'produto' },
+        { internal: 'valor_total', external: 'valor_total' },
+        { internal: 'data_cancelamento', external: 'data_cancelamento' },
+        { internal: 'tipo_cancelamento', external: 'tipo_cancelamento' },
+        { internal: 'razao_cancelamento', external: 'razao_cancelamento' },
+        { internal: 'multa', external: 'multa' },
+        { internal: 'pago_ate_cancelamento', external: 'pago_ate_cancelamento' },
+        { internal: 'perda', external: 'perda' },
+        { internal: 'status', external: 'cancelamento' },
       ],
     },
     {
       id: 'cobranca',
       name: 'Cobranca',
       sourceUrl: COBRANCA_URL,
-      sheetName: 'Cobranca',
+      sheetName: 'Sheet1',
       columns: [
-        { internal: 'nome', external: 'nome' },
-        { internal: 'email', external: 'email' },
-        { internal: 'telefone', external: 'telefone' },
-        { internal: 'vencimento', external: 'vencimento' },
-        { internal: 'cobranca_valor', external: 'valor' },
-        { internal: 'valor_total_aberto', external: 'valor_aberto' },
-        { internal: 'data_pagamento', external: 'data_pagamento' },
-        { internal: 'valor_recuperado', external: 'valor_recuperado' },
-        { internal: 'data_ultimo_contato', external: 'ultimo_contato' },
-        { internal: 'aluno', external: 'aluno' },
-        { internal: 'status', external: 'status' },
+        { internal: 'data', external: 'Data' },
+        { internal: 'aluno_nome', external: 'Nome' },
+        { internal: 'email', external: 'Email' },
+        { internal: 'telefone', external: 'Telefone' },
+        { internal: 'vencimento', external: 'Vencimento' },
+        { internal: 'pagamento', external: 'Pagamento' },
+        { internal: 'cobranca_valor', external: 'Cobrança valor' },
+        { internal: 'parcelas_aberto', external: 'Parcelas em aberto' },
+        { internal: 'valor_total_aberto', external: 'Valor total em aberto' },
+        { internal: 'data_ultimo_contato', external: 'Data do último contato' },
+        { internal: 'data_pagamento', external: 'Data de pagamento' },
+        { internal: 'valor_recuperado', external: 'Valor recuperado ' },
+        { internal: 'status', external: 'Status' },
+        { internal: 'observacoes', external: 'Observações' },
       ],
     },
     {

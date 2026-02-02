@@ -125,48 +125,29 @@ export default function CancelamentosPage() {
 
   const { data, loading, error, lastUpdated, sourceUrl, refresh } = useSheetData<Cancelamento>('cancelamentos');
 
-  // Dados de vendas B2C para cancelamentos de 7 dias
+  // Dados de vendas B2C para cancelamentos de 7 dias e Taxa de Cancelamento Geral
   const [vendasData, setVendasData] = useState<VendaB2C[]>([]);
   const [vendasLoading, setVendasLoading] = useState(true);
-  const [vendasError, setVendasError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVendasData = async () => {
       try {
         setVendasLoading(true);
-        setVendasError(null);
-        console.log('[DEBUG] Fetching vendas data...');
         const response = await fetch(`/api/data/vendas-b2c?refresh=true&_t=${Date.now()}`, {
           cache: 'no-store'
         });
 
         if (!response.ok) {
-          const errMsg = `API response not OK: ${response.status} ${response.statusText}`;
-          console.error('[DEBUG]', errMsg);
-          setVendasError(errMsg);
+          console.error('API response not OK:', response.status);
           return;
         }
 
         const result = await response.json();
-        console.log('[DEBUG] API full response:', JSON.stringify(result).substring(0, 500));
-        console.log('[DEBUG] API response success:', result.success);
-        console.log('[DEBUG] result.data exists:', !!result.data);
-        console.log('[DEBUG] result.data.data exists:', !!result.data?.data);
-        console.log('[DEBUG] Data length:', result.data?.data?.length);
-
         if (result.success && result.data?.data) {
-          console.log('[DEBUG] Sample record:', JSON.stringify(result.data.data[0]));
-          console.log('[DEBUG] Setting vendasData with', result.data.data.length, 'records');
           setVendasData(result.data.data);
-        } else {
-          const errMsg = `Failed to extract data: success=${result.success}, hasData=${!!result.data}, hasDataData=${!!result.data?.data}`;
-          console.error('[DEBUG]', errMsg);
-          setVendasError(errMsg);
         }
       } catch (err) {
-        const errMsg = `Exception: ${err instanceof Error ? err.message : String(err)}`;
         console.error('Erro ao carregar dados de vendas:', err);
-        setVendasError(errMsg);
       } finally {
         setVendasLoading(false);
       }
@@ -183,35 +164,21 @@ export default function CancelamentosPage() {
   // TAXA DE CANCELAMENTO GERAL (baseado na aba Vendas - não responde ao filtro)
   // ==========================================
   const taxaCancelamentoGeral = useMemo(() => {
-    console.log('[DEBUG Cancelamentos] vendasData length:', vendasData?.length);
-
     if (!vendasData || vendasData.length === 0) return { taxa: 0, cancelados: 0, total: 0 };
-
-    // Log sample para debug
-    if (vendasData.length > 0) {
-      console.log('[DEBUG Cancelamentos] Sample vendasData[0]:', JSON.stringify(vendasData[0]));
-      console.log('[DEBUG Cancelamentos] typeof cancelamento:', typeof vendasData[0]?.cancelamento);
-      console.log('[DEBUG Cancelamentos] cancelamento value:', vendasData[0]?.cancelamento);
-    }
 
     // Filtra apenas registros com data válida (exclui linhas vazias)
     const registrosValidos = vendasData.filter(item => {
       const dataVenda = item.data_venda as unknown;
-      // Aceita tanto string quanto Date
       if (typeof dataVenda === 'string') {
         return dataVenda && dataVenda.trim().length > 0;
       }
       return dataVenda instanceof Date && !isNaN(dataVenda.getTime());
     });
 
-    console.log('[DEBUG Cancelamentos] registrosValidos:', registrosValidos.length);
-
     // Conta cancelados - verifica múltiplos formatos possíveis
     const cancelados = registrosValidos.filter(item => {
       const cancel = item.cancelamento as unknown;
-      // Verifica boolean true
       if (cancel === true) return true;
-      // Verifica string "true" ou "TRUE"
       if (typeof cancel === 'string') {
         const lower = cancel.toLowerCase().trim();
         return lower === 'true' || lower === 'sim' || lower === 'verdadeiro';
@@ -219,12 +186,8 @@ export default function CancelamentosPage() {
       return false;
     }).length;
 
-    console.log('[DEBUG Cancelamentos] cancelados:', cancelados);
-
     const total = registrosValidos.length;
     const taxa = total > 0 ? (cancelados / total) * 100 : 0;
-
-    console.log('[DEBUG Cancelamentos] Result:', { taxa, cancelados, total });
 
     return { taxa, cancelados, total };
   }, [vendasData]);
@@ -549,19 +512,6 @@ export default function CancelamentosPage() {
               </p>
             </div>
           )}
-
-          {/* DEBUG: Mostrar estado dos dados - REMOVER DEPOIS */}
-          <div className={`border rounded-lg p-4 text-sm font-mono mb-4 ${vendasError ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
-            <p className={`font-bold mb-2 ${vendasError ? 'text-red-700' : 'text-blue-700'}`}>
-              DEBUG INFO (remover depois):
-            </p>
-            <p>vendasLoading: {vendasLoading ? 'true' : 'false'}</p>
-            <p>vendasError: {vendasError || 'null'}</p>
-            <p>vendasData.length: {vendasData.length}</p>
-            <p>taxaCancelamentoGeral.taxa: {taxaCancelamentoGeral.taxa.toFixed(2)}%</p>
-            <p>taxaCancelamentoGeral.cancelados: {taxaCancelamentoGeral.cancelados}</p>
-            <p>taxaCancelamentoGeral.total: {taxaCancelamentoGeral.total}</p>
-          </div>
 
           {/* KPIs - Linha 1: Taxa Geral (baseado na aba Vendas - não responde ao filtro) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
