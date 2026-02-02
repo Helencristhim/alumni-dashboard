@@ -247,10 +247,13 @@ acompanhamento:
     data_onboarding: "Obs3"  # Data do Onboarding
     primeira_aula: "1 AULA"
     data_primeira_aula: "DATA 1 AULA"
-    fup1: "1 FUP(7 dias)"
-    status_fup1: "Status 1"
-    fup2: "2 FUP (30 dias)"
-    status_fup2: "Status 2"
+    data_fup1: "1 FUP(7 dias)"  # Data do 1º Follow-up
+    status_fup1: "Status 1"  # Checkbox: 1º FUP feito
+    data_fup2: "2 FUP (30 dias)"  # Data do 2º Follow-up
+    status_fup2: "Status 2"  # Checkbox: 2º FUP feito
+    renovacao: "RENOVAÇÃO"  # Data da renovação
+    status_3: "Status 3"  # Checkbox: Renovação feita
+    obs4: "Obs 4:"  # Observações
 
 # ============================================================
 # MÓDULO 8 - MARKETING

@@ -15,7 +15,8 @@ import {
   Calendar,
   Phone,
   Clock,
-  Target
+  Target,
+  RefreshCw
 } from 'lucide-react';
 import { useSheetData } from '@/lib/hooks/useSheetData';
 import Link from 'next/link';
@@ -37,10 +38,13 @@ interface AcompanhamentoAluno {
   data_onboarding?: Date | string;  // Obs3
   primeira_aula?: boolean | string;
   data_primeira_aula?: Date | string;
-  fup1?: boolean | string;
-  status_fup1?: string;
-  fup2?: boolean | string;
-  status_fup2?: string;
+  data_fup1?: Date | string;  // Data do 1º FUP (7 dias)
+  status_fup1?: boolean | string;  // Checkbox: 1º FUP feito
+  data_fup2?: Date | string;  // Data do 2º FUP (30 dias)
+  status_fup2?: boolean | string;  // Checkbox: 2º FUP feito
+  renovacao?: Date | string;  // Data da renovação
+  status_3?: boolean | string;  // Checkbox: Renovação feita
+  obs4?: string;  // Observações
   [key: string]: unknown;
 }
 
@@ -118,16 +122,17 @@ export default function AcompanhamentoPage() {
     const comAcesso = alunos.filter(a => isChecked(a.acesso)).length;
     const comOnboarding = alunos.filter(a => isChecked(a.onboarding)).length;
     const comPrimeiraAula = alunos.filter(a => isChecked(a.primeira_aula)).length;
-    const comFup1 = alunos.filter(a => isChecked(a.fup1)).length;
-    const comFup2 = alunos.filter(a => isChecked(a.fup2)).length;
+    const comFup1 = alunos.filter(a => isChecked(a.status_fup1)).length;
+    const comFup2 = alunos.filter(a => isChecked(a.status_fup2)).length;
+    const comRenovacao = alunos.filter(a => isChecked(a.status_3)).length;
 
     // Alunos que completaram todo o funil
     const funnelCompleto = alunos.filter(a =>
       isChecked(a.levelling) &&
       isChecked(a.onboarding) &&
       isChecked(a.primeira_aula) &&
-      isChecked(a.fup1) &&
-      isChecked(a.fup2)
+      isChecked(a.status_fup1) &&
+      isChecked(a.status_fup2)
     ).length;
 
     return {
@@ -138,12 +143,14 @@ export default function AcompanhamentoPage() {
       comPrimeiraAula,
       comFup1,
       comFup2,
+      comRenovacao,
       funnelCompleto,
       taxaLevelling: total > 0 ? (comLevelling / total) * 100 : 0,
       taxaOnboarding: total > 0 ? (comOnboarding / total) * 100 : 0,
       taxaPrimeiraAula: total > 0 ? (comPrimeiraAula / total) * 100 : 0,
       taxaFup1: total > 0 ? (comFup1 / total) * 100 : 0,
       taxaFup2: total > 0 ? (comFup2 / total) * 100 : 0,
+      taxaRenovacao: total > 0 ? (comRenovacao / total) * 100 : 0,
     };
   }, [alunosFiltrados]);
 
@@ -156,6 +163,7 @@ export default function AcompanhamentoPage() {
       { etapa: '1ª Aula', quantidade: kpis.comPrimeiraAula, cor: '#10B981' },
       { etapa: '1º FUP', quantidade: kpis.comFup1, cor: '#F59E0B' },
       { etapa: '2º FUP', quantidade: kpis.comFup2, cor: '#EF4444' },
+      { etapa: 'Renovação', quantidade: kpis.comRenovacao, cor: '#3B82F6' },
     ];
   }, [kpis]);
 
@@ -181,8 +189,9 @@ export default function AcompanhamentoPage() {
       semLevelling: alunos.filter(a => !isChecked(a.levelling)),
       semOnboarding: alunos.filter(a => isChecked(a.levelling) && !isChecked(a.onboarding)),
       semPrimeiraAula: alunos.filter(a => isChecked(a.onboarding) && !isChecked(a.primeira_aula)),
-      semFup1: alunos.filter(a => isChecked(a.primeira_aula) && !isChecked(a.fup1)),
-      semFup2: alunos.filter(a => isChecked(a.fup1) && !isChecked(a.fup2)),
+      semFup1: alunos.filter(a => isChecked(a.primeira_aula) && !isChecked(a.status_fup1)),
+      semFup2: alunos.filter(a => isChecked(a.status_fup1) && !isChecked(a.status_fup2)),
+      semRenovacao: alunos.filter(a => isChecked(a.status_fup2) && !isChecked(a.status_3)),
     };
   }, [alunosFiltrados]);
 
@@ -247,7 +256,7 @@ export default function AcompanhamentoPage() {
           </div>
 
           {/* KPIs do Funil */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             <KPICard
               title="Total Alunos"
               value={kpis.total}
@@ -291,9 +300,17 @@ export default function AcompanhamentoPage() {
             <KPICard
               title="2º FUP (30d)"
               value={`${kpis.taxaFup2.toFixed(0)}%`}
-              icon={<CheckCircle className="w-5 h-5" />}
+              icon={<Clock className="w-5 h-5" />}
               color="#EF4444"
               subtitle={`${kpis.comFup2} de ${kpis.total}`}
+              loading={loading}
+            />
+            <KPICard
+              title="Renovação"
+              value={`${kpis.taxaRenovacao.toFixed(0)}%`}
+              icon={<RefreshCw className="w-5 h-5" />}
+              color="#3B82F6"
+              subtitle={`${kpis.comRenovacao} de ${kpis.total}`}
               loading={loading}
             />
           </div>
@@ -335,7 +352,7 @@ export default function AcompanhamentoPage() {
             title="Alunos Pendentes por Etapa"
             subtitle="Quem precisa de atenção em cada fase"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Target className="w-5 h-5 text-purple-600" />
@@ -380,6 +397,15 @@ export default function AcompanhamentoPage() {
                 <p className="text-3xl font-bold text-red-700">{pendentes.semFup2.length}</p>
                 <p className="text-sm text-red-600">alunos</p>
               </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <RefreshCw className="w-5 h-5 text-blue-600" />
+                  <h4 className="font-semibold text-blue-900">Sem Renovação</h4>
+                </div>
+                <p className="text-3xl font-bold text-blue-700">{pendentes.semRenovacao.length}</p>
+                <p className="text-sm text-blue-600">alunos</p>
+              </div>
             </div>
           </ModuleSection>
 
@@ -402,6 +428,7 @@ export default function AcompanhamentoPage() {
                         <th className="px-4 py-3 text-center text-xs font-semibold text-purple-800 uppercase">1ª Aula</th>
                         <th className="px-4 py-3 text-center text-xs font-semibold text-purple-800 uppercase">1º FUP</th>
                         <th className="px-4 py-3 text-center text-xs font-semibold text-purple-800 uppercase">2º FUP</th>
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-purple-800 uppercase">Renovação</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-purple-800 uppercase">Status</th>
                       </tr>
                     </thead>
@@ -454,18 +481,40 @@ export default function AcompanhamentoPage() {
                             </div>
                           </td>
                           <td className="px-4 py-3 text-center">
-                            {isChecked(item.fup1) ? (
-                              <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                            ) : (
-                              <div className="w-5 h-5 border-2 border-gray-300 rounded mx-auto" />
-                            )}
+                            <div className="flex flex-col items-center">
+                              {isChecked(item.status_fup1) ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : (
+                                <div className="w-5 h-5 border-2 border-gray-300 rounded" />
+                              )}
+                              {item.data_fup1 && (
+                                <span className="text-xs text-gray-500 mt-1">{String(item.data_fup1)}</span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-center">
-                            {isChecked(item.fup2) ? (
-                              <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                            ) : (
-                              <div className="w-5 h-5 border-2 border-gray-300 rounded mx-auto" />
-                            )}
+                            <div className="flex flex-col items-center">
+                              {isChecked(item.status_fup2) ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : (
+                                <div className="w-5 h-5 border-2 border-gray-300 rounded" />
+                              )}
+                              {item.data_fup2 && (
+                                <span className="text-xs text-gray-500 mt-1">{String(item.data_fup2)}</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex flex-col items-center">
+                              {isChecked(item.status_3) ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : (
+                                <div className="w-5 h-5 border-2 border-gray-300 rounded" />
+                              )}
+                              {item.renovacao && (
+                                <span className="text-xs text-gray-500 mt-1">{String(item.renovacao)}</span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${

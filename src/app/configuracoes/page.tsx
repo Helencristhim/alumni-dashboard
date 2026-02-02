@@ -189,10 +189,13 @@ const getInitialModules = (): ModuleConfig[] => [
       { internal: 'data_onboarding', label: 'Data Onboarding (Obs3)', external: '', required: false },
       { internal: 'primeira_aula', label: '1ª Aula (checkbox)', external: '', required: false },
       { internal: 'data_primeira_aula', label: 'Data 1ª Aula', external: '', required: false },
-      { internal: 'fup1', label: '1º FUP 7 dias (checkbox)', external: '', required: false },
-      { internal: 'status_fup1', label: 'Status 1º FUP', external: '', required: false },
-      { internal: 'fup2', label: '2º FUP 30 dias (checkbox)', external: '', required: false },
-      { internal: 'status_fup2', label: 'Status 2º FUP', external: '', required: false },
+      { internal: 'data_fup1', label: 'Data 1º FUP (7 dias)', external: '', required: false },
+      { internal: 'status_fup1', label: '1º FUP Feito (checkbox)', external: '', required: false },
+      { internal: 'data_fup2', label: 'Data 2º FUP (30 dias)', external: '', required: false },
+      { internal: 'status_fup2', label: '2º FUP Feito (checkbox)', external: '', required: false },
+      { internal: 'renovacao', label: 'Data Renovação', external: '', required: false },
+      { internal: 'status_3', label: 'Renovação Feita (checkbox)', external: '', required: false },
+      { internal: 'obs4', label: 'Observações (Obs 4)', external: '', required: false },
     ]
   },
   {
