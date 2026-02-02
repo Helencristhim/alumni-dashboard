@@ -128,18 +128,22 @@ export default function CancelamentosPage() {
   // Dados de vendas B2C para cancelamentos de 7 dias
   const [vendasData, setVendasData] = useState<VendaB2C[]>([]);
   const [vendasLoading, setVendasLoading] = useState(true);
+  const [vendasError, setVendasError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVendasData = async () => {
       try {
         setVendasLoading(true);
+        setVendasError(null);
         console.log('[DEBUG] Fetching vendas data...');
         const response = await fetch(`/api/data/vendas-b2c?refresh=true&_t=${Date.now()}`, {
           cache: 'no-store'
         });
 
         if (!response.ok) {
-          console.error('[DEBUG] API response not OK:', response.status, response.statusText);
+          const errMsg = `API response not OK: ${response.status} ${response.statusText}`;
+          console.error('[DEBUG]', errMsg);
+          setVendasError(errMsg);
           return;
         }
 
@@ -155,10 +159,14 @@ export default function CancelamentosPage() {
           console.log('[DEBUG] Setting vendasData with', result.data.data.length, 'records');
           setVendasData(result.data.data);
         } else {
-          console.error('[DEBUG] Failed to extract data from response');
+          const errMsg = `Failed to extract data: success=${result.success}, hasData=${!!result.data}, hasDataData=${!!result.data?.data}`;
+          console.error('[DEBUG]', errMsg);
+          setVendasError(errMsg);
         }
       } catch (err) {
+        const errMsg = `Exception: ${err instanceof Error ? err.message : String(err)}`;
         console.error('Erro ao carregar dados de vendas:', err);
+        setVendasError(errMsg);
       } finally {
         setVendasLoading(false);
       }
@@ -543,9 +551,12 @@ export default function CancelamentosPage() {
           )}
 
           {/* DEBUG: Mostrar estado dos dados - REMOVER DEPOIS */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm font-mono mb-4">
-            <p className="font-bold text-blue-700 mb-2">DEBUG INFO (remover depois):</p>
+          <div className={`border rounded-lg p-4 text-sm font-mono mb-4 ${vendasError ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
+            <p className={`font-bold mb-2 ${vendasError ? 'text-red-700' : 'text-blue-700'}`}>
+              DEBUG INFO (remover depois):
+            </p>
             <p>vendasLoading: {vendasLoading ? 'true' : 'false'}</p>
+            <p>vendasError: {vendasError || 'null'}</p>
             <p>vendasData.length: {vendasData.length}</p>
             <p>taxaCancelamentoGeral.taxa: {taxaCancelamentoGeral.taxa.toFixed(2)}%</p>
             <p>taxaCancelamentoGeral.cancelados: {taxaCancelamentoGeral.cancelados}</p>
