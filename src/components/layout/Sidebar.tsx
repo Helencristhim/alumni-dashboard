@@ -14,7 +14,8 @@ import {
   Settings,
   HelpCircle,
   Activity,
-  UserCog
+  UserCog,
+  ClipboardCheck
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -84,6 +85,14 @@ const navItems: NavItem[] = [
     href: '/alunos-ativos',
     color: '#06B6D4',
     moduleId: 'alunos-ativos'
+  },
+  {
+    id: 'acompanhamento',
+    label: 'Acompanhamento',
+    icon: <ClipboardCheck className="w-5 h-5" />,
+    href: '/acompanhamento',
+    color: '#8B5CF6',
+    moduleId: 'acompanhamento'
   },
   {
     id: 'marketing',

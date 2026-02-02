@@ -35,6 +35,7 @@ const HARDCODED_URLS = {
   CANCELAMENTOS: 'https://docs.google.com/spreadsheets/d/1YBBwUQHOlOCNmpSA8hdGLKZYpbq4Pwbo3I3tx8U7dW8/edit',
   COBRANCA: 'https://docs.google.com/spreadsheets/d/1R5mBFA8_BjKO-xkMwOVSROBhJxx3bB10uSjiXhDEjPA/edit',
   ALUNOS_ATIVOS: 'https://docs.google.com/spreadsheets/d/1YBBwUQHOlOCNmpSA8hdGLKZYpbq4Pwbo3I3tx8U7dW8/edit',
+  ACOMPANHAMENTO: 'https://docs.google.com/spreadsheets/d/1YBBwUQHOlOCNmpSA8hdGLKZYpbq4Pwbo3I3tx8U7dW8/edit',
   MARKETING: '',
 };
 
@@ -47,6 +48,7 @@ export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
   const CANCELAMENTOS_URL = process.env.NEXT_PUBLIC_SHEET_CANCELAMENTOS || HARDCODED_URLS.CANCELAMENTOS;
   const COBRANCA_URL = process.env.NEXT_PUBLIC_SHEET_COBRANCA || HARDCODED_URLS.COBRANCA;
   const ALUNOS_ATIVOS_URL = process.env.NEXT_PUBLIC_SHEET_ALUNOS_ATIVOS || HARDCODED_URLS.ALUNOS_ATIVOS;
+  const ACOMPANHAMENTO_URL = process.env.NEXT_PUBLIC_SHEET_ACOMPANHAMENTO || HARDCODED_URLS.ACOMPANHAMENTO;
   const MARKETING_URL = process.env.NEXT_PUBLIC_SHEET_MARKETING || HARDCODED_URLS.MARKETING;
 
   return [
@@ -153,6 +155,31 @@ export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
         { internal: 'data_fim', external: 'FIM' },
         { internal: 'status', external: 'STATUS' },
         { internal: 'nivel', external: 'NÍVEL' },
+      ],
+    },
+    {
+      id: 'acompanhamento',
+      name: 'Acompanhamento',
+      sourceUrl: ACOMPANHAMENTO_URL,
+      sheetName: 'Alunos',
+      columns: [
+        { internal: 'nome', external: 'NOME' },
+        { internal: 'email', external: 'EMAIL' },
+        { internal: 'status', external: 'STATUS' },
+        { internal: 'produto', external: 'PRODUTO' },
+        { internal: 'horas_ofertadas', external: 'Horas ofertadas' },
+        { internal: 'inicio', external: 'INICIO' },
+        { internal: 'fim', external: 'FIM' },
+        { internal: 'levelling', external: 'LEVELLING' },
+        { internal: 'nivel', external: 'NIVEL' },
+        { internal: 'acesso', external: 'ACESSO' },
+        { internal: 'onboarding', external: 'ONBOARDING' },
+        { internal: 'primeira_aula', external: '1 AULA' },
+        { internal: 'data_primeira_aula', external: 'DATA 1 AULA' },
+        { internal: 'fup1', external: '1 FUP(7 dias)' },
+        { internal: 'status_fup1', external: 'Status 1' },
+        { internal: 'fup2', external: '2 FUP (30 dias)' },
+        { internal: 'status_fup2', external: 'Status 2' },
       ],
     },
     {
