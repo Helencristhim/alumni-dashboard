@@ -137,12 +137,25 @@ export default function CancelamentosPage() {
         const response = await fetch(`/api/data/vendas-b2c?refresh=true&_t=${Date.now()}`, {
           cache: 'no-store'
         });
+
+        if (!response.ok) {
+          console.error('[DEBUG] API response not OK:', response.status, response.statusText);
+          return;
+        }
+
         const result = await response.json();
+        console.log('[DEBUG] API full response:', JSON.stringify(result).substring(0, 500));
         console.log('[DEBUG] API response success:', result.success);
+        console.log('[DEBUG] result.data exists:', !!result.data);
+        console.log('[DEBUG] result.data.data exists:', !!result.data?.data);
         console.log('[DEBUG] Data length:', result.data?.data?.length);
+
         if (result.success && result.data?.data) {
-          console.log('[DEBUG] Sample record:', result.data.data[1]);
+          console.log('[DEBUG] Sample record:', JSON.stringify(result.data.data[0]));
+          console.log('[DEBUG] Setting vendasData with', result.data.data.length, 'records');
           setVendasData(result.data.data);
+        } else {
+          console.error('[DEBUG] Failed to extract data from response');
         }
       } catch (err) {
         console.error('Erro ao carregar dados de vendas:', err);
@@ -166,28 +179,44 @@ export default function CancelamentosPage() {
 
     if (!vendasData || vendasData.length === 0) return { taxa: 0, cancelados: 0, total: 0 };
 
+    // Log sample para debug
+    if (vendasData.length > 0) {
+      console.log('[DEBUG Cancelamentos] Sample vendasData[0]:', JSON.stringify(vendasData[0]));
+      console.log('[DEBUG Cancelamentos] typeof cancelamento:', typeof vendasData[0]?.cancelamento);
+      console.log('[DEBUG Cancelamentos] cancelamento value:', vendasData[0]?.cancelamento);
+    }
+
     // Filtra apenas registros com data válida (exclui linhas vazias)
     const registrosValidos = vendasData.filter(item => {
       const dataVenda = item.data_venda as unknown;
       // Aceita tanto string quanto Date
       if (typeof dataVenda === 'string') {
-        return dataVenda && /^\d{2}\/\d{2}\/\d{4}$/.test(dataVenda);
+        return dataVenda && dataVenda.trim().length > 0;
       }
       return dataVenda instanceof Date && !isNaN(dataVenda.getTime());
     });
 
     console.log('[DEBUG Cancelamentos] registrosValidos:', registrosValidos.length);
 
-    // Conta cancelados (cancelamento = TRUE ou true)
+    // Conta cancelados - verifica múltiplos formatos possíveis
     const cancelados = registrosValidos.filter(item => {
-      const cancel = item.cancelamento;
-      return cancel === true;
+      const cancel = item.cancelamento as unknown;
+      // Verifica boolean true
+      if (cancel === true) return true;
+      // Verifica string "true" ou "TRUE"
+      if (typeof cancel === 'string') {
+        const lower = cancel.toLowerCase().trim();
+        return lower === 'true' || lower === 'sim' || lower === 'verdadeiro';
+      }
+      return false;
     }).length;
 
     console.log('[DEBUG Cancelamentos] cancelados:', cancelados);
 
     const total = registrosValidos.length;
     const taxa = total > 0 ? (cancelados / total) * 100 : 0;
+
+    console.log('[DEBUG Cancelamentos] Result:', { taxa, cancelados, total });
 
     return { taxa, cancelados, total };
   }, [vendasData]);
