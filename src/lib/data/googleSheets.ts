@@ -147,7 +147,20 @@ function parseValue(value: unknown): unknown {
 
   const strValue = String(value).trim();
 
-  // Tenta converter para número
+  // Tenta converter valor monetário brasileiro (R$ 5.760,00)
+  if (/^R\$\s*[\d.,]+$/.test(strValue)) {
+    const numStr = strValue
+      .replace('R$', '')
+      .replace(/\s/g, '')
+      .replace(/\./g, '')  // Remove separador de milhares
+      .replace(',', '.');   // Converte vírgula decimal para ponto
+    const numValue = parseFloat(numStr);
+    if (!isNaN(numValue)) {
+      return numValue;
+    }
+  }
+
+  // Tenta converter para número simples
   if (/^-?\d+([.,]\d+)?$/.test(strValue)) {
     const numValue = parseFloat(strValue.replace(',', '.'));
     if (!isNaN(numValue)) {
