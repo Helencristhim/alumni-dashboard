@@ -542,6 +542,16 @@ export default function CancelamentosPage() {
             </div>
           )}
 
+          {/* DEBUG: Mostrar estado dos dados - REMOVER DEPOIS */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm font-mono mb-4">
+            <p className="font-bold text-blue-700 mb-2">DEBUG INFO (remover depois):</p>
+            <p>vendasLoading: {vendasLoading ? 'true' : 'false'}</p>
+            <p>vendasData.length: {vendasData.length}</p>
+            <p>taxaCancelamentoGeral.taxa: {taxaCancelamentoGeral.taxa.toFixed(2)}%</p>
+            <p>taxaCancelamentoGeral.cancelados: {taxaCancelamentoGeral.cancelados}</p>
+            <p>taxaCancelamentoGeral.total: {taxaCancelamentoGeral.total}</p>
+          </div>
+
           {/* KPIs - Linha 1: Taxa Geral (baseado na aba Vendas - não responde ao filtro) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <KPICard
