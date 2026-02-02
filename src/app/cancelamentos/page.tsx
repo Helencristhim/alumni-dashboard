@@ -133,11 +133,15 @@ export default function CancelamentosPage() {
     const fetchVendasData = async () => {
       try {
         setVendasLoading(true);
+        console.log('[DEBUG] Fetching vendas data...');
         const response = await fetch(`/api/data/vendas-b2c?refresh=true&_t=${Date.now()}`, {
           cache: 'no-store'
         });
         const result = await response.json();
+        console.log('[DEBUG] API response success:', result.success);
+        console.log('[DEBUG] Data length:', result.data?.data?.length);
         if (result.success && result.data?.data) {
+          console.log('[DEBUG] Sample record:', result.data.data[1]);
           setVendasData(result.data.data);
         }
       } catch (err) {
@@ -158,19 +162,29 @@ export default function CancelamentosPage() {
   // TAXA DE CANCELAMENTO GERAL (baseado na aba Vendas - não responde ao filtro)
   // ==========================================
   const taxaCancelamentoGeral = useMemo(() => {
+    console.log('[DEBUG Cancelamentos] vendasData length:', vendasData?.length);
+
     if (!vendasData || vendasData.length === 0) return { taxa: 0, cancelados: 0, total: 0 };
 
     // Filtra apenas registros com data válida (exclui linhas vazias)
     const registrosValidos = vendasData.filter(item => {
       const dataVenda = item.data_venda as unknown;
-      return dataVenda && typeof dataVenda === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dataVenda);
+      // Aceita tanto string quanto Date
+      if (typeof dataVenda === 'string') {
+        return dataVenda && /^\d{2}\/\d{2}\/\d{4}$/.test(dataVenda);
+      }
+      return dataVenda instanceof Date && !isNaN(dataVenda.getTime());
     });
 
-    // Conta cancelados (cancelamento = TRUE)
+    console.log('[DEBUG Cancelamentos] registrosValidos:', registrosValidos.length);
+
+    // Conta cancelados (cancelamento = TRUE ou true)
     const cancelados = registrosValidos.filter(item => {
-      const cancel = item.cancelamento as unknown;
-      return cancel === true || cancel === 'TRUE' || cancel === 'true';
+      const cancel = item.cancelamento;
+      return cancel === true;
     }).length;
+
+    console.log('[DEBUG Cancelamentos] cancelados:', cancelados);
 
     const total = registrosValidos.length;
     const taxa = total > 0 ? (cancelados / total) * 100 : 0;
