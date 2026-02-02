@@ -10,9 +10,21 @@ import {
   Users,
   Receipt,
   XCircle,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import type { VendaB2C } from '@/types';
+
+interface VendaComIndice extends VendaB2C {
+  _rowIndex: number;
+}
+
+interface Inconsistencia {
+  linha: number;
+  nome: string;
+  tipo: 'sem_data' | 'sem_valor' | 'sem_produto' | 'valor_zero';
+  descricao: string;
+}
 
 interface ApiResponse {
   success: boolean;
@@ -22,9 +34,10 @@ interface ApiResponse {
 }
 
 export default function VendasB2CPage() {
-  const [data, setData] = useState<VendaB2C[]>([]);
+  const [data, setData] = useState<VendaComIndice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showInconsistencias, setShowInconsistencias] = useState(false);
 
   // Filtro de data - padrão: últimos 30 dias
   const [startDate, setStartDate] = useState(() => {
@@ -49,28 +62,21 @@ export default function VendasB2CPage() {
       const result: ApiResponse = await response.json();
 
       if (result.success && result.data?.data) {
-        // Converte e filtra dados válidos
-        const processedData = result.data.data
-          .map(item => {
-            const cancelamentoValue = item.cancelamento as unknown;
-            const dataVenda = new Date(item.data_venda);
-            const valorTotal = Number(item.valor_total) || 0;
+        // Converte dados
+        const processedData = result.data.data.map((item, index) => {
+          const cancelamentoValue = item.cancelamento as unknown;
+          const dataVenda = new Date(item.data_venda);
+          const valorTotal = Number(item.valor_total) || 0;
 
-            return {
-              ...item,
-              data_venda: dataVenda,
-              valor_total: valorTotal,
-              parcelas: Number(item.parcelas) || 0,
-              cancelamento: cancelamentoValue === true || cancelamentoValue === 'TRUE' || cancelamentoValue === 'true'
-            };
-          })
-          // Filtra linhas inválidas (sem data ou sem valor)
-          .filter(item => {
-            const hasValidDate = item.data_venda instanceof Date && !isNaN(item.data_venda.getTime());
-            const hasValidValue = item.valor_total > 0;
-            const hasValidProduct = item.produto && item.produto.trim() !== '';
-            return hasValidDate && hasValidValue && hasValidProduct;
-          });
+          return {
+            ...item,
+            _rowIndex: index + 2, // +2 porque linha 1 é header
+            data_venda: dataVenda,
+            valor_total: valorTotal,
+            parcelas: Number(item.parcelas) || 0,
+            cancelamento: cancelamentoValue === true || cancelamentoValue === 'TRUE' || cancelamentoValue === 'true'
+          };
+        });
         setData(processedData);
       } else {
         setError('Erro ao carregar dados');
@@ -87,13 +93,63 @@ export default function VendasB2CPage() {
     fetchData();
   }, []);
 
+  // Detecta inconsistências nos dados
+  const inconsistencias = useMemo((): Inconsistencia[] => {
+    const problemas: Inconsistencia[] = [];
+
+    data.forEach(item => {
+      const hasValidDate = item.data_venda instanceof Date && !isNaN(item.data_venda.getTime());
+      const hasValidValue = item.valor_total > 0;
+      const hasValidProduct = item.produto && item.produto.trim() !== '';
+
+      if (!hasValidDate) {
+        problemas.push({
+          linha: item._rowIndex,
+          nome: item.nome || 'Sem nome',
+          tipo: 'sem_data',
+          descricao: 'Data de venda não preenchida ou inválida'
+        });
+      }
+
+      if (!hasValidValue && hasValidDate) {
+        problemas.push({
+          linha: item._rowIndex,
+          nome: item.nome || 'Sem nome',
+          tipo: item.valor_total === 0 ? 'valor_zero' : 'sem_valor',
+          descricao: item.valor_total === 0 ? 'Valor total igual a zero' : 'Valor total não preenchido'
+        });
+      }
+
+      if (!hasValidProduct && hasValidDate) {
+        problemas.push({
+          linha: item._rowIndex,
+          nome: item.nome || 'Sem nome',
+          tipo: 'sem_produto',
+          descricao: 'Produto não preenchido'
+        });
+      }
+    });
+
+    return problemas;
+  }, [data]);
+
+  // Filtra apenas dados válidos para cálculos
+  const dadosValidos = useMemo(() => {
+    return data.filter(item => {
+      const hasValidDate = item.data_venda instanceof Date && !isNaN(item.data_venda.getTime());
+      const hasValidValue = item.valor_total > 0;
+      const hasValidProduct = item.produto && item.produto.trim() !== '';
+      return hasValidDate && hasValidValue && hasValidProduct;
+    });
+  }, [data]);
+
   // Filtra dados pelo período selecionado
   const filteredData = useMemo(() => {
-    return data.filter(item => {
+    return dadosValidos.filter(item => {
       const itemDate = new Date(item.data_venda);
       return itemDate >= startDate && itemDate <= endDate;
     });
-  }, [data, startDate, endDate]);
+  }, [dadosValidos, startDate, endDate]);
 
   // KPIs calculados
   const kpis = useMemo(() => {
@@ -234,6 +290,59 @@ export default function VendasB2CPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
             {error}
+          </div>
+        )}
+
+        {/* Alerta de Inconsistências */}
+        {inconsistencias.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <div>
+                  <p className="font-medium text-amber-800">
+                    {inconsistencias.length} inconsistência{inconsistencias.length > 1 ? 's' : ''} encontrada{inconsistencias.length > 1 ? 's' : ''} na planilha
+                  </p>
+                  <p className="text-sm text-amber-600">
+                    Esses registros precisam ser corrigidos para aparecer nos cálculos
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowInconsistencias(!showInconsistencias)}
+                className="px-3 py-1.5 text-sm font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors"
+              >
+                {showInconsistencias ? 'Ocultar' : 'Ver detalhes'}
+              </button>
+            </div>
+
+            {showInconsistencias && (
+              <div className="mt-4 max-h-64 overflow-y-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-amber-200">
+                      <th className="text-left py-2 px-3 font-medium text-amber-800">Linha</th>
+                      <th className="text-left py-2 px-3 font-medium text-amber-800">Nome</th>
+                      <th className="text-left py-2 px-3 font-medium text-amber-800">Problema</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inconsistencias.slice(0, 50).map((item, index) => (
+                      <tr key={index} className="border-b border-amber-100">
+                        <td className="py-2 px-3 text-amber-700 font-mono">{item.linha}</td>
+                        <td className="py-2 px-3 text-amber-700">{item.nome}</td>
+                        <td className="py-2 px-3 text-amber-600">{item.descricao}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {inconsistencias.length > 50 && (
+                  <p className="text-center text-amber-600 text-sm mt-2">
+                    ... e mais {inconsistencias.length - 50} registros
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
