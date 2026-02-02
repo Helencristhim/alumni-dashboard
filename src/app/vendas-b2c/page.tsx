@@ -66,15 +66,15 @@ export default function VendasB2CPage() {
         const processedData = result.data.data.map((item, index) => {
           const cancelamentoValue = item.cancelamento as unknown;
 
-          // Trata a data corretamente (pode vir como string ISO ou objeto serializado)
+          // Trata a data extraindo apenas ano/mês/dia (ignora fuso horário)
           let dataVenda: Date;
           const rawDate = item.data_venda as unknown;
           if (typeof rawDate === 'string') {
-            // Se for string ISO (2026-01-15T00:00:00.000Z), converte
-            // Se for string brasileira (15/01/2026), também converte
             if (rawDate.includes('T')) {
-              // String ISO - ajusta para evitar problema de fuso horário
-              dataVenda = new Date(rawDate);
+              // String ISO (2026-01-15T12:00:00.000Z) - extrai apenas a data
+              const [datePart] = rawDate.split('T');
+              const [year, month, day] = datePart.split('-').map(Number);
+              dataVenda = new Date(year, month - 1, day);
             } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(rawDate)) {
               // String brasileira DD/MM/YYYY
               const [day, month, year] = rawDate.split('/').map(Number);

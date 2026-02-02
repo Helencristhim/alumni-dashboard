@@ -177,9 +177,10 @@ function parseValue(value: unknown): unknown {
   }
 
   // Tenta converter para data (formato brasileiro DD/MM/YYYY)
+  // Usa UTC para evitar problemas de fuso horário
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(strValue)) {
     const [day, month, year] = strValue.split('/').map(Number);
-    const date = new Date(year, month - 1, day);
+    const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // Meio-dia UTC evita problemas de fuso
     if (!isNaN(date.getTime())) {
       return date;
     }
