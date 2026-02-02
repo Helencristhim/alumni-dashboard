@@ -156,8 +156,25 @@ export default function VendasB2CPage() {
   // Filtra dados pelo período selecionado
   const filteredData = useMemo(() => {
     return dadosValidos.filter(item => {
-      const itemDate = new Date(item.data_venda);
-      return itemDate >= startDate && itemDate <= endDate;
+      // Compara apenas ano, mês e dia (ignora horário)
+      const itemYear = item.data_venda.getFullYear();
+      const itemMonth = item.data_venda.getMonth();
+      const itemDay = item.data_venda.getDate();
+
+      const startYear = startDate.getFullYear();
+      const startMonth = startDate.getMonth();
+      const startDay = startDate.getDate();
+
+      const endYear = endDate.getFullYear();
+      const endMonth = endDate.getMonth();
+      const endDay = endDate.getDate();
+
+      // Cria datas numéricas para comparação (YYYYMMDD)
+      const itemNum = itemYear * 10000 + itemMonth * 100 + itemDay;
+      const startNum = startYear * 10000 + startMonth * 100 + startDay;
+      const endNum = endYear * 10000 + endMonth * 100 + endDay;
+
+      return itemNum >= startNum && itemNum <= endNum;
     });
   }, [dadosValidos, startDate, endDate]);
 
