@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   ShoppingCart,
   Building2,
-  HeadphonesIcon,
   UserX,
   Receipt,
   Users,
@@ -55,14 +54,6 @@ const navItems: NavItem[] = [
     moduleId: 'vendas-b2b'
   },
   {
-    id: 'customer-care',
-    label: 'Customer Care',
-    icon: <HeadphonesIcon className="w-5 h-5" />,
-    href: '/customer-care',
-    color: '#8B5CF6',
-    moduleId: 'customer-care'
-  },
-  {
     id: 'cancelamentos',
     label: 'Cancelamentos',
     icon: <UserX className="w-5 h-5" />,
@@ -87,10 +78,10 @@ const navItems: NavItem[] = [
     moduleId: 'alunos-ativos'
   },
   {
-    id: 'acompanhamento',
-    label: 'Acompanhamento',
+    id: 'customer-care',
+    label: 'Customer Care',
     icon: <ClipboardCheck className="w-5 h-5" />,
-    href: '/acompanhamento',
+    href: '/customer-care',
     color: '#8B5CF6',
     moduleId: 'acompanhamento'
   },
