@@ -189,13 +189,23 @@ export default function AlunosAtivosPage() {
   // Distribuição por tipo (B2B, B2B2C, B2C, BOLSISTA)
   const distribuicaoPorTipo = useMemo(() => {
     const tipos: Record<string, number> = {};
+    const total = alunosFiltrados.length;
 
     alunosFiltrados.forEach(item => {
       const tipo = item.tipo_normalizado || 'Não informado';
       tipos[tipo] = (tipos[tipo] || 0) + 1;
     });
 
-    return Object.entries(tipos).map(([name, value]) => ({ name, value }));
+    // Ordem definida para os tipos
+    const ordemTipos = ['B2B', 'B2B2C', 'B2C', 'BOLSISTA', 'Não informado'];
+
+    return ordemTipos
+      .filter(tipo => tipos[tipo] && tipos[tipo] > 0)
+      .map(name => ({
+        name,
+        value: tipos[name],
+        percentual: total > 0 ? ((tipos[name] / total) * 100).toFixed(1) : '0',
+      }));
   }, [alunosFiltrados]);
 
   // Distribuição por nível
@@ -452,15 +462,54 @@ export default function AlunosAtivosPage() {
             {distribuicaoPorTipo.length > 0 && (
               <ChartCard
                 title="Distribuicao por Tipo"
-                subtitle="B2B, B2B2C, B2C, BOLSISTA"
+                subtitle={`${alunosFiltrados.length} alunos - ${statusFilter === 'ATIVOS' ? 'Ativos' : statusFilter}`}
               >
-                <PieChartComponent
-                  data={distribuicaoPorTipo}
-                  nameKey="name"
-                  valueKey="value"
-                  height={280}
-                  loading={loading}
-                />
+                <div className="space-y-3 py-2">
+                  {distribuicaoPorTipo.map((item, index) => {
+                    const colors: Record<string, string> = {
+                      'B2B': '#8B5CF6',
+                      'B2B2C': '#F59E0B',
+                      'B2C': '#3B82F6',
+                      'BOLSISTA': '#10B981',
+                      'Não informado': '#6B7280',
+                    };
+                    const color = colors[item.name] || '#6B7280';
+                    const maxValue = Math.max(...distribuicaoPorTipo.map(d => d.value));
+                    const barWidth = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+
+                    return (
+                      <div key={index} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium text-gray-700">{item.name}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="font-bold text-gray-900">{item.value}</span>
+                            <span className="text-gray-500 w-14 text-right">({item.percentual}%)</span>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-6">
+                          <div
+                            className="h-6 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
+                            style={{ width: `${barWidth}%`, backgroundColor: color, minWidth: item.value > 0 ? '40px' : '0' }}
+                          >
+                            {barWidth > 20 && (
+                              <span className="text-xs font-semibold text-white">{item.percentual}%</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Total */}
+                <div className="mt-4 pt-3 border-t border-gray-200">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-bold text-gray-900">TOTAL</span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-cyan-600 text-lg">{alunosFiltrados.length}</span>
+                      <span className="text-gray-500 w-14 text-right">(100%)</span>
+                    </div>
+                  </div>
+                </div>
               </ChartCard>
             )}
 
