@@ -74,6 +74,7 @@ vendas_b2b:
     sheet_name: "Vendas"
 
   column_mapping:
+    tipo_documento: "documento"
     documento: "cpf/cnpj"
     nome: "nome"
     cliente: "cliente"
@@ -86,6 +87,7 @@ vendas_b2b:
     valor_total: "valor_total"
     adquirente: "adquirente"
     cancelamento: "cancelamento"
+    marca: "Marca"
 
 # ============================================================
 # MÓDULO 3 - CUSTOMER CARE
