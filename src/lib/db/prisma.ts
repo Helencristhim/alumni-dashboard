@@ -1,6 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { PrismaNeon } from '@prisma/adapter-neon';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+
+// Configurar WebSocket para ambientes que precisam (opcional em serverless)
+// neonConfig.webSocketConstructor = ws; // Não necessário no Vercel
 
 // Previne multiplas instancias do Prisma Client em desenvolvimento
 const globalForPrisma = globalThis as unknown as {
@@ -15,7 +18,7 @@ function createPrismaClient(): PrismaClient {
     throw new Error('DATABASE_URL não está configurada');
   }
 
-  // Usar pool de conexões com pg
+  // Usar pool de conexões com Neon serverless
   const pool = globalForPrisma.pool ?? new Pool({
     connectionString,
     max: 5, // Limitar conexões em serverless
@@ -23,7 +26,7 @@ function createPrismaClient(): PrismaClient {
 
   globalForPrisma.pool = pool;
 
-  const adapter = new PrismaPg(pool);
+  const adapter = new PrismaNeon(pool);
 
   return new PrismaClient({
     adapter,
