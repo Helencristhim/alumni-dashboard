@@ -79,8 +79,16 @@ function getPresetDates(preset: PeriodPreset): { start: Date; end: Date } {
 export function DateFilter({ startDate, endDate, onChange }: DateFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<PeriodPreset>('last30days');
-  const [customStart, setCustomStart] = useState(startDate.toISOString().split('T')[0]);
-  const [customEnd, setCustomEnd] = useState(endDate.toISOString().split('T')[0]);
+  // Formata data para input type="date" sem problemas de fuso horário
+  const formatForInput = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const [customStart, setCustomStart] = useState(formatForInput(startDate));
+  const [customEnd, setCustomEnd] = useState(formatForInput(endDate));
 
   const displayText = useMemo(() => {
     if (selectedPreset === 'custom') {
@@ -99,10 +107,14 @@ export function DateFilter({ startDate, endDate, onChange }: DateFilterProps) {
   };
 
   const handleCustomApply = () => {
-    const start = new Date(customStart);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(customEnd);
-    end.setHours(23, 59, 59, 999);
+    // Usa formato com 'T00:00:00' para evitar interpretação UTC
+    // que causa o problema de recuar um dia no fuso horário do Brasil
+    const [startYear, startMonth, startDay] = customStart.split('-').map(Number);
+    const [endYear, endMonth, endDay] = customEnd.split('-').map(Number);
+
+    const start = new Date(startYear, startMonth - 1, startDay, 0, 0, 0, 0);
+    const end = new Date(endYear, endMonth - 1, endDay, 23, 59, 59, 999);
+
     onChange(start, end);
     setIsOpen(false);
   };
