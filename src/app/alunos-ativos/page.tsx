@@ -96,9 +96,22 @@ const normalizeTipo = (tipo: string | undefined): string => {
   return t;
 };
 
+// Função para formatar data para input date (YYYY-MM-DD)
+const formatDateForInput = (date: Date): string => {
+  return date.toISOString().split('T')[0];
+};
+
 export default function AlunosAtivosPage() {
   const { data, loading, error, lastUpdated, sourceUrl, refresh } = useSheetData<AlunoAtivo>('alunos_ativos');
   const [statusFilter, setStatusFilter] = useState<string>('ATIVOS');
+
+  // Filtros de data para renovações
+  const hoje = new Date();
+  const tresMesesDepois = new Date();
+  tresMesesDepois.setMonth(tresMesesDepois.getMonth() + 3);
+
+  const [dataInicio, setDataInicio] = useState<string>(formatDateForInput(hoje));
+  const [dataFim, setDataFim] = useState<string>(formatDateForInput(tresMesesDepois));
 
   // Todos os alunos com status normalizado
   const alunosProcessados = useMemo(() => {
@@ -241,20 +254,22 @@ export default function AlunosAtivosPage() {
 
   // Renovações próximas (detalhes) - TODAS para exportação
   const todasRenovacoesProximas = useMemo(() => {
-    const hoje = new Date();
-    const tresMesesDepois = new Date();
-    tresMesesDepois.setMonth(tresMesesDepois.getMonth() + 3);
+    const inicio = new Date(dataInicio);
+    const fim = new Date(dataFim);
+    // Ajusta para incluir o dia inteiro
+    inicio.setHours(0, 0, 0, 0);
+    fim.setHours(23, 59, 59, 999);
 
     return alunosAtivos
       .filter(item => {
         if (!item.data_fim_parsed) return false;
-        return item.data_fim_parsed >= hoje && item.data_fim_parsed <= tresMesesDepois;
+        return item.data_fim_parsed >= inicio && item.data_fim_parsed <= fim;
       })
       .sort((a, b) => {
         if (!a.data_fim_parsed || !b.data_fim_parsed) return 0;
         return a.data_fim_parsed.getTime() - b.data_fim_parsed.getTime();
       });
-  }, [alunosAtivos]);
+  }, [alunosAtivos, dataInicio, dataFim]);
 
   // Lista para exibição (limitada a 50)
   const listaRenovacoesProximas = useMemo(() => {
@@ -639,21 +654,92 @@ export default function AlunosAtivosPage() {
           )}
 
           {/* Renovacoes Proximas */}
-          {todasRenovacoesProximas.length > 0 && (
-            <ModuleSection
-              title="Renovacoes Proximas"
-              subtitle={`${todasRenovacoesProximas.length} matriculas vencem nos proximos 3 meses`}
-            >
-              {/* Botão de Download */}
-              <div className="flex justify-end mb-4">
-                <button
-                  onClick={exportarRenovacoesExcel}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                >
-                  <Download className="w-4 h-4" />
-                  Baixar Excel ({todasRenovacoesProximas.length} registros)
-                </button>
+          <ModuleSection
+            title="Renovacoes Proximas"
+            subtitle="Matrículas que vencem no período selecionado"
+          >
+            {/* Filtros de Período */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-amber-600" />
+                  <span className="text-sm font-medium text-amber-800">Período:</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-600">De:</label>
+                  <input
+                    type="date"
+                    value={dataInicio}
+                    onChange={(e) => setDataInicio(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-600">Até:</label>
+                  <input
+                    type="date"
+                    value={dataFim}
+                    onChange={(e) => setDataFim(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  />
+                </div>
+                {/* Atalhos rápidos */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const h = new Date();
+                      const m1 = new Date();
+                      m1.setMonth(m1.getMonth() + 1);
+                      setDataInicio(formatDateForInput(h));
+                      setDataFim(formatDateForInput(m1));
+                    }}
+                    className="px-3 py-2 text-xs bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors"
+                  >
+                    1 mês
+                  </button>
+                  <button
+                    onClick={() => {
+                      const h = new Date();
+                      const m3 = new Date();
+                      m3.setMonth(m3.getMonth() + 3);
+                      setDataInicio(formatDateForInput(h));
+                      setDataFim(formatDateForInput(m3));
+                    }}
+                    className="px-3 py-2 text-xs bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors"
+                  >
+                    3 meses
+                  </button>
+                  <button
+                    onClick={() => {
+                      const h = new Date();
+                      const m6 = new Date();
+                      m6.setMonth(m6.getMonth() + 6);
+                      setDataInicio(formatDateForInput(h));
+                      setDataFim(formatDateForInput(m6));
+                    }}
+                    className="px-3 py-2 text-xs bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors"
+                  >
+                    6 meses
+                  </button>
+                </div>
+                {/* Resultado e Download */}
+                <div className="flex items-center gap-4 ml-auto">
+                  <span className="text-sm font-semibold text-amber-800">
+                    {todasRenovacoesProximas.length} matrículas encontradas
+                  </span>
+                  <button
+                    onClick={exportarRenovacoesExcel}
+                    disabled={todasRenovacoesProximas.length === 0}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Download className="w-4 h-4" />
+                    Baixar Excel
+                  </button>
+                </div>
               </div>
+            </div>
+
+            {todasRenovacoesProximas.length > 0 ? (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -724,8 +810,14 @@ export default function AlunosAtivosPage() {
                   )}
                 </div>
               </div>
-            </ModuleSection>
-          )}
+            ) : (
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+                <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-600">Nenhuma matrícula vence no período selecionado.</p>
+                <p className="text-sm text-gray-500 mt-1">Ajuste as datas acima para ver outros períodos.</p>
+              </div>
+            )}
+          </ModuleSection>
 
           {/* Tabela completa de alunos filtrados */}
           {alunosFiltrados.length > 0 && (
