@@ -316,24 +316,36 @@ export default function VendasB2CPage() {
     const vendasAtivas = filteredData.filter(isVendaAtiva);
     const novos = vendasAtivas.filter(v => v.tipo_matricula === 'Novo Aluno');
     const renovacoes = vendasAtivas.filter(v => v.tipo_matricula === 'Renovação');
+    const total = vendasAtivas.length;
 
     return [
-      { name: 'Novos Alunos', value: novos.length, valor: novos.reduce((s, v) => s + v.valor_total, 0) },
-      { name: 'Renovações', value: renovacoes.length, valor: renovacoes.reduce((s, v) => s + v.valor_total, 0) }
+      {
+        name: 'Novos Alunos',
+        value: novos.length,
+        valor: novos.reduce((s, v) => s + v.valor_total, 0),
+        percentage: total > 0 ? (novos.length / total) * 100 : 0
+      },
+      {
+        name: 'Renovações',
+        value: renovacoes.length,
+        valor: renovacoes.reduce((s, v) => s + v.valor_total, 0),
+        percentage: total > 0 ? (renovacoes.length / total) * 100 : 0
+      }
     ];
   }, [filteredData]);
 
   // Dados por forma de pagamento
   const dadosFormaPagamento = useMemo(() => {
     const vendasAtivas = filteredData.filter(isVendaAtiva);
-    const porForma: Record<string, { count: number; linhas: number[] }> = {};
+    const porForma: Record<string, { count: number; valor: number; linhas: number[] }> = {};
 
     vendasAtivas.forEach(v => {
       const forma = v.forma_pagamento || 'Não informado';
       if (!porForma[forma]) {
-        porForma[forma] = { count: 0, linhas: [] };
+        porForma[forma] = { count: 0, valor: 0, linhas: [] };
       }
       porForma[forma].count += 1;
+      porForma[forma].valor += v.valor_total;
       if (forma === 'Não informado') {
         porForma[forma].linhas.push(v._rowIndex);
       }
@@ -344,6 +356,7 @@ export default function VendasB2CPage() {
       .map(([name, data]) => ({
         name,
         value: data.count,
+        valor: data.valor,
         percentage: total > 0 ? (data.count / total) * 100 : 0,
         linhas: data.linhas
       }))
@@ -588,13 +601,42 @@ export default function VendasB2CPage() {
             title="Novos Alunos vs Renovações"
             subtitle="Distribuição de matrículas"
           >
-            <PieChartComponent
-              data={dadosRenovacao}
-              nameKey="name"
-              valueKey="value"
-              height={300}
-              loading={loading}
-            />
+            {loading ? (
+              <div className="flex items-center justify-center h-[200px]">
+                <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
+              </div>
+            ) : (
+              <div className="space-y-4 py-4">
+                {dadosRenovacao.map((item, index) => {
+                  const colors = ['#10B981', '#3B82F6'];
+                  const color = colors[index % colors.length];
+
+                  return (
+                    <div key={item.name} className="space-y-2">
+                      <div className="flex justify-between items-start text-sm">
+                        <span className="font-medium text-gray-700">{item.name}</span>
+                        <span className="text-gray-600 text-right">
+                          <span className="font-medium">{item.value}</span> ({item.percentage.toFixed(1)}%)
+                          <br />
+                          <span className="text-xs text-gray-500">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor)}
+                          </span>
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-4">
+                        <div
+                          className="h-4 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${item.percentage}%`,
+                            backgroundColor: color
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </ChartCard>
         </div>
 
@@ -626,8 +668,12 @@ export default function VendasB2CPage() {
                             </span>
                           )}
                         </span>
-                        <span className="text-gray-600">
-                          {item.value} ({item.percentage.toFixed(1)}%)
+                        <span className="text-gray-600 text-right">
+                          <span className="font-medium">{item.value}</span> ({item.percentage.toFixed(1)}%)
+                          <br />
+                          <span className="text-xs text-gray-500">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor)}
+                          </span>
                         </span>
                       </div>
                       <div className="w-full bg-gray-100 rounded-full h-3">
