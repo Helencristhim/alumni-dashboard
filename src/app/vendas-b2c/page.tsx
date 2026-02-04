@@ -208,33 +208,18 @@ export default function VendasB2CPage() {
     });
   }, [dadosValidos, startDate, endDate]);
 
-  // Conta cancelamentos de 7 dias no período
+  // Conta cancelamentos de 7 dias no período (baseado na mesma filteredData)
   const cancelamentos7DiasCount = useMemo(() => {
-    return dadosValidos.filter(item => {
+    return filteredData.filter(item => {
       // Deve ser um cancelamento
       if (!item.cancelamento) return false;
 
       // Deve ser do tipo "7 dias"
       if (item.tipo_cancelamento !== '7 dias') return false;
 
-      // Verifica se tem data de cancelamento válida
-      const rawDataCancel = item.data_cancelamento;
-      if (!rawDataCancel || typeof rawDataCancel !== 'string') return false;
-
-      // Parse da data de cancelamento (DD/MM/YYYY)
-      const match = rawDataCancel.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-      if (!match) return false;
-
-      const [, day, month, year] = match.map(Number);
-
-      // Compara com o período selecionado
-      const cancelNum = year * 10000 + (month - 1) * 100 + day;
-      const startNum = startDate.getFullYear() * 10000 + startDate.getMonth() * 100 + startDate.getDate();
-      const endNum = endDate.getFullYear() * 10000 + endDate.getMonth() * 100 + endDate.getDate();
-
-      return cancelNum >= startNum && cancelNum <= endNum;
+      return true;
     }).length;
-  }, [dadosValidos, startDate, endDate]);
+  }, [filteredData]);
 
   // KPIs calculados
   const kpis = useMemo(() => {
