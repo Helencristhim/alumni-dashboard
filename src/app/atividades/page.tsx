@@ -111,7 +111,21 @@ async function fetchModuleData(moduleId: string): Promise<{ rowCount: number } |
   }
 }
 
-// Função para calcular tempo relativo
+// Função para formatar data e hora
+function formatDateTime(dateString: string | null): string {
+  if (!dateString) return 'Nunca';
+
+  const date = new Date(dateString);
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+// Função para calcular tempo relativo (usada no header)
 function getRelativeTime(dateString: string | null): string {
   if (!dateString) return 'Nunca';
 
@@ -467,12 +481,12 @@ export default function AtividadesPage() {
                         )}
 
                         {/* Última atualização */}
-                        <div className="text-right min-w-[100px]">
+                        <div className="text-right min-w-[140px]">
                           <p className={`text-sm font-medium ${config.color}`}>
                             {config.label}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {module.lastUpdated ? getRelativeTime(module.lastUpdated) : 'Nunca'}
+                            {module.lastUpdated ? formatDateTime(module.lastUpdated) : 'Nunca'}
                           </p>
                         </div>
 
