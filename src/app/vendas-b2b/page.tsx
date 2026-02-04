@@ -135,12 +135,18 @@ export default function VendasB2BPage() {
     fetchData();
   }, []);
 
-  // Filtra dados com data válida e tipo documento = CNPJ (B2B)
+  // Filtra dados com data válida
+  // Se tipo_documento existir, filtra apenas CNPJ, senão inclui todos
   const dadosValidos = useMemo(() => {
     return data.filter(item => {
       const hasValidDate = item.data_venda instanceof Date && !isNaN(item.data_venda.getTime());
-      const isCNPJ = item.tipo_documento?.toUpperCase() === 'CNPJ';
-      return hasValidDate && isCNPJ;
+      // Se o campo tipo_documento existir, filtra por CNPJ
+      if (item.tipo_documento) {
+        const isCNPJ = item.tipo_documento?.toUpperCase() === 'CNPJ';
+        return hasValidDate && isCNPJ;
+      }
+      // Se não existir, aceita todos (planilha só de B2B)
+      return hasValidDate;
     });
   }, [data]);
 
