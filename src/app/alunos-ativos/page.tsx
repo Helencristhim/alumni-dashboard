@@ -211,13 +211,20 @@ export default function AlunosAtivosPage() {
   // Distribuição por nível
   const distribuicaoNivel = useMemo(() => {
     const niveis: Record<string, number> = {};
+    const total = alunosFiltrados.length;
 
     alunosFiltrados.forEach(item => {
       const nivel = String(item.nivel || 'Não informado').trim();
       niveis[nivel] = (niveis[nivel] || 0) + 1;
     });
 
-    return Object.entries(niveis).map(([name, value]) => ({ name, value }));
+    return Object.entries(niveis)
+      .map(([name, value]) => ({
+        name,
+        value,
+        percentual: total > 0 ? ((value / total) * 100).toFixed(1) : '0',
+      }))
+      .sort((a, b) => b.value - a.value); // Ordena do maior para o menor
   }, [alunosFiltrados]);
 
   // Distribuição por status
@@ -516,15 +523,55 @@ export default function AlunosAtivosPage() {
             {distribuicaoNivel.length > 0 && (
               <ChartCard
                 title="Distribuicao por Nivel"
-                subtitle="Quantidade por nivel"
+                subtitle={`${alunosFiltrados.length} alunos`}
               >
-                <PieChartComponent
-                  data={distribuicaoNivel}
-                  nameKey="name"
-                  valueKey="value"
-                  height={280}
-                  loading={loading}
-                />
+                <div className="space-y-2 py-2 max-h-64 overflow-y-auto">
+                  {distribuicaoNivel.map((item, index) => {
+                    // Cores para os níveis
+                    const colorPalette = [
+                      '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                      '#06B6D4', '#EC4899', '#14B8A6', '#F97316', '#6366F1',
+                      '#84CC16', '#22D3EE', '#A855F7', '#FB7185', '#34D399',
+                    ];
+                    const color = colorPalette[index % colorPalette.length];
+                    const maxValue = Math.max(...distribuicaoNivel.map(d => d.value));
+                    const barWidth = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+
+                    return (
+                      <div key={index} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium text-gray-700 truncate max-w-[120px]" title={item.name}>
+                            {item.name}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-gray-900">{item.value}</span>
+                            <span className="text-gray-500 w-12 text-right text-xs">({item.percentual}%)</span>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-5">
+                          <div
+                            className="h-5 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
+                            style={{ width: `${barWidth}%`, backgroundColor: color, minWidth: item.value > 0 ? '30px' : '0' }}
+                          >
+                            {barWidth > 25 && (
+                              <span className="text-xs font-semibold text-white">{item.percentual}%</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Total */}
+                <div className="mt-3 pt-2 border-t border-gray-200">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-bold text-gray-900">TOTAL</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-cyan-600">{alunosFiltrados.length}</span>
+                      <span className="text-gray-500 w-12 text-right text-xs">(100%)</span>
+                    </div>
+                  </div>
+                </div>
               </ChartCard>
             )}
           </div>
