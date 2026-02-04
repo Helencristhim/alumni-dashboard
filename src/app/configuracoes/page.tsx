@@ -77,6 +77,7 @@ const getInitialModules = (): ModuleConfig[] => [
       { internal: 'duracao_curso', label: 'Duração do Curso', external: '', required: false },
       { internal: 'valor_total', label: 'Valor Total', external: '', required: true },
       { internal: 'adquirente', label: 'Adquirente', external: '', required: false },
+      { internal: 'marca', label: 'Marca', external: '', required: false },
     ]
   },
   {

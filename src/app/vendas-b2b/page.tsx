@@ -29,6 +29,7 @@ interface VendaB2B {
   valor_total: number;
   adquirente: string;
   cancelamento: boolean;
+  marca: string;
 }
 
 interface ApiResponse {
@@ -83,6 +84,12 @@ export default function VendasB2BPage() {
       const result: ApiResponse = await response.json();
 
       if (result.success && result.data?.data) {
+        // Debug: mostra primeiro registro para verificar campos
+        if (result.data.data.length > 0) {
+          console.log('[DEBUG B2B] Primeiro registro:', result.data.data[0]);
+          console.log('[DEBUG B2B] tipo_documento:', result.data.data[0].tipo_documento);
+        }
+
         const processedData = result.data.data.map((item, index) => {
           const cancelamentoValue = item.cancelamento as unknown;
 

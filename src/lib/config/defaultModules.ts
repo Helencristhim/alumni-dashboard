@@ -78,6 +78,7 @@ export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
         { internal: 'valor_total', external: 'valor_total' },
         { internal: 'adquirente', external: 'adquirente' },
         { internal: 'cancelamento', external: 'cancelamento' },
+        { internal: 'marca', external: 'Marca' },
       ],
     },
     {
