@@ -326,15 +326,35 @@ export default function VendasB2CPage() {
   // Dados por forma de pagamento
   const dadosFormaPagamento = useMemo(() => {
     const vendasAtivas = filteredData.filter(isVendaAtiva);
-    const porForma: Record<string, number> = {};
+    const porForma: Record<string, { count: number; linhas: number[] }> = {};
 
     vendasAtivas.forEach(v => {
       const forma = v.forma_pagamento || 'Não informado';
-      porForma[forma] = (porForma[forma] || 0) + 1;
+      if (!porForma[forma]) {
+        porForma[forma] = { count: 0, linhas: [] };
+      }
+      porForma[forma].count += 1;
+      if (forma === 'Não informado') {
+        porForma[forma].linhas.push(v._rowIndex);
+      }
     });
 
-    return Object.entries(porForma).map(([name, value]) => ({ name, value }));
+    const total = vendasAtivas.length;
+    return Object.entries(porForma)
+      .map(([name, data]) => ({
+        name,
+        value: data.count,
+        percentage: total > 0 ? (data.count / total) * 100 : 0,
+        linhas: data.linhas
+      }))
+      .sort((a, b) => b.value - a.value);
   }, [filteredData]);
+
+  // Linhas com forma de pagamento não informada
+  const linhasNaoInformado = useMemo(() => {
+    const item = dadosFormaPagamento.find(d => d.name === 'Não informado');
+    return item?.linhas || [];
+  }, [dadosFormaPagamento]);
 
   const handleDateChange = (start: Date, end: Date) => {
     setStartDate(start);
@@ -584,13 +604,46 @@ export default function VendasB2CPage() {
             title="Forma de Pagamento"
             subtitle="Distribuição por método"
           >
-            <PieChartComponent
-              data={dadosFormaPagamento}
-              nameKey="name"
-              valueKey="value"
-              height={250}
-              loading={loading}
-            />
+            {loading ? (
+              <div className="flex items-center justify-center h-[250px]">
+                <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
+              </div>
+            ) : (
+              <div className="space-y-3 py-2">
+                {dadosFormaPagamento.map((item, index) => {
+                  const colors = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444'];
+                  const color = colors[index % colors.length];
+                  const isNaoInformado = item.name === 'Não informado';
+
+                  return (
+                    <div key={item.name} className="space-y-1">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className={`font-medium ${isNaoInformado ? 'text-amber-600' : 'text-gray-700'}`}>
+                          {item.name}
+                          {isNaoInformado && item.linhas.length > 0 && (
+                            <span className="ml-2 text-xs text-amber-500">
+                              (linhas: {item.linhas.slice(0, 5).join(', ')}{item.linhas.length > 5 ? `, +${item.linhas.length - 5}` : ''})
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-gray-600">
+                          {item.value} ({item.percentage.toFixed(1)}%)
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-3">
+                        <div
+                          className="h-3 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${item.percentage}%`,
+                            backgroundColor: isNaoInformado ? '#F59E0B' : color
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </ChartCard>
 
           {/* Tabela de Produtos */}
