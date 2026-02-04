@@ -208,18 +208,21 @@ export default function VendasB2CPage() {
     });
   }, [dadosValidos, startDate, endDate]);
 
-  // Conta cancelamentos de 7 dias no período (baseado na mesma filteredData)
-  const cancelamentos7DiasCount = useMemo(() => {
-    return filteredData.filter(item => {
-      // Deve ser um cancelamento
-      if (!item.cancelamento) return false;
+  // Conta cancelamentos por tipo no período
+  const cancelamentosPorTipo = useMemo(() => {
+    const cancelados = filteredData.filter(item => item.cancelamento);
+    const de7dias = cancelados.filter(item => item.tipo_cancelamento === '7 dias').length;
+    const foraDe7dias = cancelados.filter(item => item.tipo_cancelamento !== '7 dias').length;
 
-      // Deve ser do tipo "7 dias"
-      if (item.tipo_cancelamento !== '7 dias') return false;
-
-      return true;
-    }).length;
+    return {
+      de7dias,
+      foraDe7dias,
+      total: cancelados.length
+    };
   }, [filteredData]);
+
+  // Mantém compatibilidade com código existente
+  const cancelamentos7DiasCount = cancelamentosPorTipo.de7dias;
 
   // KPIs calculados
   const kpis = useMemo(() => {
@@ -423,13 +426,26 @@ export default function VendasB2CPage() {
           </div>
         )}
 
-        {/* Indicador de Cancelamentos de 7 dias */}
-        {cancelamentos7DiasCount > 0 && (
+        {/* Indicador de Cancelamentos */}
+        {cancelamentosPorTipo.total > 0 && (
           <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
             <XCircle className="w-5 h-5 text-red-600" />
-            <div>
-              <span className="font-semibold text-red-900">{cancelamentos7DiasCount}</span>
-              <span className="text-red-700 ml-1">cancelamento{cancelamentos7DiasCount > 1 ? 's' : ''} de 7 dias no período</span>
+            <div className="flex items-center gap-4">
+              {cancelamentosPorTipo.de7dias > 0 && (
+                <div>
+                  <span className="font-semibold text-red-900">{cancelamentosPorTipo.de7dias}</span>
+                  <span className="text-red-700 ml-1">cancelamento{cancelamentosPorTipo.de7dias > 1 ? 's' : ''} de 7 dias</span>
+                </div>
+              )}
+              {cancelamentosPorTipo.de7dias > 0 && cancelamentosPorTipo.foraDe7dias > 0 && (
+                <span className="text-red-300">|</span>
+              )}
+              {cancelamentosPorTipo.foraDe7dias > 0 && (
+                <div>
+                  <span className="font-semibold text-red-900">{cancelamentosPorTipo.foraDe7dias}</span>
+                  <span className="text-red-700 ml-1">cancelamento{cancelamentosPorTipo.foraDe7dias > 1 ? 's' : ''} fora dos 7 dias</span>
+                </div>
+              )}
             </div>
             <a
               href="/cancelamentos"
