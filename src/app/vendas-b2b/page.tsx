@@ -40,7 +40,10 @@ export default function VendasB2BPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filtro de data - padrão: este ano
+  // Controla se o filtro está ativo (por padrão não está)
+  const [filterActive, setFilterActive] = useState(false);
+
+  // Filtro de data - valores iniciais (usados quando filtro é ativado)
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
     date.setMonth(0, 1); // 1 de janeiro
@@ -123,8 +126,13 @@ export default function VendasB2BPage() {
     });
   }, [data]);
 
-  // Filtra pelo período
+  // Filtra pelo período (apenas se filtro estiver ativo)
   const filteredData = useMemo(() => {
+    // Se filtro não está ativo, retorna todos os dados CNPJ
+    if (!filterActive) {
+      return dadosCNPJ;
+    }
+
     return dadosCNPJ.filter(item => {
       const itemYear = item.data_venda.getFullYear();
       const itemMonth = item.data_venda.getMonth();
@@ -144,7 +152,7 @@ export default function VendasB2BPage() {
 
       return itemNum >= startNum && itemNum <= endNum;
     });
-  }, [dadosCNPJ, startDate, endDate]);
+  }, [dadosCNPJ, startDate, endDate, filterActive]);
 
   // Separa por marca
   const contratosPorMarca = useMemo(() => {
@@ -178,6 +186,12 @@ export default function VendasB2BPage() {
   const handleDateChange = (start: Date, end: Date) => {
     setStartDate(start);
     setEndDate(end);
+    setFilterActive(true); // Ativa o filtro quando usuário seleciona período
+  };
+
+  // Limpa o filtro e mostra todos os dados
+  const clearFilter = () => {
+    setFilterActive(false);
   };
 
   const formatCurrency = (value: number) => {
@@ -246,6 +260,14 @@ export default function VendasB2BPage() {
             <p className="text-gray-500 mt-1">Contratos corporativos por marca</p>
           </div>
           <div className="flex items-center gap-3">
+            {filterActive && (
+              <button
+                onClick={clearFilter}
+                className="px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                Limpar filtro
+              </button>
+            )}
             <DateFilter
               startDate={startDate}
               endDate={endDate}
@@ -276,7 +298,7 @@ export default function VendasB2BPage() {
             format="currency"
             icon={<DollarSign className="w-6 h-6" />}
             color="#10B981"
-            subtitle={`${totalContratos} contratos no período`}
+            subtitle={filterActive ? `${totalContratos} contratos no período` : `${totalContratos} contratos (todos)`}
             loading={loading}
           />
           <KPICard
