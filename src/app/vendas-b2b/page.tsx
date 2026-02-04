@@ -16,6 +16,7 @@ import {
 
 interface VendaB2B {
   _rowIndex: number;
+  tipo_documento: string;
   documento: string;
   nome: string;
   cliente: string;
@@ -127,10 +128,12 @@ export default function VendasB2BPage() {
     fetchData();
   }, []);
 
-  // Filtra dados com data válida
+  // Filtra dados com data válida e tipo documento = CNPJ (B2B)
   const dadosValidos = useMemo(() => {
     return data.filter(item => {
-      return item.data_venda instanceof Date && !isNaN(item.data_venda.getTime());
+      const hasValidDate = item.data_venda instanceof Date && !isNaN(item.data_venda.getTime());
+      const isCNPJ = item.tipo_documento?.toUpperCase() === 'CNPJ';
+      return hasValidDate && isCNPJ;
     });
   }, [data]);
 

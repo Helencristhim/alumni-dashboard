@@ -65,6 +65,7 @@ export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
       sourceUrl: VENDAS_B2B_URL,
       sheetName: 'Vendas',
       columns: [
+        { internal: 'tipo_documento', external: 'documento' },
         { internal: 'documento', external: 'cpf/cnpj' },
         { internal: 'nome', external: 'nome' },
         { internal: 'cliente', external: 'cliente' },

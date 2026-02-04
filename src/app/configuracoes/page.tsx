@@ -65,7 +65,8 @@ const getInitialModules = (): ModuleConfig[] => [
     sourceUrl: '',
     sheetName: '',
     columns: [
-      { internal: 'documento', label: 'CPF/CNPJ', external: '', required: true },
+      { internal: 'tipo_documento', label: 'Tipo Documento (CPF/CNPJ)', external: '', required: true },
+      { internal: 'documento', label: 'Número CPF/CNPJ', external: '', required: true },
       { internal: 'nome', label: 'Nome', external: '', required: true },
       { internal: 'cliente', label: 'Cliente (Email)', external: '', required: false },
       { internal: 'celular', label: 'Celular', external: '', required: false },
