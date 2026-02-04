@@ -301,15 +301,15 @@ prospec_b2b:
 
   column_mapping:
     empresa: "Empresa"
-    responsavel: "Responsável "
+    responsavel: "Responsável"
     area: "Área"
     email: "Email"
     contato: "Contato"
-    negociacao: "Negociação "
+    negociacao: "Negociação"
     status: "Status"
-    b2b: " B2B"
+    b2b: "B2B"
     b2b2c: "B2B2C"
-    fup: "FUP "
+    fup: "FUP"
 
 # ============================================================
 # CONFIGURAÇÕES GLOBAIS
