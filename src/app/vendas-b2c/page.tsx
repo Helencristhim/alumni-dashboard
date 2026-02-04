@@ -498,9 +498,9 @@ export default function VendasB2CPage() {
         {/* Gráfico Temporal */}
         <ChartCard
           title="Evolução de Receita"
-          subtitle="Faturamento por período"
+          subtitle="Faturamento de vendas ativas por período"
         >
-          <LineChart
+          <BarChartComponent
             data={dadosTemporais}
             xKey="mes"
             yKey="valor"
