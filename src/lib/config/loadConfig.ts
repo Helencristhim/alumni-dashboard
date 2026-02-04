@@ -96,7 +96,8 @@ export function getEnabledModules(): string[] {
     'cobranca',
     'alunos_ativos',
     'acompanhamento',
-    'marketing'
+    'marketing',
+    'prospec_b2b'
   ];
 
   return modules.filter(mod => {
@@ -126,7 +127,8 @@ export function getModuleDisplayName(moduleName: string): string {
     cobranca: 'Cobrança',
     alunos_ativos: 'Alunos Ativos',
     acompanhamento: 'Acompanhamento',
-    marketing: 'Marketing'
+    marketing: 'Marketing',
+    prospec_b2b: 'Prospec B2B'
   };
 
   return displayNames[moduleName] || moduleName;

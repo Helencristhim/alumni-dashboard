@@ -287,6 +287,31 @@ marketing:
     roas: "ROAS"
 
 # ============================================================
+# MÓDULO 9 - PROSPEC B2B
+# ============================================================
+prospec_b2b:
+  name: "Prospec B2B"
+  description: "Prospecção e funil de empresas B2B"
+  enabled: true
+
+  source:
+    type: "google_sheets"
+    url: "https://docs.google.com/spreadsheets/d/13GnsuWLq2HzJuyRWrfuYBy4d5u90z-IQ0DcUrVDu7LU/edit"
+    sheet_name: "PROSPEC"
+
+  column_mapping:
+    empresa: "Empresa"
+    responsavel: "Responsável "
+    area: "Área"
+    email: "Email"
+    contato: "Contato"
+    negociacao: "Negociação "
+    status: "Status"
+    b2b: " B2B"
+    b2b2c: "B2B2C"
+    fup: "FUP "
+
+# ============================================================
 # CONFIGURAÇÕES GLOBAIS
 # ============================================================
 global_settings:
@@ -312,3 +337,4 @@ global_settings:
     cobranca: "#F59E0B"       # Laranja
     alunos_ativos: "#06B6D4"  # Ciano
     marketing: "#EC4899"      # Rosa
+    prospec_b2b: "#0EA5E9"    # Sky Blue

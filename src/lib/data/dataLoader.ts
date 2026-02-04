@@ -16,6 +16,7 @@ import type {
   AlunoAtivo,
   CampanhaMarketing,
   Acompanhamento,
+  ProspecB2B,
   ModuleData
 } from '@/types';
 
@@ -25,7 +26,7 @@ import type {
 const dataCache: Map<string, { data: unknown[]; timestamp: number }> = new Map();
 const CACHE_DURATION = 0; // Cache desabilitado para debug - era 15 * 60 * 1000
 
-type ModuleName = 'vendas_b2c' | 'vendas_b2b' | 'customer_care' | 'cancelamentos' | 'cobranca' | 'alunos_ativos' | 'acompanhamento' | 'marketing';
+type ModuleName = 'vendas_b2c' | 'vendas_b2b' | 'customer_care' | 'cancelamentos' | 'cobranca' | 'alunos_ativos' | 'acompanhamento' | 'marketing' | 'prospec_b2b';
 
 /**
  * Carrega dados de um módulo específico
@@ -138,6 +139,10 @@ export async function loadMarketing(forceRefresh = false): Promise<ModuleData<Ca
   return loadModuleData<CampanhaMarketing>('marketing', forceRefresh);
 }
 
+export async function loadProspecB2B(forceRefresh = false): Promise<ModuleData<ProspecB2B>> {
+  return loadModuleData<ProspecB2B>('prospec_b2b', forceRefresh);
+}
+
 // ============================================================
 // UTILITÁRIOS
 // ============================================================
@@ -168,7 +173,8 @@ export function getCacheStatus(): Record<string, { cached: boolean; age: number 
     'cobranca',
     'alunos_ativos',
     'acompanhamento',
-    'marketing'
+    'marketing',
+    'prospec_b2b'
   ];
 
   modules.forEach(mod => {

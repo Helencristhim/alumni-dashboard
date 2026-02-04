@@ -14,7 +14,8 @@ import {
   HelpCircle,
   Activity,
   UserCog,
-  ClipboardCheck
+  ClipboardCheck,
+  Target
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -52,6 +53,14 @@ const navItems: NavItem[] = [
     href: '/vendas-b2b',
     color: '#3B82F6',
     moduleId: 'vendas-b2b'
+  },
+  {
+    id: 'prospec-b2b',
+    label: 'Prospec B2B',
+    icon: <Target className="w-5 h-5" />,
+    href: '/prospec-b2b',
+    color: '#0EA5E9',
+    moduleId: 'prospec-b2b'
   },
   {
     id: 'cancelamentos',

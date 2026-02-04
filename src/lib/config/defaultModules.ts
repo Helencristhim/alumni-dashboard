@@ -37,6 +37,7 @@ const HARDCODED_URLS = {
   ALUNOS_ATIVOS: 'https://docs.google.com/spreadsheets/d/1YBBwUQHOlOCNmpSA8hdGLKZYpbq4Pwbo3I3tx8U7dW8/edit',
   ACOMPANHAMENTO: 'https://docs.google.com/spreadsheets/d/1YBBwUQHOlOCNmpSA8hdGLKZYpbq4Pwbo3I3tx8U7dW8/edit',
   MARKETING: '',
+  PROSPEC_B2B: 'https://docs.google.com/spreadsheets/d/13GnsuWLq2HzJuyRWrfuYBy4d5u90z-IQ0DcUrVDu7LU/edit',
 };
 
 // Carrega configuracoes: env vars (prioridade) > hardcoded > vazio
@@ -50,6 +51,7 @@ export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
   const ALUNOS_ATIVOS_URL = process.env.NEXT_PUBLIC_SHEET_ALUNOS_ATIVOS || HARDCODED_URLS.ALUNOS_ATIVOS;
   const ACOMPANHAMENTO_URL = process.env.NEXT_PUBLIC_SHEET_ACOMPANHAMENTO || HARDCODED_URLS.ACOMPANHAMENTO;
   const MARKETING_URL = process.env.NEXT_PUBLIC_SHEET_MARKETING || HARDCODED_URLS.MARKETING;
+  const PROSPEC_B2B_URL = process.env.NEXT_PUBLIC_SHEET_PROSPEC_B2B || HARDCODED_URLS.PROSPEC_B2B;
 
   return [
     {
@@ -210,6 +212,24 @@ export function getDefaultModuleConfigs(): ModuleDefaultConfig[] {
         { internal: 'cpl', external: 'cpl' },
         { internal: 'cac', external: 'cac' },
         { internal: 'roas', external: 'roas' },
+      ],
+    },
+    {
+      id: 'prospec_b2b',
+      name: 'Prospec B2B',
+      sourceUrl: PROSPEC_B2B_URL,
+      sheetName: 'PROSPEC',
+      columns: [
+        { internal: 'empresa', external: 'Empresa' },
+        { internal: 'responsavel', external: 'Responsável ' },
+        { internal: 'area', external: 'Área' },
+        { internal: 'email', external: 'Email' },
+        { internal: 'contato', external: 'Contato' },
+        { internal: 'negociacao', external: 'Negociação ' },
+        { internal: 'status', external: 'Status' },
+        { internal: 'b2b', external: ' B2B' },
+        { internal: 'b2b2c', external: 'B2B2C' },
+        { internal: 'fup', external: 'FUP ' },
       ],
     },
   ];

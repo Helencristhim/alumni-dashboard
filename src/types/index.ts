@@ -52,6 +52,7 @@ export interface DashboardConfig {
   alunos_ativos: ModuleConfig;
   acompanhamento: ModuleConfig;
   marketing: ModuleConfig;
+  prospec_b2b: ModuleConfig;
   global_settings: GlobalSettings;
 }
 
@@ -192,6 +193,20 @@ export interface CampanhaMarketing {
   cpl: number;
   cac: number;
   roas: number;
+}
+
+// Prospec B2B
+export interface ProspecB2B {
+  empresa: string;
+  responsavel: string;
+  area: string;
+  email: string;
+  contato: string;
+  negociacao: string;
+  status: string;
+  b2b: string;
+  b2b2c: string;
+  fup: string;
 }
 
 // ============================================================
