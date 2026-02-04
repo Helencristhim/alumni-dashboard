@@ -5,7 +5,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ModuleContainer, ModuleSection } from '@/components/layout/ModuleContainer';
 import { KPICard } from '@/components/ui/KPICard';
 import { ChartCard, BarChartComponent, PieChartComponent } from '@/components/ui/Charts';
-import { Users, GraduationCap, AlertCircle, Settings, Calendar, Award, Clock } from 'lucide-react';
+import { Users, GraduationCap, AlertCircle, Settings, Calendar, Award, Clock, Download } from 'lucide-react';
 import { useSheetData } from '@/lib/hooks/useSheetData';
 import Link from 'next/link';
 
@@ -239,8 +239,8 @@ export default function AlunosAtivosPage() {
     return Object.entries(status).map(([name, value]) => ({ name, value }));
   }, [alunosProcessados]);
 
-  // Renovações próximas (detalhes)
-  const listaRenovacoesProximas = useMemo(() => {
+  // Renovações próximas (detalhes) - TODAS para exportação
+  const todasRenovacoesProximas = useMemo(() => {
     const hoje = new Date();
     const tresMesesDepois = new Date();
     tresMesesDepois.setMonth(tresMesesDepois.getMonth() + 3);
@@ -253,9 +253,54 @@ export default function AlunosAtivosPage() {
       .sort((a, b) => {
         if (!a.data_fim_parsed || !b.data_fim_parsed) return 0;
         return a.data_fim_parsed.getTime() - b.data_fim_parsed.getTime();
-      })
-      .slice(0, 20);
+      });
   }, [alunosAtivos]);
+
+  // Lista para exibição (limitada a 50)
+  const listaRenovacoesProximas = useMemo(() => {
+    return todasRenovacoesProximas.slice(0, 50);
+  }, [todasRenovacoesProximas]);
+
+  // Função para exportar renovações para Excel (CSV)
+  const exportarRenovacoesExcel = () => {
+    if (todasRenovacoesProximas.length === 0) {
+      alert('Não há renovações para exportar.');
+      return;
+    }
+
+    // Cabeçalhos
+    const headers = ['Aluno', 'Produto', 'Tipo', 'Nível', 'Início', 'Fim'];
+
+    // Dados
+    const rows = todasRenovacoesProximas.map(item => [
+      String(item.aluno_nome || item.aluno_id || ''),
+      item.produto_normalizado || '',
+      item.tipo_normalizado || '',
+      String(item.nivel || ''),
+      item.data_inicio_parsed ? item.data_inicio_parsed.toLocaleDateString('pt-BR') : '',
+      item.data_fim_parsed ? item.data_fim_parsed.toLocaleDateString('pt-BR') : '',
+    ]);
+
+    // Monta CSV com BOM para Excel reconhecer UTF-8
+    const BOM = '\uFEFF';
+    const csvContent = BOM + [
+      headers.join(';'),
+      ...rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(';'))
+    ].join('\n');
+
+    // Cria blob e faz download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    const dataAtual = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+    link.setAttribute('download', `renovacoes_proximas_${dataAtual}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   // Se houver erro de configuração
   if (error) {
@@ -594,11 +639,21 @@ export default function AlunosAtivosPage() {
           )}
 
           {/* Renovacoes Proximas */}
-          {listaRenovacoesProximas.length > 0 && (
+          {todasRenovacoesProximas.length > 0 && (
             <ModuleSection
               title="Renovacoes Proximas"
-              subtitle={`${kpis.renovacoesProximas} matriculas vencem nos proximos 3 meses`}
+              subtitle={`${todasRenovacoesProximas.length} matriculas vencem nos proximos 3 meses`}
             >
+              {/* Botão de Download */}
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={exportarRenovacoesExcel}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                >
+                  <Download className="w-4 h-4" />
+                  Baixar Excel ({todasRenovacoesProximas.length} registros)
+                </button>
+              </div>
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -656,6 +711,17 @@ export default function AlunosAtivosPage() {
                       ))}
                     </tbody>
                   </table>
+                  {todasRenovacoesProximas.length > 50 && (
+                    <div className="px-4 py-3 bg-amber-50 text-center text-sm text-amber-700">
+                      Mostrando 50 de {todasRenovacoesProximas.length} registros.
+                      <button
+                        onClick={exportarRenovacoesExcel}
+                        className="ml-2 text-amber-800 font-semibold underline hover:text-amber-900"
+                      >
+                        Baixar todos em Excel
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </ModuleSection>
