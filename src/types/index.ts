@@ -50,6 +50,7 @@ export interface DashboardConfig {
   cancelamentos: ModuleConfig;
   cobranca: ModuleConfig;
   alunos_ativos: ModuleConfig;
+  acompanhamento: ModuleConfig;
   marketing: ModuleConfig;
   global_settings: GlobalSettings;
 }
@@ -147,6 +148,33 @@ export interface AlunoAtivo {
   data_fim: Date | null;
   status: 'Ativo' | 'Inativo' | 'Cancelado';
   nivel: string;
+}
+
+// Acompanhamento
+export interface Acompanhamento {
+  nome: string;
+  email: string;
+  status: string;
+  produto: string;
+  horas_ofertadas: number;
+  inicio: Date | null;
+  fim: Date | null;
+  levelling: boolean;
+  data_levelling: string;
+  nivel: string;
+  acesso: boolean;
+  data_acesso: string;
+  onboarding: boolean;
+  data_onboarding: string;
+  primeira_aula: boolean;
+  data_primeira_aula: string;
+  data_fup1: string;
+  status_fup1: boolean;
+  data_fup2: string;
+  status_fup2: boolean;
+  renovacao: string;
+  status_3: boolean;
+  obs4: string;
 }
 
 // Marketing

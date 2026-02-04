@@ -6,6 +6,7 @@ import {
   loadCancelamentos,
   loadCobranca,
   loadAlunosAtivos,
+  loadAcompanhamento,
   loadMarketing,
   invalidateCache
 } from '@/lib/data/dataLoader';
@@ -14,7 +15,7 @@ import {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-type ModuleName = 'vendas_b2c' | 'vendas_b2b' | 'customer_care' | 'cancelamentos' | 'cobranca' | 'alunos_ativos' | 'marketing';
+type ModuleName = 'vendas_b2c' | 'vendas_b2b' | 'customer_care' | 'cancelamentos' | 'cobranca' | 'alunos_ativos' | 'acompanhamento' | 'marketing';
 
 const moduleLoaders: Record<ModuleName, (force: boolean) => Promise<unknown>> = {
   vendas_b2c: loadVendasB2C,
@@ -23,6 +24,7 @@ const moduleLoaders: Record<ModuleName, (force: boolean) => Promise<unknown>> = 
   cancelamentos: loadCancelamentos,
   cobranca: loadCobranca,
   alunos_ativos: loadAlunosAtivos,
+  acompanhamento: loadAcompanhamento,
   marketing: loadMarketing,
 };
 

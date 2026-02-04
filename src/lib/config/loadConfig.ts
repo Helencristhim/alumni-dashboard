@@ -95,6 +95,7 @@ export function getEnabledModules(): string[] {
     'cancelamentos',
     'cobranca',
     'alunos_ativos',
+    'acompanhamento',
     'marketing'
   ];
 
@@ -124,6 +125,7 @@ export function getModuleDisplayName(moduleName: string): string {
     cancelamentos: 'Cancelamentos',
     cobranca: 'Cobrança',
     alunos_ativos: 'Alunos Ativos',
+    acompanhamento: 'Acompanhamento',
     marketing: 'Marketing'
   };
 
