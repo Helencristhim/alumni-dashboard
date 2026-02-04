@@ -18,11 +18,23 @@ export function extractSheetId(url: string): string {
 /**
  * Constrói a URL para exportar dados do Google Sheets como CSV
  * Funciona para planilhas públicas
+ * Usa o endpoint /export que é mais confiável que gviz/tq
  */
 export function buildExportUrl(sheetId: string, sheetName?: string): string {
-  let url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+  // Usa o endpoint export que é mais confiável
+  let url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+  // Nota: o endpoint export usa gid (número) ao invés do nome da aba
+  // Para compatibilidade, se o sheetName for um número, usa como gid
+  // Caso contrário, tenta usar gid=0 (primeira aba) como fallback
   if (sheetName) {
-    url += `&sheet=${encodeURIComponent(sheetName)}`;
+    // Se for número, usa como gid
+    if (/^\d+$/.test(sheetName)) {
+      url += `&gid=${sheetName}`;
+    } else {
+      // Para nomes de aba, usa gid=0 como fallback (primeira aba)
+      // A maioria das planilhas tem os dados na primeira aba
+      url += `&gid=0`;
+    }
   }
   return url;
 }
