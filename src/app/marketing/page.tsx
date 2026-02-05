@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, Fragment } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { KPICard } from '@/components/ui/KPICard';
 import { ChartCard, BarChartComponent } from '@/components/ui/Charts';
 import {
   Megaphone, DollarSign, Users, Target, TrendingUp,
-  Mail, Globe, Handshake, RefreshCw, AlertCircle,
+  Mail, Globe, Handshake, RefreshCw, AlertCircle, Calendar, X,
 } from 'lucide-react';
 import type { ChannelData, ChannelMetric, MarketingChannelsResponse } from '@/types';
 
@@ -41,7 +41,9 @@ const ALL_MONTHS = [
   { key: 'fevereiro' as const, label: 'Fev' },
 ];
 
-// Formata valor para exibição
+type MonthKey = typeof ALL_MONTHS[number]['key'];
+
+// Formata valor para exibição compacta (KPI cards)
 function formatMetricValue(value: number | null, format: string): string {
   if (value === null || value === undefined) return '-';
 
@@ -59,7 +61,7 @@ function formatMetricValue(value: number | null, format: string): string {
   return value.toLocaleString('pt-BR');
 }
 
-// Formata valor completo (sem abreviação)
+// Formata valor completo (tabela)
 function formatFullValue(value: number | null, format: string): string {
   if (value === null || value === undefined) return '-';
 
@@ -74,11 +76,23 @@ function formatFullValue(value: number | null, format: string): string {
   return value.toLocaleString('pt-BR');
 }
 
+// Calcula variação percentual entre dois valores
+function calcVariation(current: number | null, previous: number | null): number | null {
+  if (current === null || previous === null || previous === 0) return null;
+  return ((current - previous) / Math.abs(previous)) * 100;
+}
+
+// Soma valores de meses selecionados
+function sumMonths(metric: ChannelMetric, months: { key: MonthKey }[]): number {
+  return months.reduce((sum, m) => sum + (metric.monthly[m.key] ?? 0), 0);
+}
+
 export default function MarketingPage() {
   const [data, setData] = useState<MarketingChannelsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedChannel, setSelectedChannel] = useState(0);
+  const [monthFilter, setMonthFilter] = useState<Set<MonthKey>>(new Set());
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -101,33 +115,71 @@ export default function MarketingPage() {
 
   const channels = data?.channels || [];
   const currentChannel = channels[selectedChannel] || null;
+  const filterActive = monthFilter.size > 0;
 
-  // KPIs resumo: soma de Meta Ads + Google Ads
-  const summaryKPIs = useMemo(() => {
-    const meta = channels.find(c => c.channel === 'Meta Ads');
-    const google = channels.find(c => c.channel === 'Google Ads');
-
-    const getTotal = (ch: ChannelData | undefined, metricName: string): number => {
-      if (!ch) return 0;
-      const m = ch.metrics.find(m => m.name.toLowerCase() === metricName.toLowerCase());
-      return m?.total ?? 0;
-    };
-
-    return {
-      investimentoTotal: getTotal(meta, 'Investimento') + getTotal(google, 'Investimento'),
-      receitaTotal: getTotal(meta, 'Receita') + getTotal(google, 'Receita'),
-      leadsCRM: getTotal(meta, 'Leads CRM') + getTotal(google, 'Leads CRM'),
-      vendasTotal: getTotal(meta, 'Vendas') + getTotal(google, 'Vendas'),
-    };
-  }, [channels]);
-
-  // Meses ativos para o canal selecionado (que têm pelo menos um valor)
+  // Meses que têm dados no canal selecionado
   const activeMonths = useMemo(() => {
     if (!currentChannel) return ALL_MONTHS;
     return ALL_MONTHS.filter(m =>
       currentChannel.metrics.some(metric => metric.monthly[m.key] !== null)
     );
   }, [currentChannel]);
+
+  // Meses a exibir (filtrados ou todos)
+  const displayMonths = useMemo(() => {
+    if (!filterActive) return activeMonths;
+    return activeMonths.filter(m => monthFilter.has(m.key));
+  }, [activeMonths, monthFilter, filterActive]);
+
+  // Toggle de mês no filtro
+  const toggleMonth = (key: MonthKey) => {
+    setMonthFilter(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const clearFilter = () => setMonthFilter(new Set());
+
+  // Calcula valor de uma métrica considerando o filtro
+  const getFilteredValue = useCallback((metric: ChannelMetric): number | null => {
+    if (!filterActive) return metric.total;
+    if (metric.format === 'percent') {
+      // Para percentuais, calcular média dos meses selecionados
+      const values = displayMonths
+        .map(m => metric.monthly[m.key])
+        .filter((v): v is number => v !== null);
+      if (values.length === 0) return null;
+      return values.reduce((a, b) => a + b, 0) / values.length;
+    }
+    return sumMonths(metric, displayMonths);
+  }, [filterActive, displayMonths]);
+
+  // KPIs resumo com filtro aplicado
+  const summaryKPIs = useMemo(() => {
+    const meta = channels.find(c => c.channel === 'Meta Ads');
+    const google = channels.find(c => c.channel === 'Google Ads');
+
+    const getValue = (ch: ChannelData | undefined, metricName: string): number => {
+      if (!ch) return 0;
+      const m = ch.metrics.find(m => m.name.toLowerCase() === metricName.toLowerCase());
+      if (!m) return 0;
+      if (!filterActive) return m.total ?? 0;
+      return sumMonths(m, displayMonths);
+    };
+
+    return {
+      investimentoTotal: getValue(meta, 'Investimento') + getValue(google, 'Investimento'),
+      receitaTotal: getValue(meta, 'Receita') + getValue(google, 'Receita'),
+      leadsCRM: getValue(meta, 'Leads CRM') + getValue(google, 'Leads CRM'),
+      vendasTotal: getValue(meta, 'Vendas') + getValue(google, 'Vendas'),
+    };
+  }, [channels, filterActive, displayMonths]);
 
   // Dados para o gráfico de barras mensal
   const chartData = useMemo(() => {
@@ -136,17 +188,16 @@ export default function MarketingPage() {
     const chartMetrics = currentChannel.metrics.filter(
       m => m.format !== 'percent' && m.monthly && Object.values(m.monthly).some(v => v !== null)
     );
-
     const metricsToChart = chartMetrics.slice(0, 3);
 
-    return activeMonths.map((m) => {
+    return displayMonths.map((m) => {
       const point: Record<string, unknown> = { mes: m.label };
       for (const metric of metricsToChart) {
         point[metric.name] = metric.monthly[m.key] ?? 0;
       }
       return point;
     });
-  }, [currentChannel, activeMonths]);
+  }, [currentChannel, displayMonths]);
 
   const chartMetricNames = useMemo(() => {
     if (!currentChannel) return [];
@@ -196,10 +247,55 @@ export default function MarketingPage() {
           </button>
         </div>
 
+        {/* Filtro de Meses */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Calendar className="w-4 h-4" />
+              <span className="font-medium">Período:</span>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {ALL_MONTHS.map(m => {
+                const isSelected = monthFilter.has(m.key);
+                const isAvailable = activeMonths.some(am => am.key === m.key);
+                return (
+                  <button
+                    key={m.key}
+                    onClick={() => toggleMonth(m.key)}
+                    disabled={!isAvailable}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                      isSelected
+                        ? 'bg-pink-500 text-white'
+                        : isAvailable
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
+            {filterActive && (
+              <button
+                onClick={clearFilter}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm text-pink-600 hover:text-pink-700 hover:bg-pink-50 rounded-lg transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+                Limpar
+              </button>
+            )}
+            {!filterActive && (
+              <span className="text-xs text-gray-400">Todos os meses</span>
+            )}
+          </div>
+        </div>
+
         {/* KPIs Resumo - Mídia Paga (Meta + Google) */}
         <div>
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
-            Resumo Midia Paga (Meta + Google)
+            Resumo Mídia Paga (Meta + Google)
+            {filterActive && <span className="ml-2 text-pink-500">- Período filtrado</span>}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
@@ -273,11 +369,12 @@ export default function MarketingPage() {
             }`}>
               {currentChannel.metrics.map((metric) => {
                 const color = CHANNEL_COLORS[currentChannel.channel] || '#6B7280';
+                const filteredVal = getFilteredValue(metric);
                 const kpiFormat = metric.format === 'currency' ? 'currency' :
                                   metric.format === 'percent' ? 'text' : 'number';
                 const displayValue = metric.format === 'percent'
-                  ? formatMetricValue(metric.total, 'percent')
-                  : metric.total ?? 0;
+                  ? formatMetricValue(filteredVal, 'percent')
+                  : filteredVal ?? 0;
 
                 return (
                   <KPICard
@@ -310,44 +407,82 @@ export default function MarketingPage() {
               </ChartCard>
             )}
 
-            {/* Tabela Completa */}
+            {/* Tabela com Comparativo Mês a Mês */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
                 <h3 className="font-semibold text-gray-900">
                   Métricas Detalhadas - {currentChannel.channel}
                 </h3>
+                <p className="text-xs text-gray-400 mt-1">Colunas Δ mostram a variação em relação ao mês anterior</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10">
                         Métrica
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total
-                      </th>
-                      {activeMonths.map(m => (
-                        <th key={m.key} className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {m.label}
+                      {!filterActive && (
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Total
                         </th>
+                      )}
+                      {displayMonths.map((m, idx) => (
+                        <Fragment key={m.key}>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {m.label}
+                          </th>
+                          {idx > 0 && (
+                            <th className="px-2 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider w-16">
+                              Δ
+                            </th>
+                          )}
+                        </Fragment>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {currentChannel.metrics.map((metric) => (
                       <tr key={metric.name} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">
                           {metric.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                          {formatFullValue(metric.total, metric.format)}
-                        </td>
-                        {activeMonths.map(m => (
-                          <td key={m.key} className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">
-                            {formatFullValue(metric.monthly[m.key], metric.format)}
+                        {!filterActive && (
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
+                            {formatFullValue(metric.total, metric.format)}
                           </td>
-                        ))}
+                        )}
+                        {displayMonths.map((m, idx) => {
+                          const currentVal = metric.monthly[m.key];
+                          const prevMonth = idx > 0 ? displayMonths[idx - 1] : null;
+                          const prevVal = prevMonth ? metric.monthly[prevMonth.key] : null;
+                          const variation = idx > 0 ? calcVariation(currentVal, prevVal) : null;
+
+                          return (
+                            <Fragment key={m.key}>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
+                                {formatFullValue(currentVal, metric.format)}
+                              </td>
+                              {idx > 0 && (
+                                <td className="px-2 py-3 whitespace-nowrap text-center">
+                                  {variation !== null ? (
+                                    <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                                      variation > 0
+                                        ? 'text-emerald-700 bg-emerald-50'
+                                        : variation < 0
+                                        ? 'text-red-700 bg-red-50'
+                                        : 'text-gray-500 bg-gray-50'
+                                    }`}>
+                                      {variation > 0 ? '+' : ''}{variation.toFixed(0)}%
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-gray-300">-</span>
+                                  )}
+                                </td>
+                              )}
+                            </Fragment>
+                          );
+                        })}
                       </tr>
                     ))}
                   </tbody>
