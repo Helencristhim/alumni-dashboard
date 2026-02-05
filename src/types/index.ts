@@ -178,7 +178,31 @@ export interface Acompanhamento {
   obs4: string;
 }
 
-// Marketing
+// Marketing - Dados multi-canal
+export interface ChannelMetric {
+  name: string;
+  total: number | null;
+  monthly: {
+    outubro: number | null;
+    novembro: number | null;
+    dezembro: number | null;
+    janeiro: number | null;
+    fevereiro: number | null;
+  };
+  format: 'currency' | 'number' | 'percent';
+}
+
+export interface ChannelData {
+  channel: string;
+  metrics: ChannelMetric[];
+}
+
+export interface MarketingChannelsResponse {
+  channels: ChannelData[];
+  lastUpdated: string;
+}
+
+// Legacy - mantido para compatibilidade
 export interface CampanhaMarketing {
   data: Date;
   plataforma: 'Google' | 'Meta' | 'LinkedIn' | 'TikTok';
