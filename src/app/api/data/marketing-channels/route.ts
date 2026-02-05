@@ -3,20 +3,20 @@ import type { ChannelData, ChannelMetric } from '@/types';
 
 const SPREADSHEET_ID = '1CZio2uMRs-Xz1eAshoJxnlB2sDK8tMslw4M2IvgJQbI';
 
-// Canais e métricas desejadas para cada aba
-const CHANNEL_CONFIG: { tab: string; label: string; metrics: string[] }[] = [
+// GIDs de cada aba (obtidos da planilha)
+const CHANNEL_CONFIG: { gid: number; label: string; metrics: string[] }[] = [
   {
-    tab: 'Meta Ads',
+    gid: 156922063,
     label: 'Meta Ads',
     metrics: ['Investimento', 'Leads CRM', 'Vendas', 'Receita', 'ROAS'],
   },
   {
-    tab: 'Google Ads',
+    gid: 0,
     label: 'Google Ads',
     metrics: ['Investimento', 'Leads CRM', 'Vendas', 'Receita', 'ROAS'],
   },
   {
-    tab: 'Emails B2C',
+    gid: 1067205156,
     label: 'Emails B2C',
     metrics: [
       'Qtd Emails',
@@ -30,28 +30,28 @@ const CHANNEL_CONFIG: { tab: string; label: string; metrics: string[] }[] = [
     ],
   },
   {
-    tab: 'Instagram Organico',
+    gid: 1312565242,
     label: 'Instagram Orgânico',
     metrics: [
-      'Views Conteúdo',
-      'Views % por Anúncio',
-      'Novos Leads Gerados no Mês (Data de Criação)',
+      'View Conteúdo',
+      'View % por Anúncio',
+      'Novos Leads gerados no Mês (Data de Criação)',
       'Leads Ganhos no Mês (Data de Ganho)',
       'Receita - Leads Ganhos no Mês (Data de Ganho)',
     ],
   },
   {
-    tab: 'Tiktok organico',
+    gid: 2054753409,
     label: 'TikTok Orgânico',
-    metrics: ['Visualizações por Vídeo', 'Visualizações de Perfil', 'Comentários'],
+    metrics: ['Visualizações de Vídeo', 'Visualizações de Perfil', 'Comentários'],
   },
   {
-    tab: 'Site organico',
+    gid: 552480204,
     label: 'Site Orgânico',
     metrics: [
-      'Sessões Total',
-      'Sessões Mídia Paga',
-      'Sessões Orgânico',
+      'Sessões TOTAL',
+      'Sessões MÍDIA PAGA',
+      'Sessões ORGÂNICO',
       'Taxa de Engajamento',
       'Total de Usuários',
       'Novos Usuários',
@@ -61,10 +61,10 @@ const CHANNEL_CONFIG: { tab: string; label: string; metrics: string[] }[] = [
     ],
   },
   {
-    tab: 'Parcerias Corporativas',
+    gid: 127881387,
     label: 'Parcerias Corporativas (B2B2C)',
     metrics: [
-      'Novos Leads Gerados no Mês (Data de Criação)',
+      'Novos Leads gerados no Mês (Data de Criação)',
       'Leads Ganhos no Mês (Data de Ganho)',
       'Receita - Leads Ganhos no Mês (Data de Ganho)',
       'Atualizações',
@@ -72,16 +72,24 @@ const CHANNEL_CONFIG: { tab: string; label: string; metrics: string[] }[] = [
   },
 ];
 
-const MONTH_KEYS = ['outubro', 'novembro', 'dezembro', 'janeiro', 'fevereiro'] as const;
-const MONTH_HEADERS = ['Outubro', 'Novembro', 'Dezembro', 'Janeiro', 'Fevereiro'];
+// Todos os meses possíveis (em ordem)
+const ALL_MONTHS = ['setembro', 'outubro', 'novembro', 'dezembro', 'janeiro', 'fevereiro'] as const;
+const MONTH_NAMES_MAP: Record<string, typeof ALL_MONTHS[number]> = {
+  'setembro': 'setembro',
+  'outubro': 'outubro',
+  'novembro': 'novembro',
+  'dezembro': 'dezembro',
+  'janeiro': 'janeiro',
+  'fevereiro': 'fevereiro',
+};
 
 // Parseia valor no formato BR para número
 function parseBRValue(raw: string): { value: number | null; format: 'currency' | 'number' | 'percent' } {
-  if (!raw || raw.trim() === '' || raw.includes('#DIV/0!') || raw.trim() === '-') {
+  const trimmed = (raw || '').trim();
+
+  if (!trimmed || trimmed === '-' || trimmed.includes('#DIV/0!') || trimmed.toLowerCase() === 'sem dados') {
     return { value: null, format: 'number' };
   }
-
-  const trimmed = raw.trim();
 
   // Currency: R$ 27.473,40
   if (trimmed.startsWith('R$')) {
@@ -90,7 +98,7 @@ function parseBRValue(raw: string): { value: number | null; format: 'currency' |
     return { value: isNaN(num) ? null : num, format: 'currency' };
   }
 
-  // Percent: 1,1%
+  // Percent: 1,1% or 76,70%
   if (trimmed.endsWith('%')) {
     const cleaned = trimmed.replace('%', '').replace(',', '.').trim();
     const num = parseFloat(cleaned);
@@ -103,8 +111,8 @@ function parseBRValue(raw: string): { value: number | null; format: 'currency' |
   return { value: isNaN(num) ? null : num, format: 'number' };
 }
 
-// Parseia CSV simples (sem campos multiline)
-function parseSimpleCSV(csvText: string): string[][] {
+// Parseia CSV
+function parseCSV(csvText: string): string[][] {
   const rows: string[][] = [];
   const lines = csvText.split('\n');
 
@@ -124,74 +132,132 @@ function parseSimpleCSV(csvText: string): string[][] {
           inQuotes = !inQuotes;
         }
       } else if (char === ',' && !inQuotes) {
-        cells.push(current.trim());
+        cells.push(current);
         current = '';
       } else {
         current += char;
       }
     }
-    cells.push(current.trim());
+    cells.push(current);
     rows.push(cells);
   }
 
   return rows;
 }
 
-// Busca e parseia uma aba
-async function fetchTab(tabName: string, desiredMetrics: string[]): Promise<ChannelMetric[]> {
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+// Normaliza string para comparação (remove acentos, lowercase, trim)
+function normalize(str: string): string {
+  return str
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+// Busca e parseia uma aba por GID
+async function fetchTab(gid: number, desiredMetrics: string[]): Promise<ChannelMetric[]> {
+  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${gid}`;
 
   const response = await fetch(url, { cache: 'no-store' });
   if (!response.ok) {
-    console.error(`Erro ao buscar aba "${tabName}": ${response.status}`);
-    return [];
+    console.error(`Erro ao buscar aba gid=${gid}: ${response.status}`);
+    return desiredMetrics.map(name => ({
+      name,
+      total: null,
+      monthly: { setembro: null, outubro: null, novembro: null, dezembro: null, janeiro: null, fevereiro: null },
+      format: 'number',
+    }));
   }
 
   const csvText = await response.text();
-  const rows = parseSimpleCSV(csvText);
+  const rows = parseCSV(csvText);
 
   if (rows.length === 0) return [];
 
-  // Encontrar índices das colunas de meses
-  const headerRow = rows[0];
-  const totalIdx = headerRow.findIndex(h => h.toLowerCase() === 'total');
-  const monthIndices: number[] = MONTH_HEADERS.map(month =>
-    headerRow.findIndex(h => h.toLowerCase() === month.toLowerCase())
-  );
+  // Encontrar o header (linha que contém "Métrica" ou "TOTAL" ou "MÉDIA")
+  let headerRowIdx = 0;
+  for (let i = 0; i < Math.min(rows.length, 3); i++) {
+    const rowText = rows[i].join(',').toLowerCase();
+    if (rowText.includes('trica') || rowText.includes('total') || rowText.includes('dia')) {
+      headerRowIdx = i;
+      break;
+    }
+  }
 
-  // Encontrar a coluna de métrica (geralmente a segunda, índice 1)
-  const metricIdx = headerRow.findIndex(h => h.toLowerCase().includes('trica')) || 1;
+  const headerRow = rows[headerRowIdx];
 
-  const metrics: ChannelMetric[] = [];
+  // Encontrar índice da coluna de métrica
+  let metricIdx = -1;
+  for (let i = 0; i < headerRow.length; i++) {
+    if (normalize(headerRow[i]).includes('trica')) {
+      metricIdx = i;
+      break;
+    }
+  }
+  if (metricIdx === -1) metricIdx = 1; // fallback: segunda coluna
+
+  // Encontrar índice de TOTAL ou MÉDIA
+  let totalIdx = -1;
+  for (let i = 0; i < headerRow.length; i++) {
+    const h = normalize(headerRow[i]);
+    if (h === 'total' || h === 'media' || h === 'média') {
+      totalIdx = i;
+      break;
+    }
+  }
+
+  // Encontrar índices dos meses
+  const monthIndices: Record<string, number> = {};
+  for (let i = 0; i < headerRow.length; i++) {
+    const h = normalize(headerRow[i]);
+    for (const [monthNorm, monthKey] of Object.entries(MONTH_NAMES_MAP)) {
+      if (h === monthNorm) {
+        monthIndices[monthKey] = i;
+        break;
+      }
+    }
+  }
 
   // Para cada métrica desejada, buscar na planilha
+  const metrics: ChannelMetric[] = [];
+
   for (const desiredMetric of desiredMetrics) {
-    const normalizedDesired = desiredMetric.toLowerCase().trim();
+    const normalizedDesired = normalize(desiredMetric);
 
     // Buscar a linha que contém essa métrica
-    const dataRow = rows.find(row => {
-      const cellValue = (row[metricIdx] || '').toLowerCase().trim();
-      return cellValue === normalizedDesired || cellValue.includes(normalizedDesired) || normalizedDesired.includes(cellValue);
-    });
+    let dataRow: string[] | undefined;
+    for (let i = headerRowIdx + 1; i < rows.length; i++) {
+      const cellValue = normalize(rows[i][metricIdx] || '');
+      if (cellValue === normalizedDesired) {
+        dataRow = rows[i];
+        break;
+      }
+    }
+
+    // Se não encontrou match exato, tentar match parcial
+    if (!dataRow) {
+      for (let i = headerRowIdx + 1; i < rows.length; i++) {
+        const cellValue = normalize(rows[i][metricIdx] || '');
+        if (cellValue.includes(normalizedDesired) || normalizedDesired.includes(cellValue)) {
+          if (cellValue.length > 2) { // evitar matches falsos
+            dataRow = rows[i];
+            break;
+          }
+        }
+      }
+    }
 
     if (!dataRow) {
-      // Métrica não encontrada, retornar com nulls
       metrics.push({
         name: desiredMetric,
         total: null,
-        monthly: {
-          outubro: null,
-          novembro: null,
-          dezembro: null,
-          janeiro: null,
-          fevereiro: null,
-        },
+        monthly: { setembro: null, outubro: null, novembro: null, dezembro: null, janeiro: null, fevereiro: null },
         format: 'number',
       });
       continue;
     }
 
-    // Parsear valor TOTAL
+    // Parsear valor TOTAL/MÉDIA
     const totalRaw = totalIdx >= 0 ? (dataRow[totalIdx] || '') : '';
     const totalParsed = parseBRValue(totalRaw);
 
@@ -199,20 +265,32 @@ async function fetchTab(tabName: string, desiredMetrics: string[]): Promise<Chan
     const monthly: Record<string, number | null> = {};
     let detectedFormat = totalParsed.format;
 
-    for (let m = 0; m < MONTH_KEYS.length; m++) {
-      const colIdx = monthIndices[m];
-      const raw = colIdx >= 0 ? (dataRow[colIdx] || '') : '';
-      const parsed = parseBRValue(raw);
-      monthly[MONTH_KEYS[m]] = parsed.value;
-      if (parsed.value !== null && detectedFormat === 'number') {
-        detectedFormat = parsed.format;
+    for (const month of ALL_MONTHS) {
+      const colIdx = monthIndices[month];
+      if (colIdx !== undefined) {
+        const raw = dataRow[colIdx] || '';
+        const parsed = parseBRValue(raw);
+        monthly[month] = parsed.value;
+        if (parsed.value !== null && parsed.format !== 'number') {
+          detectedFormat = parsed.format;
+        }
+      } else {
+        monthly[month] = null;
       }
+    }
+
+    // Se o total não deu formato mas um valor mensal deu, usar esse
+    if (totalParsed.format === 'number' && detectedFormat !== 'number') {
+      // keep detectedFormat
+    } else {
+      detectedFormat = totalParsed.format;
     }
 
     metrics.push({
       name: desiredMetric,
       total: totalParsed.value,
       monthly: {
+        setembro: monthly.setembro ?? null,
         outubro: monthly.outubro ?? null,
         novembro: monthly.novembro ?? null,
         dezembro: monthly.dezembro ?? null,
@@ -231,7 +309,7 @@ export async function GET() {
     // Buscar todas as abas em paralelo
     const results = await Promise.all(
       CHANNEL_CONFIG.map(async (config) => {
-        const metrics = await fetchTab(config.tab, config.metrics);
+        const metrics = await fetchTab(config.gid, config.metrics);
         return {
           channel: config.label,
           metrics,
@@ -247,16 +325,13 @@ export async function GET() {
       {
         headers: {
           'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
+          Pragma: 'no-cache',
+          Expires: '0',
         },
       }
     );
   } catch (error) {
     console.error('Erro ao buscar dados de marketing:', error);
-    return NextResponse.json(
-      { error: 'Erro ao buscar dados de marketing' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro ao buscar dados de marketing' }, { status: 500 });
   }
 }

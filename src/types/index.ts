@@ -183,6 +183,7 @@ export interface ChannelMetric {
   name: string;
   total: number | null;
   monthly: {
+    setembro: number | null;
     outubro: number | null;
     novembro: number | null;
     dezembro: number | null;

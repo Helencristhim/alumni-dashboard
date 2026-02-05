@@ -32,8 +32,14 @@ const CHANNEL_ICONS: Record<string, React.ReactNode> = {
   'Parcerias Corporativas (B2B2C)': <Handshake className="w-4 h-4" />,
 };
 
-const MONTHS = ['Out', 'Nov', 'Dez', 'Jan', 'Fev'];
-const MONTH_KEYS = ['outubro', 'novembro', 'dezembro', 'janeiro', 'fevereiro'] as const;
+const ALL_MONTHS = [
+  { key: 'setembro' as const, label: 'Set' },
+  { key: 'outubro' as const, label: 'Out' },
+  { key: 'novembro' as const, label: 'Nov' },
+  { key: 'dezembro' as const, label: 'Dez' },
+  { key: 'janeiro' as const, label: 'Jan' },
+  { key: 'fevereiro' as const, label: 'Fev' },
+];
 
 // Formata valor para exibição
 function formatMetricValue(value: number | null, format: string): string {
@@ -115,26 +121,32 @@ export default function MarketingPage() {
     };
   }, [channels]);
 
+  // Meses ativos para o canal selecionado (que têm pelo menos um valor)
+  const activeMonths = useMemo(() => {
+    if (!currentChannel) return ALL_MONTHS;
+    return ALL_MONTHS.filter(m =>
+      currentChannel.metrics.some(metric => metric.monthly[m.key] !== null)
+    );
+  }, [currentChannel]);
+
   // Dados para o gráfico de barras mensal
   const chartData = useMemo(() => {
     if (!currentChannel) return [];
 
-    // Pegar as métricas numéricas/currency que têm dados mensais
     const chartMetrics = currentChannel.metrics.filter(
       m => m.format !== 'percent' && m.monthly && Object.values(m.monthly).some(v => v !== null)
     );
 
-    // Se houver muitas métricas, pegar as 3 primeiras
     const metricsToChart = chartMetrics.slice(0, 3);
 
-    return MONTH_KEYS.map((key, i) => {
-      const point: Record<string, unknown> = { mes: MONTHS[i] };
+    return activeMonths.map((m) => {
+      const point: Record<string, unknown> = { mes: m.label };
       for (const metric of metricsToChart) {
-        point[metric.name] = metric.monthly[key] ?? 0;
+        point[metric.name] = metric.monthly[m.key] ?? 0;
       }
       return point;
     });
-  }, [currentChannel]);
+  }, [currentChannel, activeMonths]);
 
   const chartMetricNames = useMemo(() => {
     if (!currentChannel) return [];
@@ -315,9 +327,9 @@ export default function MarketingPage() {
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Total
                       </th>
-                      {MONTHS.map(m => (
-                        <th key={m} className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {m}
+                      {activeMonths.map(m => (
+                        <th key={m.key} className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {m.label}
                         </th>
                       ))}
                     </tr>
@@ -331,9 +343,9 @@ export default function MarketingPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                           {formatFullValue(metric.total, metric.format)}
                         </td>
-                        {MONTH_KEYS.map(key => (
-                          <td key={key} className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">
-                            {formatFullValue(metric.monthly[key], metric.format)}
+                        {activeMonths.map(m => (
+                          <td key={m.key} className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">
+                            {formatFullValue(metric.monthly[m.key], metric.format)}
                           </td>
                         ))}
                       </tr>
