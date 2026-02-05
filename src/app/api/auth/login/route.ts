@@ -118,14 +118,14 @@ export async function POST(request: NextRequest) {
         data: {
           type: 'USER_LOGIN',
           description: `Usuário ${user.name} fez login`,
-          metadata: JSON.stringify({
+          metadata: {
             userAgent: request.headers.get('user-agent'),
             ip: request.headers.get('x-forwarded-for') || 'unknown',
-          }),
+          },
           userId: user.id,
         }
-      }).catch(() => {
-        console.error('Erro ao registrar login no ActivityLog');
+      }).catch(err => {
+        console.error('Erro ao registrar login no ActivityLog:', err);
       });
 
       return NextResponse.json({

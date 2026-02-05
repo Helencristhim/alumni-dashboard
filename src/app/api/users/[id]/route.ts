@@ -153,19 +153,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (resetPassword || newPassword) changes.push('senha');
 
     if (changes.length > 0) {
-      await prisma.activityLog.create({
+      const isDemoUser = authUser.userId.startsWith('demo-');
+      prisma.activityLog.create({
         data: {
           type: roleId !== existingUser.roleId ? 'ROLE_CHANGED' : 'USER_UPDATED',
           description: `Usuario ${updatedUser.name} atualizado: ${changes.join(', ')}`,
-          metadata: JSON.stringify({
+          metadata: {
             updatedUserId: updatedUser.id,
             changes,
             previousRole: existingUser.role.name,
             newRole: updatedUser.role.name,
-          }),
-          userId: authUser.userId,
+          },
+          userId: isDemoUser ? null : authUser.userId,
         }
-      });
+      }).catch(err => console.error('Erro ao registrar atividade:', err));
     }
 
     // Remover senha do retorno
@@ -225,18 +226,19 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       data: { isActive: false },
     });
 
-    // Registrar atividade
-    await prisma.activityLog.create({
+    // Registrar atividade (não bloqueia a operação principal)
+    const isDemoUser = authUser.userId.startsWith('demo-');
+    prisma.activityLog.create({
       data: {
         type: 'USER_DELETED',
         description: `Usuario ${existingUser.name} desativado por ${authUser.name}`,
-        metadata: JSON.stringify({
+        metadata: {
           deletedUserId: existingUser.id,
           deletedUserEmail: existingUser.email,
-        }),
-        userId: authUser.userId,
+        },
+        userId: isDemoUser ? null : authUser.userId,
       }
-    });
+    }).catch(err => console.error('Erro ao registrar atividade:', err));
 
     return NextResponse.json({
       success: true,

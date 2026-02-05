@@ -160,19 +160,20 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Registrar atividade
-    await prisma.activityLog.create({
+    // Registrar atividade (não bloqueia a operação principal)
+    const isDemoUser = authUser.userId.startsWith('demo-');
+    prisma.activityLog.create({
       data: {
         type: 'USER_CREATED',
         description: `Usuario ${newUser.name} criado por ${authUser.name}`,
-        metadata: JSON.stringify({
+        metadata: {
           createdUserId: newUser.id,
           createdUserEmail: newUser.email,
           roleId: newUser.roleId,
-        }),
-        userId: authUser.userId,
+        },
+        userId: isDemoUser ? null : authUser.userId,
       }
-    });
+    }).catch(err => console.error('Erro ao registrar atividade:', err));
 
     // Remover senha do retorno
     const { passwordHash: _, ...safeUser } = newUser;
