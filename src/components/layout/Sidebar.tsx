@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard,
   ShoppingCart,
   Building2,
   UserX,
@@ -30,14 +29,6 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  {
-    id: 'overview',
-    label: 'Visao Geral',
-    icon: <LayoutDashboard className="w-5 h-5" />,
-    href: '/',
-    color: '#6B7280'
-    // Sem moduleId = sempre visivel para usuarios autenticados
-  },
   {
     id: 'vendas-b2c',
     label: 'Vendas B2C',
