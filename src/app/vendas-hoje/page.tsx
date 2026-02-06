@@ -63,7 +63,7 @@ export default function VendasHojePage() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'hoje' | 'mes'>('hoje');
+  const [viewMode, setViewMode] = useState<'hoje' | 'mes'>('mes');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
