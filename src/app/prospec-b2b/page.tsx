@@ -93,18 +93,26 @@ export default function ProspecB2BPage() {
     return data.filter(item => (item.status || '').trim() === filtroStatus);
   }, [data, filtroStatus]);
 
+  // Normaliza valor B2B/B2B2C para string
+  const normalizeB2B = (val: unknown): string => {
+    if (val === true) return 'sim';
+    if (val === false) return 'nao';
+    if (val === null || val === undefined) return '';
+    return String(val).toLowerCase();
+  };
+
   // KPIs
   const kpis = useMemo(() => {
     const total = data.length;
     const b2bCount = data.filter(item =>
-      (item.b2b || '').toLowerCase() === 'sim'
+      normalizeB2B(item.b2b) === 'sim'
     ).length;
     const b2b2cCount = data.filter(item =>
-      (item.b2b2c || '').toLowerCase() === 'sim'
+      normalizeB2B(item.b2b2c) === 'sim'
     ).length;
     const emNegociacao = data.filter(item =>
-      (item.b2b || '').toLowerCase() === 'em negociacao' ||
-      (item.b2b2c || '').toLowerCase() === 'em negociacao'
+      normalizeB2B(item.b2b).includes('negoci') ||
+      normalizeB2B(item.b2b2c).includes('negoci')
     ).length;
     const propostaOk = data.filter(item =>
       (item.status || '').toLowerCase().includes('proposta') &&
@@ -134,12 +142,20 @@ export default function ProspecB2BPage() {
   };
 
   // Cor B2B/B2B2C
-  const getB2BColor = (value: string) => {
-    const v = value.toLowerCase();
+  const getB2BColor = (value: unknown) => {
+    const v = normalizeB2B(value);
     if (v === 'sim') return 'bg-green-100 text-green-800';
     if (v === 'nao' || v === 'não') return 'bg-red-100 text-red-800';
-    if (v === 'em negociacao' || v === 'em negociação') return 'bg-blue-100 text-blue-800';
+    if (v.includes('negoci')) return 'bg-blue-100 text-blue-800';
     return 'bg-gray-100 text-gray-800';
+  };
+
+  // Formata valor B2B para exibição
+  const formatB2B = (value: unknown): string => {
+    if (value === true) return 'Sim';
+    if (value === false) return 'Não';
+    if (value === null || value === undefined) return '-';
+    return String(value);
   };
 
   return (
@@ -315,13 +331,13 @@ export default function ProspecB2BPage() {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getB2BColor(item.b2b || '')}`}>
-                          {item.b2b || '-'}
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getB2BColor(item.b2b)}`}>
+                          {formatB2B(item.b2b)}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getB2BColor(item.b2b2c || '')}`}>
-                          {item.b2b2c || '-'}
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getB2BColor(item.b2b2c)}`}>
+                          {formatB2B(item.b2b2c)}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-gray-700 text-xs">
