@@ -14,7 +14,8 @@ import {
   Activity,
   UserCog,
   ClipboardCheck,
-  Target
+  Target,
+  Clock
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -29,6 +30,14 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  {
+    id: 'vendas-hoje',
+    label: 'Vendas Hoje',
+    icon: <Clock className="w-5 h-5" />,
+    href: '/vendas-hoje',
+    color: '#22C55E',
+    moduleId: 'vendas-b2c'
+  },
   {
     id: 'vendas-b2c',
     label: 'Vendas B2C',
