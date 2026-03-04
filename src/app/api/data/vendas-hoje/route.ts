@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server';
 
 const SPREADSHEET_ID = '1D4MbnkZfdJyu5w_YrOYtpMZ6MJgHWYt5W9ipALi6fq0';
 
-// Nomes dos meses em português para construir o nome da aba dinamicamente
-const MONTH_NAMES = [
-  '', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-];
+// Constrói o nome da aba no formato MM/YY (ex: "03/26", "04/26")
+function buildSheetName(month: number, year: number): string {
+  const mm = String(month).padStart(2, '0');
+  const yy = String(year).slice(-2);
+  return `${mm}/${yy}`;
+}
 
 interface VendaHoje {
   qtd: number;
@@ -213,8 +214,8 @@ export async function GET() {
       year: 'numeric'
     }); // DD/MM/YYYY
 
-    // Constrói o nome da aba dinamicamente: "Março 2026", "Abril 2026", etc.
-    const sheetName = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
+    // Constrói o nome da aba dinamicamente: "03/26", "04/26", etc.
+    const sheetName = buildSheetName(currentMonth, currentYear);
 
     // Busca dados do mês pela aba correspondente
     const vendasMes = await fetchMonthData(sheetName);
