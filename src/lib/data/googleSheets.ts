@@ -202,7 +202,18 @@ function parseValue(value: unknown): unknown {
     }
   }
 
-  // Tenta converter para número simples
+  // Tenta converter número brasileiro com separador de milhar (ex: 5.760,00 ou 12.345,67)
+  if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(strValue)) {
+    const numStr = strValue
+      .replace(/\./g, '')   // Remove separador de milhares
+      .replace(',', '.');    // Converte vírgula decimal para ponto
+    const numValue = parseFloat(numStr);
+    if (!isNaN(numValue)) {
+      return numValue;
+    }
+  }
+
+  // Tenta converter para número simples (ex: 1234 ou 1234,56)
   if (/^-?\d+([.,]\d+)?$/.test(strValue)) {
     const numValue = parseFloat(strValue.replace(',', '.'));
     if (!isNaN(numValue)) {
@@ -218,10 +229,13 @@ function parseValue(value: unknown): unknown {
     return false;
   }
 
-  // Mantém data como string no formato original (DD/MM/YYYY)
+  // Mantém data como string no formato original (DD/MM/YYYY ou D/M/YYYY)
   // A conversão para Date será feita no frontend para evitar problemas de fuso horário
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(strValue)) {
-    return strValue; // Retorna a string original
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(strValue)) {
+    // Normaliza para DD/MM/YYYY com zero à esquerda
+    const parts = strValue.split('/');
+    const normalized = `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[2]}`;
+    return normalized;
   }
 
   return strValue;

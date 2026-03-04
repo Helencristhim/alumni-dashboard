@@ -90,13 +90,25 @@ export default function VendasB2CPage() {
           let dataVenda: Date = new Date(NaN); // Inválida por padrão
           const rawDate = item.data_venda as unknown;
 
-          if (typeof rawDate === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(rawDate)) {
-            // Formato brasileiro DD/MM/YYYY
+          if (typeof rawDate === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(rawDate)) {
+            // Formato brasileiro DD/MM/YYYY ou D/M/YYYY
             const [day, month, year] = rawDate.split('/').map(Number);
             dataVenda = new Date(year, month - 1, day);
           }
 
-          const valorTotal = Number(item.valor_total) || 0;
+          // Converte valor_total - trata formato brasileiro se vier como string
+          let valorTotal = 0;
+          if (typeof item.valor_total === 'number') {
+            valorTotal = item.valor_total;
+          } else if (typeof item.valor_total === 'string') {
+            const strVal = (item.valor_total as string).replace('R$', '').trim();
+            // Formato brasileiro com separador de milhar: 5.760,00
+            if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(strVal)) {
+              valorTotal = parseFloat(strVal.replace(/\./g, '').replace(',', '.')) || 0;
+            } else {
+              valorTotal = parseFloat(strVal.replace(',', '.')) || 0;
+            }
+          }
 
           // Processa data de cancelamento
           const rawDataCancelamento = item.data_cancelamento as unknown;
