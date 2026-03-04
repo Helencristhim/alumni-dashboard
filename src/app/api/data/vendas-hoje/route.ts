@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 
 const SPREADSHEET_ID = '1D4MbnkZfdJyu5w_YrOYtpMZ6MJgHWYt5W9ipALi6fq0';
 
-// Mapeamento de mês para GID (abas com formato de vendas)
-const MONTH_GIDS: Record<number, number> = {
-  12: 204365572,   // Dezembro 2025
-  1: 2023200714,   // Janeiro 2026
-  2: 362130747,    // Fevereiro 2026
-};
+// Nomes dos meses em português para construir o nome da aba dinamicamente
+const MONTH_NAMES = [
+  '', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+];
 
 interface VendaHoje {
   qtd: number;
@@ -96,9 +95,9 @@ function parseCSV(csvText: string): string[][] {
   return rows;
 }
 
-// Busca dados de uma aba
-async function fetchMonthData(gid: number): Promise<VendaHoje[]> {
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${gid}`;
+// Busca dados de uma aba pelo nome (ex: "Março 2026")
+async function fetchMonthData(sheetName: string): Promise<VendaHoje[]> {
+  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
 
   const response = await fetch(url, {
     cache: 'no-store',
@@ -106,11 +105,17 @@ async function fetchMonthData(gid: number): Promise<VendaHoje[]> {
   });
 
   if (!response.ok) {
-    console.error(`Erro ao buscar aba gid=${gid}: ${response.status}`);
+    console.error(`Erro ao buscar aba "${sheetName}": ${response.status}`);
     return [];
   }
 
   const csvText = await response.text();
+
+  // O endpoint gviz retorna JS callback em vez de CSV quando a aba não existe
+  if (csvText.includes('google.visualization.Query.setResponse')) {
+    console.error(`Aba "${sheetName}" não encontrada na planilha`);
+    return [];
+  }
   const rows = parseCSV(csvText);
 
   // Encontra o header (linha com "QTD", "Nome", "Data", etc.)
@@ -124,7 +129,7 @@ async function fetchMonthData(gid: number): Promise<VendaHoje[]> {
   }
 
   if (headerIdx === -1) {
-    console.error(`Header não encontrado na aba gid=${gid}`);
+    console.error(`Header não encontrado na aba "${sheetName}"`);
     return [];
   }
 
@@ -201,33 +206,23 @@ export async function GET() {
   try {
     const now = new Date();
     const currentMonth = now.getMonth() + 1; // 1-12
+    const currentYear = now.getFullYear();
     const today = now.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     }); // DD/MM/YYYY
 
-    // Busca GID do mês atual
-    const gid = MONTH_GIDS[currentMonth];
+    // Constrói o nome da aba dinamicamente: "Março 2026", "Abril 2026", etc.
+    const sheetName = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
 
-    if (!gid) {
-      return NextResponse.json({
-        success: true,
-        vendasHoje: [],
-        vendasMes: [],
-        totais: {
-          hoje: { quantidade: 0, valor: 0, novos: 0, renovacoes: 0 },
-          mes: { quantidade: 0, valor: 0, novos: 0, renovacoes: 0 }
-        },
-        dataReferencia: today,
-        mesReferencia: currentMonth,
-        lastUpdated: new Date().toISOString(),
-        message: `Aba do mês ${currentMonth} não configurada`
-      });
+    // Busca dados do mês pela aba correspondente
+    const vendasMes = await fetchMonthData(sheetName);
+
+    if (vendasMes.length === 0) {
+      // Pode ser que não há vendas ou que a aba não existe ainda
+      console.log(`Nenhum dado encontrado para aba "${sheetName}"`);
     }
-
-    // Busca dados do mês
-    const vendasMes = await fetchMonthData(gid);
 
     // Filtra vendas de hoje
     const vendasHoje = vendasMes.filter(v => v.data === today);
