@@ -17,6 +17,7 @@ const routePermissions: Record<string, string[]> = {
   '/cobranca': ['module:cobranca:view'],
   '/alunos-ativos': ['module:alunos-ativos:view'],
   '/marketing': ['module:marketing:view'],
+  '/contratos-b2b': ['module:contratos-b2b:view', 'module:contratos-b2b:edit'],
   '/admin/usuarios': ['admin:users:manage'],
   '/configuracoes': ['admin:config:view'],
   '/atividades': ['activity:view:own', 'activity:view:all'],

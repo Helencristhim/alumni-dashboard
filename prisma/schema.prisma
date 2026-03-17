@@ -155,3 +155,201 @@ model ScheduledTaskRun {
   @@index([taskName, startedAt])
   @@index([status])
 }
+
+// ============================================================
+// CONTRATOS B2B - MÓDULO DE CONTRATOS
+// ============================================================
+
+model Company {
+  id                String     @id @default(cuid())
+  razaoSocial       String
+  cnpj              String     @unique
+  endereco          String?
+  cidade            String?
+  estado            String?
+  cep               String?
+  representanteNome String?
+  representanteCpf  String?
+  representanteEmail String?
+  representanteTelefone String?
+  isActive          Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  contracts         Contract[]
+
+  @@index([cnpj])
+  @@index([razaoSocial])
+}
+
+model ContractTemplate {
+  id          String   @id @default(cuid())
+  name        String   // "Master Agreement Alumni", "Anexo Comercial Better"
+  type        ContractType
+  brand       String   // "alumni", "better"
+  htmlContent String   @db.Text // HTML template com {{variaveis}}
+  clauses     Json?    // Clausulas base do template
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  contracts   Contract[]
+
+  @@index([type, brand])
+}
+
+model Contract {
+  id              String         @id @default(cuid())
+  number          String         @unique // Numero sequencial: CTR-2026-001
+  title           String
+  type            ContractType
+  status          ContractStatus @default(DRAFT)
+  brand           String         // "alumni", "better"
+
+  // Relacoes
+  company         Company        @relation(fields: [companyId], references: [id])
+  companyId       String
+  template        ContractTemplate? @relation(fields: [templateId], references: [id])
+  templateId      String?
+
+  // Dados do contrato (variáveis preenchidas)
+  contractData    Json           // Todos os dados estruturados (variaveis)
+
+  // HTML editado atual (versão mais recente)
+  htmlContent     String         @db.Text
+
+  // Financeiro
+  valorTotal      Float?
+  formaPagamento  String?
+  diaEmissaoNf    Int?
+  diaVencimento   Int?
+
+  // Prazo
+  dataInicio      DateTime?
+  dataFim         DateTime?
+  prazoMeses      Int?
+
+  // Programas contratados
+  programs        ContractProgram[]
+
+  // Versionamento
+  versions        ContractVersion[]
+  currentVersion  Int            @default(1)
+
+  // Assinatura
+  zapsignDocId    String?        // ID do documento no ZapSign
+  zapsignStatus   String?        // Status da assinatura
+  signedAt        DateTime?
+  signatories     ContractSignatory[]
+
+  // Arquivos gerados
+  files           ContractFile[]
+
+  // Auditoria
+  createdById     String?
+  updatedById     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+  @@index([brand])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model ContractProgram {
+  id            String   @id @default(cuid())
+  contract      Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contractId    String
+  tipoPrograma  String   // "Community", "Community Flow", "Particular", "Conexion"
+  quantidade    Int      // Numero de alunos
+  valorUnitario Float
+  valorTotal    Float
+  descricao     String?
+
+  @@index([contractId])
+}
+
+model ContractVersion {
+  id          String   @id @default(cuid())
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contractId  String
+  version     Int
+  htmlContent String   @db.Text // HTML completo desta versao
+  contractData Json    // Dados estruturados desta versao
+  changeNote  String?  // Descricao da mudanca
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  @@unique([contractId, version])
+  @@index([contractId])
+}
+
+model ContractFile {
+  id          String   @id @default(cuid())
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contractId  String
+  type        FileType // PDF ou DOCX
+  version     Int      // Versao do contrato quando gerado
+  fileName    String
+  fileUrl     String   // URL no S3 ou Vercel Blob
+  fileSize    Int?
+  createdAt   DateTime @default(now())
+
+  @@index([contractId])
+}
+
+model ContractSignatory {
+  id          String   @id @default(cuid())
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contractId  String
+  name        String
+  email       String
+  cpf         String?
+  role        String   // "contratante", "contratada"
+  signedAt    DateTime?
+  zapsignSignerId String? // ID do signatario no ZapSign
+
+  @@index([contractId])
+}
+
+model BrandConfig {
+  id            String   @id @default(cuid())
+  brand         String   @unique // "alumni", "better"
+  displayName   String   // "Alumni", "Better EdTech"
+  logoUrl       String?
+  primaryColor  String   @default("#3B82F6")
+  secondaryColor String  @default("#8B5CF6")
+  footerText    String?  @db.Text
+  cnpj          String?
+  endereco      String?
+  telefone      String?
+  email         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum ContractType {
+  CORPORATIVO
+  IN_COMPANY
+  AULAS_PARTICULARES
+  PARCERIA
+  LICENCIAMENTO
+}
+
+enum ContractStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  SENT_FOR_SIGNATURE
+  SIGNED
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+enum FileType {
+  PDF
+  DOCX
+}

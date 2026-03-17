@@ -23,6 +23,14 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'module:marketing:view',
     'activity:view:own',
   ],
+
+  B2B: [
+    'module:vendas-b2b:view',
+    'module:prospec-b2b:view',
+    'module:contratos-b2b:view',
+    'module:contratos-b2b:edit',
+    'activity:view:own',
+  ],
 };
 
 // Informacoes dos roles
@@ -51,6 +59,12 @@ export const ROLES = [
     description: 'Acesso ao modulo de Marketing',
     color: 'green',
   },
+  {
+    name: 'B2B',
+    displayName: 'B2B',
+    description: 'Acesso aos modulos B2B: Vendas, Prospecção e Contratos',
+    color: 'indigo',
+  },
 ] as const;
 
 export type RoleName = (typeof ROLES)[number]['name'];
@@ -62,6 +76,7 @@ export function getRoleBadgeColor(role: string): string {
     Investidor: 'bg-purple-100 text-purple-800',
     'Customer Care': 'bg-blue-100 text-blue-800',
     Marketing: 'bg-green-100 text-green-800',
+    B2B: 'bg-indigo-100 text-indigo-800',
   };
   return colors[role] || 'bg-gray-100 text-gray-800';
 }

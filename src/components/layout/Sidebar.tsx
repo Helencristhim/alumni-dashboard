@@ -15,7 +15,8 @@ import {
   UserCog,
   ClipboardCheck,
   Target,
-  Clock
+  Clock,
+  FileText,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -61,6 +62,14 @@ const navItems: NavItem[] = [
     href: '/prospec-b2b',
     color: '#0EA5E9',
     moduleId: 'prospec-b2b'
+  },
+  {
+    id: 'contratos-b2b',
+    label: 'Contratos B2B',
+    icon: <FileText className="w-5 h-5" />,
+    href: '/contratos-b2b',
+    color: '#6366F1',
+    moduleId: 'contratos-b2b'
   },
   {
     id: 'cancelamentos',
