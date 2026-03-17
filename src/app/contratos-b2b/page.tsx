@@ -19,6 +19,8 @@ import {
   Copy,
   Trash2,
   Send,
+  Settings,
+  Users,
 } from 'lucide-react';
 import {
   ContractStatus,
@@ -113,6 +115,20 @@ export default function ContratosB2BPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/contratos-b2b/empresas"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+            >
+              <Users className="w-4 h-4" />
+              Empresas
+            </Link>
+            <Link
+              href="/contratos-b2b/configuracoes"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Marca / Logo
+            </Link>
             <button
               onClick={fetchContracts}
               disabled={loading}
