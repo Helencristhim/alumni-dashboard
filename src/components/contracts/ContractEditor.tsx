@@ -16,13 +16,61 @@ import { Image } from '@tiptap/extension-image';
 import { useEffect, useCallback } from 'react';
 import { EditorToolbar } from './EditorToolbar';
 
+// Logo Alumni fixo - nunca muda
+const ALUMNI_LOGO_URL = '/logos/alumni-by-better.png';
+
 interface ContractEditorProps {
   content: string;
   onChange: (html: string) => void;
   editable?: boolean;
+  brand?: string;
+  logoUrl?: string;
 }
 
-export function ContractEditor({ content, onChange, editable = true }: ContractEditorProps) {
+// Papel timbrado fixo Alumni - header
+function AlumniLetterheadHeader() {
+  return (
+    <div style={{ pointerEvents: 'none', userSelect: 'none' }}>
+      {/* Logo topo centralizado */}
+      <div style={{ textAlign: 'center', paddingTop: 28, paddingBottom: 14 }}>
+        <img
+          src={ALUMNI_LOGO_URL}
+          alt="Alumni by Better"
+          style={{ height: 56, objectFit: 'contain', margin: '0 auto' }}
+        />
+      </div>
+      {/* Linha vermelha superior */}
+      <div style={{ margin: '0 20px', height: 2, backgroundColor: '#D42027' }} />
+    </div>
+  );
+}
+
+// Papel timbrado fixo Alumni - footer
+function AlumniLetterheadFooter() {
+  return (
+    <div style={{ pointerEvents: 'none', userSelect: 'none', marginTop: 40 }}>
+      {/* Linha vermelha inferior */}
+      <div style={{ margin: '0 20px', height: 2, backgroundColor: '#D42027' }} />
+      {/* Logo rodapé à direita */}
+      <div style={{ textAlign: 'right', padding: '10px 24px 20px' }}>
+        <img
+          src={ALUMNI_LOGO_URL}
+          alt="Alumni by Better"
+          style={{ height: 36, objectFit: 'contain', display: 'inline-block' }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function ContractEditor({
+  content,
+  onChange,
+  editable = true,
+  brand,
+}: ContractEditorProps) {
+  const isAlumni = brand === 'alumni';
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -94,14 +142,18 @@ export function ContractEditor({ content, onChange, editable = true }: ContractE
   }, [insertHTML]);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
       <EditorToolbar editor={editor} />
-      <div
-        className="flex-1 overflow-y-auto bg-gray-50"
-        style={{ minHeight: '70vh' }}
-      >
+      <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0">
         <div className="max-w-[816px] mx-auto my-6 bg-white shadow-md rounded-sm border border-gray-100">
+          {/* Papel timbrado Alumni - Header fixo (não editável) */}
+          {isAlumni && <AlumniLetterheadHeader />}
+
+          {/* Área editável do contrato */}
           <EditorContent editor={editor} />
+
+          {/* Papel timbrado Alumni - Footer fixo (não editável) */}
+          {isAlumni && <AlumniLetterheadFooter />}
         </div>
       </div>
     </div>

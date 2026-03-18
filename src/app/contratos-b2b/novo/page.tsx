@@ -12,17 +12,20 @@ import {
   Loader2,
   ArrowLeft,
   Wand2,
+  ChevronDown,
 } from 'lucide-react';
 import {
   ContractType,
   ContractVariables,
   ContractProgramData,
   CompanyData,
+  TemplateType,
+  TEMPLATE_TYPE_LABELS,
 } from '@/types/contracts';
 import { generateContractHTML } from '@/lib/contracts/clause-generator';
-import { BRAND_DEFAULTS } from '@/lib/contracts/templates';
+import { BRAND_DEFAULTS, replaceVariables } from '@/lib/contracts/templates';
 import { generateRuleBasedSuggestions } from '@/lib/contracts/ai-engine';
-import { AISuggestion } from '@/types/contracts';
+import { AISuggestion, BrandConfigData } from '@/types/contracts';
 
 export default function NovoContratoPage() {
   const router = useRouter();
@@ -30,6 +33,7 @@ export default function NovoContratoPage() {
 
   // Dados do contrato
   const [contractType, setContractType] = useState<ContractType>('CORPORATIVO');
+  const [templateType, setTemplateType] = useState<TemplateType>('MASTER_AGREEMENT');
   const [brand, setBrand] = useState('alumni');
   const [title, setTitle] = useState('');
   const [companyId, setCompanyId] = useState('');
@@ -37,13 +41,14 @@ export default function NovoContratoPage() {
   const [programs, setPrograms] = useState<ContractProgramData[]>([]);
   const [htmlContent, setHtmlContent] = useState('');
   const [companies, setCompanies] = useState<CompanyData[]>([]);
+  const [brandConfig, setBrandConfig] = useState<BrandConfigData | null>(null);
 
   // IA
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
 
-  // Carregar empresas
+  // Carregar empresas e branding
   useEffect(() => {
     fetch('/api/companies')
       .then((r) => r.json())
@@ -52,6 +57,19 @@ export default function NovoContratoPage() {
       })
       .catch(console.error);
   }, []);
+
+  // Carregar config da marca quando brand muda
+  useEffect(() => {
+    fetch('/api/branding')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) {
+          const config = data.data.find((b: BrandConfigData) => b.brand === brand);
+          if (config) setBrandConfig(config);
+        }
+      })
+      .catch(console.error);
+  }, [brand]);
 
   // Aplicar dados da marca quando muda
   useEffect(() => {
@@ -66,17 +84,29 @@ export default function NovoContratoPage() {
 
   // Gerar contrato automaticamente
   const handleGenerateContract = useCallback(() => {
-    const html = generateContractHTML({
-      type: contractType,
+    let html = generateContractHTML({
+      templateType,
       brand,
       variables,
       programs,
     });
+    // Substituir {{variáveis}} pelos valores preenchidos no formulário
+    const allVars: Record<string, string> = {};
+    for (const [key, value] of Object.entries(variables)) {
+      if (value) allVars[key] = String(value);
+    }
+    // Calcular valor total dos programas
+    const totalValue = programs.reduce((sum, p) => sum + (p.valorTotal || 0), 0);
+    if (totalValue > 0) {
+      allVars.valor_total_contrato = totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    }
+    html = replaceVariables(html, allVars);
     setHtmlContent(html);
+    const templateLabel = TEMPLATE_TYPE_LABELS[templateType];
     setTitle(
-      `Contrato ${brand === 'alumni' ? 'Alumni' : 'Better'} - ${variables.razao_social || 'Empresa'}`
+      `${templateLabel} - ${brand === 'alumni' ? 'Alumni' : 'Better'} - ${variables.razao_social || 'Empresa'}`
     );
-  }, [contractType, brand, variables, programs]);
+  }, [templateType, brand, variables, programs]);
 
   // Atualizar sugestões IA
   const refreshSuggestions = useCallback(async () => {
@@ -226,6 +256,21 @@ export default function NovoContratoPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Seletor de Template */}
+            <div className="relative">
+              <select
+                value={templateType}
+                onChange={(e) => setTemplateType(e.target.value as TemplateType)}
+                className="appearance-none pl-3 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 cursor-pointer hover:border-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                {Object.entries(TEMPLATE_TYPE_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
             <button
               onClick={handleGenerateContract}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700"
@@ -280,6 +325,8 @@ export default function NovoContratoPage() {
             <ContractEditor
               content={htmlContent}
               onChange={setHtmlContent}
+              brand={brand}
+              logoUrl={brandConfig?.logoUrl || undefined}
             />
           </main>
 
