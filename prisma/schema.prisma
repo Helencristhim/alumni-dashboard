@@ -357,3 +357,98 @@ enum FileType {
   PDF
   DOCX
 }
+
+// ============================================================
+// CONTRATOS B2C - MÓDULO DE CONTRATOS INDIVIDUAIS
+// ============================================================
+
+model B2CContract {
+  id              String   @id @default(cuid())
+  number          String   @unique
+  title           String
+  type            String   // "PRIVATE", "COMMUNITY", "COMMUNITY_FLOW"
+  status          String   @default("DRAFT") // DRAFT, REVIEW, SENT_FOR_SIGNATURE, SIGNED, ACTIVE, CANCELLED
+  brand           String   @default("alumni")
+
+  // Dados do aluno
+  nomeAluno       String
+  cpfAluno        String
+  emailAluno      String
+  telefoneAluno   String?
+  enderecoAluno   String?
+
+  // Financeiro
+  valorTotal      Float    @default(0)
+  formaPagamento  String?
+  tipoCobranca    String?  // "mensal", "pacote"
+  parcelas        Int?
+  faturamentoHibrido Boolean @default(false)
+
+  // Campos específicos por tipo (JSON flexível)
+  contractData    Json?
+
+  // Conteúdo
+  templateId      String?
+  htmlContent     String   @db.Text
+  currentVersion  Int      @default(1)
+
+  // ZapSign
+  zapsignDocId    String?
+  zapsignStatus   String?
+  signedAt        DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  versions        B2CContractVersion[]
+  signatories     B2CContractSignatory[]
+
+  @@index([status])
+  @@index([type])
+  @@index([cpfAluno])
+}
+
+model B2CContractVersion {
+  id            String   @id @default(cuid())
+  contract      B2CContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contractId    String
+  version       Int
+  htmlContent   String   @db.Text
+  contractData  Json?
+  changeNote    String?
+  createdAt     DateTime @default(now())
+
+  @@unique([contractId, version])
+  @@index([contractId])
+}
+
+model B2CContractSignatory {
+  id              String   @id @default(cuid())
+  contract        B2CContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contractId      String
+  name            String
+  email           String
+  cpf             String?
+  role            String   @default("aluno")
+  status          String   @default("pending")
+  signUrl         String?
+  signedAt        DateTime?
+  zapsignSignerId String?
+  createdAt       DateTime @default(now())
+
+  @@index([contractId])
+}
+
+model B2CContractTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "PRIVATE", "COMMUNITY", "COMMUNITY_FLOW"
+  brand       String   @default("alumni")
+  htmlContent String   @db.Text
+  variables   Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

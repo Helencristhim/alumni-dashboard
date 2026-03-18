@@ -72,6 +72,14 @@ const navItems: NavItem[] = [
     moduleId: 'contratos-b2b'
   },
   {
+    id: 'contratos-b2c',
+    label: 'Contratos B2C',
+    icon: <FileText className="w-5 h-5" />,
+    href: '/contratos-b2c',
+    color: '#8B5CF6',
+    moduleId: 'contratos-b2c'
+  },
+  {
     id: 'cancelamentos',
     label: 'Cancelamentos',
     icon: <UserX className="w-5 h-5" />,
