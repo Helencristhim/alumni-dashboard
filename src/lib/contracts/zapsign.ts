@@ -1,7 +1,8 @@
 import { SignatoryData } from '@/types/contracts';
 
 // ============================================================
-// INTEGRAÇÃO ZAPSIGN
+// INTEGRAÇÃO ZAPSIGN - API REST v1
+// Docs: https://docs.zapsign.com.br
 // ============================================================
 
 const ZAPSIGN_API_URL = 'https://api.zapsign.com.br/api/v1';
@@ -12,25 +13,40 @@ function getApiToken(): string {
   return token;
 }
 
-interface ZapSignDocResponse {
+// ============================================================
+// TIPOS DE RESPOSTA
+// ============================================================
+
+export interface ZapSignSigner {
+  token: string;
+  name: string;
+  email: string;
+  status: string;
+  sign_url: string;
+}
+
+export interface ZapSignDocResponse {
   open_id: number;
   token: string;
   status: string;
   name: string;
-  signers: Array<{
-    token: string;
-    name: string;
-    email: string;
-    status: string;
-    sign_url: string;
-  }>;
+  external_id: string;
+  signers: ZapSignSigner[];
+  created_at: string;
 }
 
-// Criar documento para assinatura
-export async function createDocument(
+// ============================================================
+// CRIAR DOCUMENTO PARA ASSINATURA (com base64 DOCX/PDF)
+// ============================================================
+
+export async function createDocumentFromBase64(
   name: string,
-  pdfUrl: string,
-  signatories: SignatoryData[]
+  base64Content: string,
+  signatories: SignatoryData[],
+  options?: {
+    reminderEveryNDays?: number;
+    externalId?: string;
+  }
 ): Promise<ZapSignDocResponse> {
   const token = getApiToken();
 
@@ -43,8 +59,12 @@ export async function createDocument(
     body: JSON.stringify({
       sandbox: process.env.NODE_ENV !== 'production',
       name,
-      url_pdf: pdfUrl,
+      base64_pdf: base64Content,
       lang: 'pt-br',
+      disable_signer_emails: false,
+      send_automatic_email: true,
+      reminder_every_n_days: options?.reminderEveryNDays ?? 3,
+      external_id: options?.externalId ?? '',
       signers: signatories.map((s) => ({
         name: s.name,
         email: s.email,
@@ -56,14 +76,18 @@ export async function createDocument(
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`ZapSign error: ${error}`);
+    const errorText = await response.text();
+    console.error('ZapSign API error:', response.status, errorText);
+    throw new Error(`ZapSign error (${response.status}): ${errorText}`);
   }
 
   return response.json();
 }
 
-// Consultar status do documento
+// ============================================================
+// CONSULTAR STATUS DO DOCUMENTO
+// ============================================================
+
 export async function getDocumentStatus(docToken: string): Promise<ZapSignDocResponse> {
   const token = getApiToken();
 
@@ -74,32 +98,42 @@ export async function getDocumentStatus(docToken: string): Promise<ZapSignDocRes
   });
 
   if (!response.ok) {
-    throw new Error('Erro ao consultar status do documento');
+    const errorText = await response.text();
+    throw new Error(`Erro ao consultar documento: ${errorText}`);
   }
 
   return response.json();
 }
 
-// Processar webhook do ZapSign
+// ============================================================
+// WEBHOOK - Processar eventos do ZapSign
+// ============================================================
+
 export interface ZapSignWebhookPayload {
   event_type: string;
   doc: {
     token: string;
     status: string;
+    name: string;
+    external_id: string;
     signers: Array<{
       token: string;
       status: string;
       name: string;
       email: string;
+      sign_url: string;
     }>;
   };
 }
 
 export function parseWebhookEvent(payload: ZapSignWebhookPayload) {
   return {
+    eventType: payload.event_type,
     docToken: payload.doc.token,
     status: payload.doc.status,
+    externalId: payload.doc.external_id,
     signers: payload.doc.signers,
     allSigned: payload.doc.signers.every((s) => s.status === 'signed'),
+    hasRefused: payload.doc.signers.some((s) => s.status === 'refused'),
   };
 }

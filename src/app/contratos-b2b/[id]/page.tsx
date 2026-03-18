@@ -8,8 +8,8 @@ import { ContractForm } from '@/components/contracts/ContractForm';
 import { AISuggestionsPanel } from '@/components/contracts/AISuggestionsPanel';
 import { VersionHistory } from '@/components/contracts/VersionHistory';
 import { SignatureModal } from '@/components/contracts/SignatureModal';
+import { SignatureStatusPanel } from '@/components/contracts/SignatureStatusPanel';
 import {
-  Save,
   FileText,
   Loader2,
   ArrowLeft,
@@ -18,6 +18,8 @@ import {
   Clock,
   FileDown,
   Check,
+  Lock,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   ContractType,
@@ -41,6 +43,7 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
   const [saving, setSaving] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
   const [showSignature, setShowSignature] = useState(false);
+  const [showSignatureStatus, setShowSignatureStatus] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle');
 
   // Dados do contrato
@@ -62,6 +65,12 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+
+  // Contrato está bloqueado para edição?
+  const isLocked =
+    contractStatus === 'SENT_FOR_SIGNATURE' ||
+    contractStatus === 'SIGNED' ||
+    contractStatus === 'ACTIVE';
 
   // Carregar contrato
   useEffect(() => {
@@ -89,6 +98,15 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
           setHtmlContent(c.htmlContent || '');
           setVersions(c.versions || []);
           setCurrentVersion(c.currentVersion);
+
+          // Se está aguardando assinatura, mostrar painel de status
+          if (
+            c.status === 'SENT_FOR_SIGNATURE' ||
+            c.status === 'SIGNED'
+          ) {
+            setShowSignatureStatus(true);
+            setShowSuggestions(false);
+          }
         }
 
         if (companiesData.success) {
@@ -107,6 +125,7 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
   // Salvar contrato
   const handleSave = useCallback(
     async (createVersion = false) => {
+      if (isLocked) return;
       setSaving(true);
       setAutoSaveStatus('saving');
       try {
@@ -142,7 +161,6 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
         const result = await response.json();
         if (result.success && createVersion) {
           setCurrentVersion(currentVersion + 1);
-          // Reload versões
           const vRes = await fetch(`/api/contracts/${contractId}/versions`);
           const vData = await vRes.json();
           if (vData.success) setVersions(vData.data);
@@ -157,10 +175,10 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
         setSaving(false);
       }
     },
-    [contractId, title, contractType, brand, variables, htmlContent, programs, currentVersion]
+    [contractId, title, contractType, brand, variables, htmlContent, programs, currentVersion, isLocked]
   );
 
-  // Autosave
+  // Autosave (apenas em rascunho)
   useAutoSave({
     data: { htmlContent, variables, programs },
     onSave: () => handleSave(false),
@@ -170,6 +188,7 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
 
   // Restaurar versão
   const handleRestoreVersion = async (version: ContractVersionData) => {
+    if (isLocked) return;
     if (!confirm(`Restaurar para versão ${version.version}?`)) return;
 
     try {
@@ -240,7 +259,6 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
       });
       const result = await response.json();
       if (result.success) {
-        // Abrir HTML em nova janela e imprimir como PDF
         const win = window.open('', '_blank');
         if (win) {
           win.document.write(result.data.html);
@@ -279,15 +297,21 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
       const response = await fetch(`/api/contracts/${contractId}/send-signature`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signatories, pdfUrl: '' }),
+        body: JSON.stringify({ signatories }),
       });
       const result = await response.json();
-      if (result.success) {
-        setContractStatus('SENT_FOR_SIGNATURE');
-        alert('Contrato enviado para assinatura com sucesso!');
+
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao enviar para assinatura');
       }
+
+      // Atualizar UI
+      setContractStatus('SENT_FOR_SIGNATURE');
+      setShowSignature(false);
+      setShowSignatureStatus(true);
+      setShowSuggestions(false);
     } catch (err) {
-      console.error('Erro ao enviar para assinatura:', err);
+      throw err; // Re-throw para o modal exibir o erro
     }
   };
 
@@ -299,11 +323,19 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
     brand?: string;
     companyId?: string;
   }) => {
+    if (isLocked) return;
     if (data.variables) setVariables(data.variables);
     if (data.programs) setPrograms(data.programs);
     if (data.type) setContractType(data.type);
     if (data.brand) setBrand(data.brand);
     if (data.companyId) setCompanyId(data.companyId);
+  };
+
+  // Callback quando status muda via painel
+  const handleSignatureStatusChange = (newStatus: string) => {
+    if (newStatus !== contractStatus) {
+      setContractStatus(newStatus as ContractStatus);
+    }
   };
 
   if (loading) {
@@ -330,11 +362,18 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
             </button>
             <div>
               <div className="flex items-center gap-3">
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="text-lg font-bold text-gray-900 border-none focus:outline-none bg-transparent"
-                />
+                {isLocked ? (
+                  <span className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-gray-400" />
+                    {title}
+                  </span>
+                ) : (
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="text-lg font-bold text-gray-900 border-none focus:outline-none bg-transparent"
+                  />
+                )}
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs font-medium ${CONTRACT_STATUS_COLORS[contractStatus]}`}
                 >
@@ -342,17 +381,47 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
                 </span>
               </div>
               <p className="text-xs text-gray-500">
-                {contractNumber} • v{currentVersion}
-                {autoSaveStatus === 'saving' && ' • Salvando...'}
-                {autoSaveStatus === 'saved' && ' • Salvo'}
+                {contractNumber} &bull; v{currentVersion}
+                {autoSaveStatus === 'saving' && ' \u2022 Salvando...'}
+                {autoSaveStatus === 'saved' && ' \u2022 Salvo'}
+                {isLocked && ' \u2022 Bloqueado para edição'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Botão Status Assinatura */}
+            {(contractStatus === 'SENT_FOR_SIGNATURE' || contractStatus === 'SIGNED') && (
+              <button
+                onClick={() => {
+                  setShowSignatureStatus(!showSignatureStatus);
+                  setShowVersions(false);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  showSignatureStatus
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {contractStatus === 'SIGNED' ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                ) : (
+                  <Clock className="w-4 h-4 text-yellow-600" />
+                )}
+                Assinaturas
+              </button>
+            )}
+
             <button
-              onClick={() => setShowVersions(!showVersions)}
-              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm"
+              onClick={() => {
+                setShowVersions(!showVersions);
+                setShowSignatureStatus(false);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                showVersions
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               <Clock className="w-4 h-4" />
               Versões
@@ -373,33 +442,62 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
               <Download className="w-4 h-4" />
               DOCX
             </button>
-            <button
-              onClick={() => setShowSignature(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700"
-            >
-              <Send className="w-4 h-4" />
-              Assinar
-            </button>
-            <button
-              onClick={() => handleSave(true)}
-              disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-            >
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Check className="w-4 h-4" />
-              )}
-              Salvar Versão
-            </button>
+
+            {!isLocked && (
+              <>
+                <button
+                  onClick={() => setShowSignature(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                  Assinar
+                </button>
+                <button
+                  onClick={() => handleSave(true)}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                  Salvar Versão
+                </button>
+              </>
+            )}
           </div>
         </div>
 
+        {/* Banner de bloqueio */}
+        {isLocked && (
+          <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 flex items-center gap-2 text-sm text-yellow-800">
+            <Lock className="w-4 h-4" />
+            {contractStatus === 'SIGNED'
+              ? 'Este contrato foi assinado por todas as partes e está bloqueado.'
+              : 'Este contrato foi enviado para assinatura e não pode ser editado.'}
+          </div>
+        )}
+
         {/* Main Content */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar Esquerda - Formulário ou Versões */}
+          {/* Sidebar Esquerda */}
           <aside className="w-80 bg-white border-r border-gray-200 overflow-y-auto p-4">
-            {showVersions ? (
+            {showSignatureStatus && contractId ? (
+              <>
+                <button
+                  onClick={() => setShowSignatureStatus(false)}
+                  className="text-sm text-purple-600 hover:underline mb-3 flex items-center gap-1"
+                >
+                  <ArrowLeft className="w-3 h-3" />
+                  Voltar ao formulário
+                </button>
+                <SignatureStatusPanel
+                  contractId={contractId}
+                  onStatusChange={handleSignatureStatusChange}
+                />
+              </>
+            ) : showVersions ? (
               <>
                 <button
                   onClick={() => setShowVersions(false)}
@@ -436,21 +534,27 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
 
           {/* Editor Central */}
           <main className="flex-1 overflow-hidden">
-            <ContractEditor content={htmlContent} onChange={setHtmlContent} />
+            <ContractEditor
+              content={htmlContent}
+              onChange={isLocked ? () => {} : setHtmlContent}
+              brand={brand}
+            />
           </main>
 
           {/* Sidebar Direita - Sugestões IA */}
-          <AISuggestionsPanel
-            suggestions={suggestions}
-            loading={suggestionsLoading}
-            isOpen={showSuggestions}
-            onToggle={() => setShowSuggestions(!showSuggestions)}
-            onInsert={handleInsertSuggestion}
-            onDismiss={(suggestionId) =>
-              setSuggestions((prev) => prev.filter((s) => s.id !== suggestionId))
-            }
-            onRefresh={refreshSuggestions}
-          />
+          {!isLocked && (
+            <AISuggestionsPanel
+              suggestions={suggestions}
+              loading={suggestionsLoading}
+              isOpen={showSuggestions}
+              onToggle={() => setShowSuggestions(!showSuggestions)}
+              onInsert={handleInsertSuggestion}
+              onDismiss={(suggestionId) =>
+                setSuggestions((prev) => prev.filter((s) => s.id !== suggestionId))
+              }
+              onRefresh={refreshSuggestions}
+            />
+          )}
         </div>
       </div>
 
@@ -458,6 +562,7 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
       {showSignature && (
         <SignatureModal
           contractTitle={title}
+          contractVariables={variables}
           onSend={handleSendSignature}
           onClose={() => setShowSignature(false)}
         />

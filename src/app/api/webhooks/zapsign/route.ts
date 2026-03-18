@@ -8,6 +8,8 @@ export async function POST(request: NextRequest) {
     const body: ZapSignWebhookPayload = await request.json();
     const event = parseWebhookEvent(body);
 
+    console.log(`[ZapSign Webhook] Evento: ${event.eventType}, Doc: ${event.docToken}`);
+
     // Buscar contrato pelo token do ZapSign
     const contract = await prisma.contract.findFirst({
       where: { zapsignDocId: event.docToken },
@@ -15,23 +17,36 @@ export async function POST(request: NextRequest) {
     });
 
     if (!contract) {
+      console.log('[ZapSign Webhook] Contrato não encontrado para token:', event.docToken);
       return NextResponse.json({ received: true, matched: false });
     }
 
-    // Atualizar status dos signatários
+    // Atualizar status de cada signatário
     for (const signer of event.signers) {
-      if (signer.status === 'signed') {
-        await prisma.contractSignatory.updateMany({
-          where: {
-            contractId: contract.id,
-            zapsignSignerId: signer.token,
-          },
-          data: { signedAt: new Date() },
-        });
-      }
+      const dbSignatory = contract.signatories.find(
+        (s) => s.zapsignSignerId === signer.token
+      );
+
+      if (!dbSignatory) continue;
+
+      const newStatus =
+        signer.status === 'signed'
+          ? 'signed'
+          : signer.status === 'refused'
+            ? 'refused'
+            : 'pending';
+
+      await prisma.contractSignatory.update({
+        where: { id: dbSignatory.id },
+        data: {
+          status: newStatus,
+          signedAt: newStatus === 'signed' ? new Date() : null,
+          signUrl: signer.sign_url || dbSignatory.signUrl,
+        },
+      });
     }
 
-    // Se todos assinaram, atualizar contrato
+    // Atualizar status do contrato
     if (event.allSigned) {
       await prisma.contract.update({
         where: { id: contract.id },
@@ -41,8 +56,16 @@ export async function POST(request: NextRequest) {
           signedAt: new Date(),
         },
       });
+      console.log(`[ZapSign Webhook] Contrato ${contract.number} ASSINADO por todos`);
+    } else if (event.hasRefused) {
+      await prisma.contract.update({
+        where: { id: contract.id },
+        data: {
+          zapsignStatus: 'refused',
+        },
+      });
+      console.log(`[ZapSign Webhook] Contrato ${contract.number} teve recusa`);
     } else {
-      // Atualizar status geral
       await prisma.contract.update({
         where: { id: contract.id },
         data: {
@@ -53,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true, matched: true });
   } catch (error) {
-    console.error('Erro no webhook ZapSign:', error);
+    console.error('[ZapSign Webhook] Erro:', error);
     return NextResponse.json(
       { received: false, error: 'Erro interno' },
       { status: 500 }

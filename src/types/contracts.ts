@@ -21,6 +21,17 @@ export type ContractStatus =
 
 export type FileType = 'PDF' | 'DOCX';
 
+export type TemplateType =
+  | 'MASTER_AGREEMENT'
+  | 'TERMOS_CONDICOES'
+  | 'ANEXO_COMERCIAL';
+
+export const TEMPLATE_TYPE_LABELS: Record<TemplateType, string> = {
+  MASTER_AGREEMENT: 'Master Agreement',
+  TERMOS_CONDICOES: 'Termos e Condições',
+  ANEXO_COMERCIAL: 'Anexo Condições Comerciais',
+};
+
 // Labels para exibição
 export const CONTRACT_TYPE_LABELS: Record<ContractType, string> = {
   CORPORATIVO: 'Corporativo',
@@ -147,11 +158,39 @@ export interface ContractVersionData {
 
 // Signatário
 export interface SignatoryData {
+  id?: string;
   name: string;
   email: string;
   cpf?: string;
   role: 'contratante' | 'contratada';
+  signatoryType: 'responsavel' | 'testemunha';
+  status?: 'pending' | 'signed' | 'refused';
+  signUrl?: string;
+  signedAt?: string;
+  zapsignSignerId?: string;
 }
+
+export const SIGNATORY_TYPE_LABELS: Record<string, string> = {
+  responsavel: 'Responsável',
+  testemunha: 'Testemunha',
+};
+
+export const SIGNATORY_ROLE_LABELS: Record<string, string> = {
+  contratante: 'Contratante',
+  contratada: 'Contratada',
+};
+
+export const SIGNATORY_STATUS_LABELS: Record<string, string> = {
+  pending: 'Pendente',
+  signed: 'Assinado',
+  refused: 'Recusado',
+};
+
+export const SIGNATORY_STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-700',
+  signed: 'bg-green-100 text-green-700',
+  refused: 'bg-red-100 text-red-700',
+};
 
 // Sugestão IA
 export interface AISuggestion {

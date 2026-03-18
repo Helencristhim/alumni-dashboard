@@ -301,15 +301,19 @@ model ContractFile {
 }
 
 model ContractSignatory {
-  id          String   @id @default(cuid())
-  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  contractId  String
-  name        String
-  email       String
-  cpf         String?
-  role        String   // "contratante", "contratada"
-  signedAt    DateTime?
-  zapsignSignerId String? // ID do signatario no ZapSign
+  id              String   @id @default(cuid())
+  contract        Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contractId      String
+  name            String
+  email           String
+  cpf             String?
+  role            String   // "contratante", "contratada"
+  signatoryType   String   @default("responsavel") // "responsavel", "testemunha"
+  status          String   @default("pending") // "pending", "signed", "refused"
+  signUrl         String?  // URL individual de assinatura no ZapSign
+  signedAt        DateTime?
+  zapsignSignerId String?  // Token do signatario no ZapSign
+  createdAt       DateTime @default(now())
 
   @@index([contractId])
 }

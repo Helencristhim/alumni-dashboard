@@ -1,9 +1,88 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db/prisma';
-import { createDocument } from '@/lib/contracts/zapsign';
+import { createDocumentFromBase64 } from '@/lib/contracts/zapsign';
 import { SignatoryData } from '@/types/contracts';
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+} from 'docx';
 
-// POST /api/contracts/[id]/send-signature - Enviar para assinatura
+// Converter HTML do contrato para elementos DOCX
+function htmlToDocxElements(html: string): Paragraph[] {
+  const paragraphs: Paragraph[] = [];
+
+  const lines = html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/h[1-3]>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/tr>/gi, '\n')
+    .split('\n');
+
+  for (const line of lines) {
+    const cleanText = line.replace(/<[^>]*>/g, '').trim();
+    if (!cleanText) continue;
+
+    const isH1 = /<h1/i.test(line);
+    const isH2 = /<h2/i.test(line);
+    const isH3 = /<h3/i.test(line);
+    const isBold = /<strong|<b>/i.test(line);
+    const isListItem = /<li/i.test(line);
+
+    if (isH1) {
+      paragraphs.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          alignment: AlignmentType.CENTER,
+          children: [new TextRun({ text: cleanText, bold: true, size: 36 })],
+        })
+      );
+    } else if (isH2) {
+      paragraphs.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [new TextRun({ text: cleanText, bold: true, size: 28 })],
+          spacing: { before: 240 },
+        })
+      );
+    } else if (isH3) {
+      paragraphs.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [new TextRun({ text: cleanText, bold: true, size: 24 })],
+        })
+      );
+    } else if (isListItem) {
+      paragraphs.push(
+        new Paragraph({
+          children: [new TextRun({ text: `• ${cleanText}`, size: 24 })],
+          indent: { left: 720 },
+        })
+      );
+    } else {
+      paragraphs.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: cleanText,
+              bold: isBold,
+              size: 24,
+            }),
+          ],
+          alignment: AlignmentType.JUSTIFIED,
+        })
+      );
+    }
+  }
+
+  return paragraphs;
+}
+
+// POST /api/contracts/[id]/send-signature - Enviar para assinatura via ZapSign
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -11,11 +90,16 @@ export async function POST(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { signatories, pdfUrl } = body as {
-      signatories: SignatoryData[];
-      pdfUrl: string;
-    };
+    const { signatories } = body as { signatories: SignatoryData[] };
 
+    if (!signatories?.length) {
+      return NextResponse.json(
+        { success: false, error: 'Informe pelo menos um signatário' },
+        { status: 400 }
+      );
+    }
+
+    // Buscar contrato
     const contract = await prisma.contract.findUnique({
       where: { id },
       include: { company: true },
@@ -28,25 +112,71 @@ export async function POST(
       );
     }
 
-    // Enviar para ZapSign
-    const docResult = await createDocument(
-      `${contract.title} - ${contract.company.razaoSocial}`,
-      pdfUrl,
-      signatories
+    if (contract.status === 'SENT_FOR_SIGNATURE' || contract.status === 'SIGNED') {
+      return NextResponse.json(
+        { success: false, error: 'Contrato já foi enviado para assinatura' },
+        { status: 400 }
+      );
+    }
+
+    // 1. Gerar DOCX a partir do HTML do contrato
+    const elements = htmlToDocxElements(contract.htmlContent);
+    const doc = new Document({
+      sections: [
+        {
+          properties: {
+            page: {
+              margin: {
+                top: 1440,
+                right: 1440,
+                bottom: 1440,
+                left: 1440,
+              },
+            },
+          },
+          children: elements,
+        },
+      ],
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+
+    // 2. Converter para base64
+    const base64Content = Buffer.from(buffer).toString('base64');
+
+    // 3. Enviar para ZapSign
+    const docName = `${contract.title} - ${contract.company.razaoSocial}`;
+    const docResult = await createDocumentFromBase64(
+      docName,
+      base64Content,
+      signatories,
+      {
+        reminderEveryNDays: 3,
+        externalId: contract.id,
+      }
     );
 
-    // Atualizar contrato com dados da assinatura
+    // 4. Salvar signatários e atualizar contrato em transação
     const updated = await prisma.$transaction(async (tx) => {
-      // Salvar signatários
+      // Remover signatários antigos (se houver tentativa anterior)
+      await tx.contractSignatory.deleteMany({
+        where: { contractId: id },
+      });
+
+      // Salvar cada signatário com dados do ZapSign
       for (let i = 0; i < signatories.length; i++) {
+        const zapSigner = docResult.signers[i];
         await tx.contractSignatory.create({
           data: {
             contractId: id,
             name: signatories[i].name,
             email: signatories[i].email,
-            cpf: signatories[i].cpf,
+            cpf: signatories[i].cpf ?? '',
             role: signatories[i].role,
-            zapsignSignerId: docResult.signers[i]?.token,
+            signatoryType: signatories[i].signatoryType,
+            status: 'pending',
+            signUrl: zapSigner?.sign_url ?? '',
+            zapsignSignerId: zapSigner?.token ?? '',
           },
         });
       }
@@ -59,6 +189,9 @@ export async function POST(
           zapsignDocId: docResult.token,
           zapsignStatus: 'pending',
         },
+        include: {
+          signatories: true,
+        },
       });
     });
 
@@ -66,13 +199,23 @@ export async function POST(
       success: true,
       data: {
         contract: updated,
-        zapsign: docResult,
+        signatories: updated.signatories.map((s) => ({
+          id: s.id,
+          name: s.name,
+          email: s.email,
+          role: s.role,
+          signatoryType: s.signatoryType,
+          status: s.status,
+          signUrl: s.signUrl,
+        })),
       },
     });
   } catch (error) {
     console.error('Erro ao enviar para assinatura:', error);
+    const message =
+      error instanceof Error ? error.message : 'Erro ao enviar para assinatura';
     return NextResponse.json(
-      { success: false, error: 'Erro ao enviar para assinatura' },
+      { success: false, error: message },
       { status: 500 }
     );
   }
