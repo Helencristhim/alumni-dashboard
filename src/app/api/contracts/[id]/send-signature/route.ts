@@ -33,9 +33,9 @@ export async function POST(
       );
     }
 
-    if (contract.status === 'SENT_FOR_SIGNATURE' || contract.status === 'SIGNED') {
+    if (contract.status === 'SIGNED') {
       return NextResponse.json(
-        { success: false, error: 'Contrato já foi enviado para assinatura' },
+        { success: false, error: 'Contrato já foi assinado e não pode ser reenviado' },
         { status: 400 }
       );
     }

@@ -68,9 +68,11 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
 
   // Contrato está bloqueado para edição?
   const isLocked =
-    contractStatus === 'SENT_FOR_SIGNATURE' ||
     contractStatus === 'SIGNED' ||
     contractStatus === 'ACTIVE';
+
+  // Contrato aguardando assinatura (permite reenvio)
+  const isPendingSignature = contractStatus === 'SENT_FOR_SIGNATURE';
 
   // Carregar contrato
   useEffect(() => {
@@ -443,28 +445,28 @@ export default function EditContractPage({ params }: { params: Promise<{ id: str
               DOCX
             </button>
 
-            {!isLocked && (
-              <>
-                <button
-                  onClick={() => setShowSignature(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                  Assinar
-                </button>
-                <button
-                  onClick={() => handleSave(true)}
-                  disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Check className="w-4 h-4" />
-                  )}
-                  Salvar Versão
-                </button>
-              </>
+            {(!isLocked || isPendingSignature) && (
+              <button
+                onClick={() => setShowSignature(true)}
+                className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+              >
+                <Send className="w-4 h-4" />
+                {isPendingSignature ? 'Reenviar' : 'Assinar'}
+              </button>
+            )}
+            {!isLocked && !isPendingSignature && (
+              <button
+                onClick={() => handleSave(true)}
+                disabled={saving}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                {saving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
+                Salvar Versão
+              </button>
             )}
           </div>
         </div>
