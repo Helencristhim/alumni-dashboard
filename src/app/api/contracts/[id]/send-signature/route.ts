@@ -1,86 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db/prisma';
-import { createDocumentFromBase64 } from '@/lib/contracts/zapsign';
+import { createDocumentFromUrl } from '@/lib/contracts/zapsign';
 import { SignatoryData } from '@/types/contracts';
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  HeadingLevel,
-  AlignmentType,
-} from 'docx';
-
-// Converter HTML do contrato para elementos DOCX
-function htmlToDocxElements(html: string): Paragraph[] {
-  const paragraphs: Paragraph[] = [];
-
-  const lines = html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
-    .replace(/<\/h[1-3]>/gi, '\n')
-    .replace(/<\/li>/gi, '\n')
-    .replace(/<\/tr>/gi, '\n')
-    .split('\n');
-
-  for (const line of lines) {
-    const cleanText = line.replace(/<[^>]*>/g, '').trim();
-    if (!cleanText) continue;
-
-    const isH1 = /<h1/i.test(line);
-    const isH2 = /<h2/i.test(line);
-    const isH3 = /<h3/i.test(line);
-    const isBold = /<strong|<b>/i.test(line);
-    const isListItem = /<li/i.test(line);
-
-    if (isH1) {
-      paragraphs.push(
-        new Paragraph({
-          heading: HeadingLevel.HEADING_1,
-          alignment: AlignmentType.CENTER,
-          children: [new TextRun({ text: cleanText, bold: true, size: 36 })],
-        })
-      );
-    } else if (isH2) {
-      paragraphs.push(
-        new Paragraph({
-          heading: HeadingLevel.HEADING_2,
-          children: [new TextRun({ text: cleanText, bold: true, size: 28 })],
-          spacing: { before: 240 },
-        })
-      );
-    } else if (isH3) {
-      paragraphs.push(
-        new Paragraph({
-          heading: HeadingLevel.HEADING_3,
-          children: [new TextRun({ text: cleanText, bold: true, size: 24 })],
-        })
-      );
-    } else if (isListItem) {
-      paragraphs.push(
-        new Paragraph({
-          children: [new TextRun({ text: `• ${cleanText}`, size: 24 })],
-          indent: { left: 720 },
-        })
-      );
-    } else {
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: cleanText,
-              bold: isBold,
-              size: 24,
-            }),
-          ],
-          alignment: AlignmentType.JUSTIFIED,
-        })
-      );
-    }
-  }
-
-  return paragraphs;
-}
 
 // POST /api/contracts/[id]/send-signature - Enviar para assinatura via ZapSign
 export async function POST(
@@ -119,36 +40,15 @@ export async function POST(
       );
     }
 
-    // 1. Gerar DOCX a partir do HTML do contrato
-    const elements = htmlToDocxElements(contract.htmlContent);
-    const doc = new Document({
-      sections: [
-        {
-          properties: {
-            page: {
-              margin: {
-                top: 1440,
-                right: 1440,
-                bottom: 1440,
-                left: 1440,
-              },
-            },
-          },
-          children: elements,
-        },
-      ],
-    });
+    // 1. Construir URL pública do DOCX para ZapSign buscar
+    const origin = request.nextUrl.origin;
+    const docxUrl = `${origin}/api/contracts/${id}/serve-docx`;
 
-    const buffer = await Packer.toBuffer(doc);
-
-    // 2. Converter para base64
-    const base64Content = Buffer.from(buffer).toString('base64');
-
-    // 3. Enviar para ZapSign
+    // 2. Enviar para ZapSign com URL do DOCX
     const docName = `${contract.title} - ${contract.company.razaoSocial}`;
-    const docResult = await createDocumentFromBase64(
+    const docResult = await createDocumentFromUrl(
       docName,
-      base64Content,
+      docxUrl,
       signatories,
       {
         reminderEveryNDays: 3,
@@ -156,7 +56,7 @@ export async function POST(
       }
     );
 
-    // 4. Salvar signatários e atualizar contrato em transação
+    // 3. Salvar signatários e atualizar contrato em transação
     const updated = await prisma.$transaction(async (tx) => {
       // Remover signatários antigos (se houver tentativa anterior)
       await tx.contractSignatory.deleteMany({
