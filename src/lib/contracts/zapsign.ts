@@ -36,12 +36,12 @@ export interface ZapSignDocResponse {
 }
 
 // ============================================================
-// CRIAR DOCUMENTO PARA ASSINATURA (com URL do DOCX/PDF)
+// CRIAR DOCUMENTO PARA ASSINATURA (com base64 PDF)
 // ============================================================
 
-export async function createDocumentFromUrl(
+export async function createDocumentFromBase64(
   name: string,
-  docUrl: string,
+  base64Pdf: string,
   signatories: SignatoryData[],
   options?: {
     reminderEveryNDays?: number;
@@ -59,7 +59,7 @@ export async function createDocumentFromUrl(
     body: JSON.stringify({
       sandbox: process.env.ZAPSIGN_SANDBOX !== 'false',
       name,
-      url_pdf: docUrl,
+      base64_pdf: base64Pdf,
       lang: 'pt-br',
       disable_signer_emails: false,
       send_automatic_email: true,

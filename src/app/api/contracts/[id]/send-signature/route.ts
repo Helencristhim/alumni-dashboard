@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db/prisma';
-import { createDocumentFromUrl } from '@/lib/contracts/zapsign';
+import { createDocumentFromBase64 } from '@/lib/contracts/zapsign';
 import { SignatoryData } from '@/types/contracts';
+import { generateContractPdf } from '@/lib/contracts/pdf-generator';
 
 // POST /api/contracts/[id]/send-signature - Enviar para assinatura via ZapSign
 export async function POST(
@@ -40,15 +41,20 @@ export async function POST(
       );
     }
 
-    // 1. Construir URL pública do DOCX para ZapSign buscar
-    const origin = request.nextUrl.origin;
-    const docxUrl = `${origin}/api/contracts/${id}/serve-docx`;
+    // 1. Gerar PDF real do contrato
+    const pdfBytes = await generateContractPdf(contract.htmlContent, {
+      title: contract.title,
+      brand: contract.brand,
+    });
 
-    // 2. Enviar para ZapSign com URL do DOCX
+    // 2. Converter para base64
+    const base64Pdf = Buffer.from(pdfBytes).toString('base64');
+
+    // 3. Enviar para ZapSign com PDF real
     const docName = `${contract.title} - ${contract.company.razaoSocial}`;
-    const docResult = await createDocumentFromUrl(
+    const docResult = await createDocumentFromBase64(
       docName,
-      docxUrl,
+      base64Pdf,
       signatories,
       {
         reminderEveryNDays: 3,
@@ -56,14 +62,12 @@ export async function POST(
       }
     );
 
-    // 3. Salvar signatários e atualizar contrato em transação
+    // 4. Salvar signatários e atualizar contrato em transação
     const updated = await prisma.$transaction(async (tx) => {
-      // Remover signatários antigos (se houver tentativa anterior)
       await tx.contractSignatory.deleteMany({
         where: { contractId: id },
       });
 
-      // Salvar cada signatário com dados do ZapSign
       for (let i = 0; i < signatories.length; i++) {
         const zapSigner = docResult.signers[i];
         await tx.contractSignatory.create({
@@ -81,7 +85,6 @@ export async function POST(
         });
       }
 
-      // Atualizar status do contrato
       return tx.contract.update({
         where: { id },
         data: {
