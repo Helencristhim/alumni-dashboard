@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Building2,
   Plus,
@@ -90,6 +90,24 @@ export function ContractForm({
   };
 
   const totalContrato = programs.reduce((sum, p) => sum + (p.valorTotal || 0), 0);
+
+  // Auto-sync valor total do contrato quando programas mudam
+  useEffect(() => {
+    if (totalContrato > 0) {
+      const formatted = totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      if (variables.valor_total_contrato !== formatted) {
+        onChange({ variables: { ...variables, valor_total_contrato: formatted } });
+      }
+    }
+  }, [totalContrato]);
+
+  // Auto-preencher data de início com hoje se vazio
+  useEffect(() => {
+    if (!variables.data_inicio) {
+      const today = new Date().toISOString().split('T')[0];
+      onChange({ variables: { ...variables, data_inicio: today } });
+    }
+  }, []);
 
   const Section = ({
     id,
@@ -284,27 +302,29 @@ export function ContractForm({
               <div>
                 <label className="text-xs text-gray-500">Alunos</label>
                 <input
-                  type="number"
-                  value={program.quantidade}
-                  onChange={(e) =>
-                    updateProgram(index, { quantidade: parseInt(e.target.value) || 0 })
-                  }
+                  type="text"
+                  inputMode="numeric"
+                  value={program.quantidade || ''}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    updateProgram(index, { quantidade: parseInt(val) || 0 });
+                  }}
                   className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
-                  min={1}
                 />
               </div>
               <div>
                 <label className="text-xs text-gray-500">Valor Unit.</label>
                 <input
-                  type="number"
-                  value={program.valorUnitario}
-                  onChange={(e) =>
+                  type="text"
+                  inputMode="decimal"
+                  value={program.valorUnitario || ''}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^\d.,]/g, '').replace(',', '.');
                     updateProgram(index, {
-                      valorUnitario: parseFloat(e.target.value) || 0,
-                    })
-                  }
+                      valorUnitario: parseFloat(val) || 0,
+                    });
+                  }}
                   className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
-                  step="0.01"
                 />
               </div>
               <div>
@@ -370,12 +390,24 @@ export function ContractForm({
             type="number"
           />
         </div>
-        <Input
-          label="Valor Total do Contrato"
-          value={variables.valor_total_contrato || ''}
-          variableKey="valor_total_contrato"
-          placeholder="0,00"
-        />
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            Valor Total do Contrato
+          </label>
+          <input
+            type="text"
+            value={
+              totalContrato > 0
+                ? `R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                : variables.valor_total_contrato || '0,00'
+            }
+            readOnly
+            className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-700 font-medium"
+          />
+          {totalContrato > 0 && (
+            <p className="text-xs text-gray-400 mt-1">Calculado automaticamente dos programas</p>
+          )}
+        </div>
       </Section>
 
       {/* Foro */}
