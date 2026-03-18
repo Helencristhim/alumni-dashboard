@@ -57,7 +57,7 @@ export async function createDocumentFromBase64(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      sandbox: process.env.NODE_ENV !== 'production',
+      sandbox: process.env.ZAPSIGN_SANDBOX !== 'false',
       name,
       base64_pdf: base64Content,
       lang: 'pt-br',
