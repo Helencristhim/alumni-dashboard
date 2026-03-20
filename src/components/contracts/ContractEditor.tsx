@@ -97,7 +97,7 @@ export function ContractEditor({
     editorProps: {
       attributes: {
         class:
-          'prose prose-sm sm:prose max-w-none focus:outline-none min-h-[600px] px-12 py-8',
+          'contract-editor focus:outline-none min-h-[600px] px-12 py-8',
       },
     },
     onUpdate: ({ editor: ed }) => {
