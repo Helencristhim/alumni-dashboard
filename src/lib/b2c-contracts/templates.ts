@@ -1,5 +1,6 @@
 // =============================================================================
 // B2C Contract Templates — Alumni by Better Education
+// Real contract content extracted from official DOCX files
 // =============================================================================
 
 // ---------------------------------------------------------------------------
@@ -7,110 +8,146 @@
 // ---------------------------------------------------------------------------
 
 export const PRIVATE_TEMPLATE = `
-<h1 style="text-align:center; font-size:20px; font-weight:bold; margin-bottom:8px;">
-  CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS — AULAS PARTICULARES
-</h1>
-<p style="text-align:center; font-size:13px; color:#555; margin-bottom:24px;">
-  Contrato nº {{numero_contrato}} &bull; Data: {{data_contrato}}
-</p>
+<h1>CONTRATO - CURSO PARTICULAR DE INGLÊS</h1>
+<h2>CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS</h2>
+<p>Data de Emissão: {{data_emissao}}</p>
 
-<h2>CLÁUSULA 1 — DAS PARTES</h2>
+<h2>1. PARTES CONTRATANTES</h2>
 
-<p><strong>CONTRATADA:</strong> BETTER EDUCATION LTDA, pessoa jurídica de direito privado,
-inscrita no CNPJ sob o nº 46.849.730/0001-55, com sede na Alameda Terracota, 185,
-Sala 1213, Barueri/SP, CEP 06460-110, neste ato representada por seu sócio-administrador
-<strong>Gilberto Gonçalves Rodrigues</strong>, CPF 261.791.848-08, doravante denominada
-<strong>"ALUMNI BY BETTER EDUCATION"</strong> ou simplesmente <strong>"CONTRATADA"</strong>.</p>
+<h3>1.1 CONTRATADA</h3>
+<p>Razão Social: Better Education – Alumni by Better<br>
+CNPJ: 53.286.868/0001-66<br>
+Endereço: Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville Barueri/SP – CEP 06453-008<br>
+Telefone: +55 11 97380-0517</p>
 
-<p><strong>CONTRATANTE:</strong> {{nome}}, inscrito(a) no CPF sob o nº {{cpf}},
-e-mail {{email}}, telefone {{telefone}}, residente e domiciliado(a) em {{endereco}},
-doravante denominado(a) <strong>"CONTRATANTE"</strong> ou <strong>"ALUNO(A)"</strong>.</p>
+<h3>1.2 CONTRATANTE</h3>
+<p>Nome Completo: {{nome}}<br>
+CPF: {{cpf}}<br>
+E-mail: {{email}}<br>
+Endereço Completo: {{endereco}}<br>
+Telefone: {{telefone}}</p>
 
-<h2>CLÁUSULA 2 — DO OBJETO</h2>
+<h2>2. OBJETO DO CONTRATO</h2>
+<p>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Particular conforme especificações abaixo:</p>
 
-<p>O presente contrato tem por objeto a prestação de serviços educacionais de ensino de
-língua inglesa na modalidade <strong>aulas particulares (Private)</strong>, sob a marca
-"Alumni by Better Education", no formato <strong>{{formato}}</strong>, conforme condições
-a seguir estabelecidas.</p>
+<h3>2.1 ESPECIFICAÇÕES DO CURSO</h3>
+<p>Modalidade: Aulas individuais</p>
+<p>Carga Horária Total: {{carga_horaria}}</p>
+<p>Período de Vigência: {{vigencia}}</p>
+<p>Formato: {{formato}}</p>
 
-<h2>CLÁUSULA 3 — DA CARGA HORÁRIA E DURAÇÃO</h2>
+<h3>2.2 RECURSOS INCLUSOS</h3>
+<p>Acesso à plataforma digital de estudos Alumni do nível indicado</p>
+<p>Teste de nivelamento inicial</p>
+<p>Avaliações periódicas de desempenho</p>
+<p>Material didático digital (Um material de career a escolher e um grammar practice)</p>
+<p>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% após nivelamento)</p>
+<p>Suporte pedagógico via chat/e-mail</p>
 
-<p>3.1. A carga horária total contratada é de <strong>{{carga_horaria}}</strong>.</p>
-<p>3.2. As aulas terão início em <strong>{{data_inicio}}</strong>, e os horários serão
-acordados diretamente entre o(a) CONTRATANTE e o(a) professor(a) designado(a) pela
-CONTRATADA.</p>
-<p>3.3. Eventual reagendamento de aula deverá ser solicitado com, no mínimo, 24 (vinte e
-quatro) horas de antecedência. Caso contrário, a aula será considerada ministrada para
-todos os efeitos.</p>
+<h2>3. INVESTIMENTO E CONDIÇÕES DE PAGAMENTO</h2>
 
-<h2>CLÁUSULA 4 — DO VALOR E FORMA DE PAGAMENTO</h2>
+<h3>3.1 VALOR TOTAL E FORMA DE PAGAMENTO</h3>
+<p>Valor por aula: R$ {{valor_por_aula}}<br>
+Valor total: R$ {{valor_total}}<br>
+Parcelamento: {{parcelas}}<br>
+Opções de Pagamento: {{forma_pagamento}}<br>
+*Se trata de um parcelamento do pacote contratado</p>
 
-<p>4.1. Pela prestação dos serviços ora contratados, o(a) CONTRATANTE pagará à CONTRATADA
-o valor total de <strong>R$ {{valor_total}}</strong>, equivalente a
-<strong>R$ {{valor_por_aula}}</strong> por aula.</p>
-<p>4.2. O pagamento será realizado em <strong>{{parcelas}}</strong>, na forma de
-<strong>{{forma_pagamento}}</strong>.</p>
-<p>4.3. O atraso no pagamento de qualquer parcela acarretará multa de 2% (dois por cento)
-sobre o valor da parcela vencida, acrescida de juros moratórios de 1% (um por cento) ao
-mês, calculados <em>pro rata die</em>.</p>
+<h3>3.2 ATRASO NO PAGAMENTO</h3>
+<p>Em caso de atraso, serão aplicados:</p>
+<p>Multa: 2% sobre o valor da parcela</p>
+<p>Juros: 1% ao mês (pro rata die)</p>
+<p>Suspensão: Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
 
-<h2>CLÁUSULA 5 — DAS OBRIGAÇÕES DA CONTRATADA</h2>
+<h2>4. AGENDAMENTO E REALIZAÇÃO DAS AULAS</h2>
 
-<p>5.1. Disponibilizar professor(a) qualificado(a) e material didático adequado ao nível
-do(a) CONTRATANTE.</p>
-<p>5.2. Acompanhar o progresso pedagógico do(a) CONTRATANTE e fornecer relatórios de
-evolução quando solicitado.</p>
-<p>5.3. Manter ambiente adequado para as aulas, presenciais ou on-line, conforme o formato
-contratado.</p>
+<h3>4.1 CANCELAMENTO E REAGENDAMENTO</h3>
+<p>Para cancelamento - mínimo de 48h - caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</p>
+<p>Para reagendamento - mínimo de 24h - caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</p>
+<p>Não é possível reagendar/cancelar uma mesma aula mais de uma vez.</p>
 
-<h2>CLÁUSULA 6 — DAS OBRIGAÇÕES DO(A) CONTRATANTE</h2>
+<h2>5. VALIDADE E VIGÊNCIA</h2>
 
-<p>6.1. Efetuar o pagamento nas datas e condições pactuadas.</p>
-<p>6.2. Comparecer às aulas nos horários agendados ou comunicar ausência com antecedência
-mínima de 24 horas.</p>
-<p>6.3. Zelar pelo material didático e equipamentos eventualmente disponibilizados pela
-CONTRATADA.</p>
-<p>6.4. Não reproduzir, distribuir ou compartilhar o material didático fornecido pela
-CONTRATADA, sob pena de responsabilização civil e criminal.</p>
+<h3>5.1 PERÍODO DE UTILIZAÇÃO</h3>
+<p>Início: {{data_inicio}}</p>
+<p>Término: {{data_termino}}</p>
+<p>Prazo para utilização das horas: {{vigencia}}</p>
+<p>Prorrogação: Mediante solicitação e aprovação, com cobrança proporcional</p>
 
-<h2>CLÁUSULA 7 — DO CANCELAMENTO E RESCISÃO</h2>
+<h3>5.2 PAUSAS/TRANCAMENTO</h3>
+<p>Permitido 1 trancamento de 15 dias a cada 6 meses de contrato</p>
+<p>Solicitação com 15 dias de antecedência</p>
+<p>Período de trancamento não suspende cobranças das parcelas</p>
 
-<p>7.1. O(A) CONTRATANTE poderá solicitar o cancelamento do presente contrato a qualquer
-momento, mediante comunicação por escrito com antecedência mínima de 30 (trinta) dias.</p>
-<p>7.2. Em caso de cancelamento, será devido o valor proporcional às aulas já ministradas,
-acrescido de multa rescisória de 20% (vinte por cento) sobre o saldo restante do
-contrato.</p>
-<p>7.3. A CONTRATADA reserva-se o direito de rescindir o contrato em caso de inadimplência
-superior a 30 (trinta) dias ou por descumprimento de qualquer cláusula contratual por
-parte do(a) CONTRATANTE.</p>
+<h2>6. POLÍTICA DE CANCELAMENTO E REEMBOLSO</h2>
 
-<h2>CLÁUSULA 8 — DAS DISPOSIÇÕES GERAIS</h2>
+<h3>6.1 DIREITO DE ARREPENDIMENTO (7 DIAS - CDC)</h3>
+<p>O CONTRATANTE poderá cancelar o contrato no prazo de até 7 (sete) dias corridos a contar da data da contratação, conforme art. 49 do Código de Defesa do Consumidor.</p>
+<p>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos;</p>
+<p>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação.</p>
 
-<p>8.1. O presente contrato é regido pelas leis da República Federativa do Brasil.</p>
-<p>8.2. As partes elegem o foro da Comarca de <strong>Barueri/SP</strong> para dirimir
-quaisquer dúvidas ou controvérsias oriundas deste contrato, com renúncia expressa a
-qualquer outro, por mais privilegiado que seja.</p>
+<h3>6.2 CANCELAMENTO APÓS 7 DIAS</h3>
+<p>Após o prazo de arrependimento:</p>
+<p>O valor referente aos serviços educacionais poderá ser reembolsado conforme o consumo de aulas utilizado pelo CONTRATANTE independentemente da forma de parcelamento. O valor terá como base o valor da hora aula x aulas utilizadas</p>
+<p>Sobre o valor remanescente dos serviços, será aplicada multa de 10% (dez por cento);</p>
 
-<p style="margin-top:32px;">E, por estarem justas e contratadas, as partes assinam o
-presente instrumento em 2 (duas) vias de igual teor e forma.</p>
+<h3>6.3 PRAZO PARA REEMBOLSO</h3>
+<p>Quando aplicável, o reembolso será efetuado em até 30 (trinta) dias úteis, contados a partir da solicitação formal de cancelamento, pelo mesmo meio de pagamento utilizado.</p>
+
+<h3>6.4 DISPOSIÇÕES GERAIS</h3>
+<p>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380 0517 e preenchimento do formulário envio pelo canal;</p>
+<p>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais;</p>
+
+<h2>7. OBRIGAÇÕES DA CONTRATADA</h2>
+<p>Fornecer professores qualificados e certificados</p>
+<p>Garantir acesso à plataforma digital 24/7</p>
+<p>Realizar avaliações periódicas de progresso</p>
+<p>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</p>
+<p>Manter sigilo sobre dados pessoais do aluno (LGPD)</p>
+
+<h2>8. OBRIGAÇÕES DO CONTRATANTE</h2>
+<p>Efetuar pagamentos nas datas acordadas</p>
+<p>Comparecer/conectar-se pontualmente às aulas agendadas</p>
+<p>Utilizar adequadamente a plataforma e materiais</p>
+<p>Respeitar professores e demais alunos (se aplicável)</p>
+<p>Informar imediatamente problemas técnicos ou pedagógicos</p>
+
+<h2>9. PROPRIEDADE INTELECTUAL</h2>
+<p>Todo material didático é propriedade da CONTRATADA</p>
+<p>Proibida reprodução, distribuição ou comercialização</p>
+<p>Uso exclusivo para fins de estudo pessoal</p>
+
+<h2>10. PROTEÇÃO DE DADOS (LGPD)</h2>
+<p>Dados coletados exclusivamente para execução do contrato</p>
+<p>Não haverá compartilhamento com terceiros sem autorização</p>
+<p>Aluno pode solicitar exclusão de dados após término do contrato</p>
+
+<h2>11. DISPOSIÇÕES GERAIS</h2>
+
+<h3>11.1 ALTERAÇÕES</h3>
+<p>Alterações contratuais devem ser formalizadas por escrito</p>
+
+<h3>11.2 CESSÃO</h3>
+<p>Contrato não pode ser cedido sem anuência das partes</p>
+
+<h3>11.3 CASO FORTUITO/FORÇA MAIOR</h3>
+<p>Partes isentas de responsabilidade em situações imprevisíveis</p>
+
+<h3>11.4 COMUNICAÇÃO</h3>
+<p>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380 0517 via whatsapp</p>
+<p>Prazo de resposta: 48 horas úteis</p>
+
+<h2>12. FORO</h2>
+<p>As partes elegem o foro da Comarca de Barueri/SP para dirimir quaisquer dúvidas oriundas deste contrato.</p>
+
+<p style="margin-top:32px;">E, por estarem justas e contratadas, as partes assinam o presente instrumento.</p>
+
+<p style="text-align:center; margin-top:24px;">Barueri/SP, {{data_emissao}}</p>
 
 <div style="margin-top:48px; display:flex; justify-content:space-between;">
-  <div style="text-align:center; width:45%;">
-    <p>_______________________________________</p>
-    <p><strong>BETTER EDUCATION LTDA</strong></p>
-    <p>Gilberto Gonçalves Rodrigues</p>
-    <p>CNPJ: 46.849.730/0001-55</p>
-  </div>
-  <div style="text-align:center; width:45%;">
-    <p>_______________________________________</p>
-    <p><strong>{{nome}}</strong></p>
-    <p>CPF: {{cpf}}</p>
-  </div>
+<div style="text-align:center; width:45%;"><p>_______________________________________</p><p><strong>BETTER EDUCATION LTDA</strong></p><p>Alumni by Better</p></div>
+<div style="text-align:center; width:45%;"><p>_______________________________________</p><p><strong>{{nome}}</strong></p><p>CPF: {{cpf}}</p></div>
 </div>
-
-<p style="text-align:center; margin-top:32px; font-size:13px; color:#555;">
-  Barueri/SP, {{data_contrato}}
-</p>
 `;
 
 // ---------------------------------------------------------------------------
@@ -118,117 +155,150 @@ presente instrumento em 2 (duas) vias de igual teor e forma.</p>
 // ---------------------------------------------------------------------------
 
 export const COMMUNITY_TEMPLATE = `
-<h1 style="text-align:center; font-size:20px; font-weight:bold; margin-bottom:8px;">
-  CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS — COMMUNITY
-</h1>
-<p style="text-align:center; font-size:13px; color:#555; margin-bottom:24px;">
-  Contrato nº {{numero_contrato}} &bull; Data: {{data_contrato}}
-</p>
+<h1>CONTRATO - CURSO COMMUNITY DE INGLÊS</h1>
+<h2>CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS</h2>
+<p>Data de Emissão: {{data_emissao}}</p>
 
-<h2>CLÁUSULA 1 — DAS PARTES</h2>
+<h2>1. PARTES CONTRATANTES</h2>
 
-<p><strong>CONTRATADA:</strong> BETTER EDUCATION LTDA, pessoa jurídica de direito privado,
-inscrita no CNPJ sob o nº 46.849.730/0001-55, com sede na Alameda Terracota, 185,
-Sala 1213, Barueri/SP, CEP 06460-110, neste ato representada por seu sócio-administrador
-<strong>Gilberto Gonçalves Rodrigues</strong>, CPF 261.791.848-08, doravante denominada
-<strong>"ALUMNI BY BETTER EDUCATION"</strong> ou simplesmente <strong>"CONTRATADA"</strong>.</p>
+<h3>1.1 CONTRATADA</h3>
+<p>Razão Social: Better Education – Alumni by Better<br>
+CNPJ: 53.286.868/0001-66<br>
+Endereço: Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville Barueri/SP – CEP 06453-008<br>
+Telefone: +55 11 97380-0517</p>
 
-<p><strong>CONTRATANTE:</strong> {{nome}}, inscrito(a) no CPF sob o nº {{cpf}},
-e-mail {{email}}, telefone {{telefone}}, residente e domiciliado(a) em {{endereco}},
-doravante denominado(a) <strong>"CONTRATANTE"</strong> ou <strong>"ALUNO(A)"</strong>.</p>
+<h3>1.2 CONTRATANTE</h3>
+<p>Nome Completo: {{nome}}<br>
+CPF: {{cpf}}<br>
+E-mail: {{email}}<br>
+Endereço Completo: {{endereco}}<br>
+Telefone: {{telefone}}</p>
 
-<h2>CLÁUSULA 2 — DO OBJETO</h2>
+<h2>2. OBJETO DO CONTRATO</h2>
+<p>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Community conforme especificações abaixo:</p>
 
-<p>O presente contrato tem por objeto a prestação de serviços educacionais de ensino de
-língua inglesa na modalidade <strong>Community (aulas em grupo)</strong>, sob a marca
-"Alumni by Better Education", no formato <strong>{{formato}}</strong>, conforme condições
-a seguir estabelecidas.</p>
+<h3>2.1 ESPECIFICAÇÕES DO CURSO</h3>
+<p>Modalidade: Aulas em grupo</p>
+<p>Carga Horária Total: {{carga_horaria_total}}</p>
+<p>Duração da Aula: {{duracao_aula}}</p>
+<p>Período de Vigência: {{vigencia}}</p>
+<p>Formato: {{formato}}</p>
 
-<h2>CLÁUSULA 3 — DA CARGA HORÁRIA E DURAÇÃO</h2>
+<h3>2.2 RECURSOS INCLUSOS</h3>
+<p>Acesso à plataforma digital de estudos Alumni do nível indicado</p>
+<p>Teste de nivelamento inicial</p>
+<p>Avaliações periódicas de desempenho</p>
+<p>Material didático digital (1 Módulo - Careers e um grammar practice)</p>
+<p>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% após nivelamento)</p>
+<p>Suporte pedagógico via chat/e-mail</p>
 
-<p>3.1. A carga horária total contratada é de <strong>{{carga_horaria_total}}</strong>,
-com aulas de <strong>{{duracao_aula}}</strong> de duração cada.</p>
-<p>3.2. As aulas terão início em <strong>{{data_inicio}}</strong>, e os horários das
-turmas serão definidos pela CONTRATADA e comunicados ao(à) CONTRATANTE previamente.</p>
-<p>3.3. A CONTRATADA reserva-se o direito de reorganizar turmas, horários e professores
-a fim de garantir a melhor experiência pedagógica, comunicando as alterações com
-antecedência mínima de 7 (sete) dias.</p>
+<h2>3. INVESTIMENTO E CONDIÇÕES DE PAGAMENTO</h2>
 
-<h2>CLÁUSULA 4 — DO VALOR E FORMA DE PAGAMENTO</h2>
+<h3>3.1 VALOR TOTAL E FORMA DE PAGAMENTO</h3>
+<p>Valor total: R$ {{valor_total}}<br>
+Parcelamento: {{parcelas}}<br>
+Opções de Pagamento: {{forma_pagamento}}<br>
+*Se trata de um parcelamento do pacote contratado</p>
 
-<p>4.1. Pela prestação dos serviços e fornecimento de materiais ora contratados, o(a)
-CONTRATANTE pagará à CONTRATADA o valor total de <strong>R$ {{valor_total}}</strong>.</p>
-<p>4.2. O pagamento será realizado em <strong>{{parcelas}}</strong>, na forma de
-<strong>{{forma_pagamento}}</strong>.</p>
-<p>4.3. <strong>Composição do valor — faturamento híbrido:</strong> do valor total
-contratado, <strong>50% (cinquenta por cento)</strong> refere-se à prestação de serviços
-educacionais e <strong>50% (cinquenta por cento)</strong> refere-se ao fornecimento de
-material didático e conteúdo pedagógico (produto), conforme legislação tributária
-vigente.</p>
-<p>4.4. O atraso no pagamento de qualquer parcela acarretará multa de 2% (dois por cento)
-sobre o valor da parcela vencida, acrescida de juros moratórios de 1% (um por cento) ao
-mês, calculados <em>pro rata die</em>.</p>
+<h3>3.2 NOTAS FISCAIS</h3>
+<p>Composição do valor — faturamento híbrido: do valor total contratado, 50% (cinquenta por cento) refere-se à prestação de serviços educacionais e 50% (cinquenta por cento) refere-se ao fornecimento de material didático e conteúdo pedagógico (produto), conforme legislação tributária vigente.</p>
 
-<h2>CLÁUSULA 5 — DAS OBRIGAÇÕES DA CONTRATADA</h2>
+<h3>3.3 ATRASO NO PAGAMENTO</h3>
+<p>Em caso de atraso, serão aplicados:</p>
+<p>Multa: 2% sobre o valor da parcela</p>
+<p>Juros: 1% ao mês (pro rata die)</p>
+<p>Suspensão: Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
 
-<p>5.1. Disponibilizar professor(a) qualificado(a) e material didático adequado ao nível
-da turma.</p>
-<p>5.2. Manter turmas com número adequado de alunos, garantindo a qualidade do
-aprendizado.</p>
-<p>5.3. Fornecer acesso à plataforma digital e materiais complementares incluídos no
-valor contratado.</p>
-<p>5.4. Acompanhar o progresso pedagógico do(a) CONTRATANTE e disponibilizar relatórios
-de evolução periodicamente.</p>
+<h2>4. AGENDAMENTO E REALIZAÇÃO DAS AULAS</h2>
 
-<h2>CLÁUSULA 6 — DAS OBRIGAÇÕES DO(A) CONTRATANTE</h2>
+<h3>4.1 CANCELAMENTO E REAGENDAMENTO</h3>
+<p>Para cancelamento - mínimo de 6h de antecedência - caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</p>
+<p>Para reagendamento - mínimo de 30 minutos de antecedência - caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</p>
+<p>Não é possível reagendar/cancelar uma mesma aula mais de uma vez.</p>
 
-<p>6.1. Efetuar o pagamento nas datas e condições pactuadas.</p>
-<p>6.2. Comparecer às aulas nos horários definidos para a turma.</p>
-<p>6.3. Respeitar as regras de convivência da turma e as orientações da CONTRATADA.</p>
-<p>6.4. Não reproduzir, distribuir ou compartilhar o material didático fornecido pela
-CONTRATADA, sob pena de responsabilização civil e criminal.</p>
+<h2>5. VALIDADE E VIGÊNCIA</h2>
 
-<h2>CLÁUSULA 7 — DO CANCELAMENTO E RESCISÃO</h2>
+<h3>5.1 PERÍODO DE UTILIZAÇÃO</h3>
+<p>Início: {{data_inicio}}</p>
+<p>Término: {{data_termino}}</p>
+<p>Prazo para utilização das horas: {{vigencia}}</p>
+<p>Prorrogação: Mediante solicitação e aprovação, com cobrança proporcional</p>
 
-<p>7.1. O(A) CONTRATANTE poderá solicitar o cancelamento do presente contrato a qualquer
-momento, mediante comunicação por escrito com antecedência mínima de 30 (trinta) dias.</p>
-<p>7.2. Em caso de cancelamento, será devido o valor proporcional às aulas já ministradas
-e ao material didático já disponibilizado, acrescido de multa rescisória de 20% (vinte
-por cento) sobre o saldo restante do contrato.</p>
-<p>7.3. O material didático e conteúdo digital eventualmente disponibilizados ao(à)
-CONTRATANTE não serão objeto de devolução ou reembolso após o acesso ter sido
-concedido.</p>
-<p>7.4. A CONTRATADA reserva-se o direito de rescindir o contrato em caso de
-inadimplência superior a 30 (trinta) dias ou por descumprimento de qualquer cláusula
-contratual por parte do(a) CONTRATANTE.</p>
+<h3>5.2 PAUSAS/TRANCAMENTO</h3>
+<p>Permitido 1 trancamento de 15 dias a cada 3 meses de contrato</p>
+<p>Solicitação com 15 dias de antecedência</p>
+<p>Período de trancamento não suspende cobranças das parcelas</p>
 
-<h2>CLÁUSULA 8 — DAS DISPOSIÇÕES GERAIS</h2>
+<h2>6. POLÍTICA DE CANCELAMENTO E REEMBOLSO</h2>
 
-<p>8.1. O presente contrato é regido pelas leis da República Federativa do Brasil.</p>
-<p>8.2. As partes elegem o foro da Comarca de <strong>Barueri/SP</strong> para dirimir
-quaisquer dúvidas ou controvérsias oriundas deste contrato, com renúncia expressa a
-qualquer outro, por mais privilegiado que seja.</p>
+<h3>6.1 DIREITO DE ARREPENDIMENTO (7 DIAS - CDC)</h3>
+<p>O CONTRATANTE poderá cancelar o contrato no prazo de até 7 (sete) dias corridos a contar da data da contratação, conforme art. 49 do Código de Defesa do Consumidor.</p>
+<p>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos;</p>
+<p>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação.</p>
 
-<p style="margin-top:32px;">E, por estarem justas e contratadas, as partes assinam o
-presente instrumento em 2 (duas) vias de igual teor e forma.</p>
+<h3>6.2 CANCELAMENTO APÓS 7 DIAS</h3>
+<p>Após o prazo de arrependimento:</p>
+<p>O valor referente aos serviços educacionais (50%) poderá ser reembolsado proporcionalmente conforme as aulas frequentadas pelo CONTRATANTE, independentemente da forma de parcelamento.</p>
+<p>O valor referente ao material didático e conteúdo pedagógico (50%) não será objeto de devolução ou reembolso após o acesso ter sido concedido.</p>
+<p>Sobre o valor remanescente dos serviços, será aplicada multa de 10% (dez por cento);</p>
+
+<h3>6.3 PRAZO PARA REEMBOLSO</h3>
+<p>Quando aplicável, o reembolso será efetuado em até 30 (trinta) dias úteis, contados a partir da solicitação formal de cancelamento, pelo mesmo meio de pagamento utilizado.</p>
+
+<h3>6.4 DISPOSIÇÕES GERAIS</h3>
+<p>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380 0517 e preenchimento do formulário envio pelo canal;</p>
+<p>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais;</p>
+
+<h2>7. OBRIGAÇÕES DA CONTRATADA</h2>
+<p>Fornecer professores qualificados e certificados</p>
+<p>Garantir acesso à plataforma digital 24/7</p>
+<p>Realizar avaliações periódicas de progresso</p>
+<p>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</p>
+<p>Manter sigilo sobre dados pessoais do aluno (LGPD)</p>
+
+<h2>8. OBRIGAÇÕES DO CONTRATANTE</h2>
+<p>Efetuar pagamentos nas datas acordadas</p>
+<p>Comparecer/conectar-se pontualmente às aulas agendadas</p>
+<p>Utilizar adequadamente a plataforma e materiais</p>
+<p>Respeitar professores e demais alunos</p>
+<p>Informar imediatamente problemas técnicos ou pedagógicos</p>
+
+<h2>9. PROPRIEDADE INTELECTUAL</h2>
+<p>Todo material didático é propriedade da CONTRATADA</p>
+<p>Proibida reprodução, distribuição ou comercialização</p>
+<p>Uso exclusivo para fins de estudo pessoal</p>
+
+<h2>10. PROTEÇÃO DE DADOS (LGPD)</h2>
+<p>Dados coletados exclusivamente para execução do contrato</p>
+<p>Não haverá compartilhamento com terceiros sem autorização</p>
+<p>Aluno pode solicitar exclusão de dados após término do contrato</p>
+
+<h2>11. DISPOSIÇÕES GERAIS</h2>
+
+<h3>11.1 ALTERAÇÕES</h3>
+<p>Alterações contratuais devem ser formalizadas por escrito</p>
+
+<h3>11.2 CESSÃO</h3>
+<p>Contrato não pode ser cedido sem anuência das partes</p>
+
+<h3>11.3 CASO FORTUITO/FORÇA MAIOR</h3>
+<p>Partes isentas de responsabilidade em situações imprevisíveis</p>
+
+<h3>11.4 COMUNICAÇÃO</h3>
+<p>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380 0517 via whatsapp</p>
+<p>Prazo de resposta: 48 horas úteis</p>
+
+<h2>12. FORO</h2>
+<p>As partes elegem o foro da Comarca de Barueri/SP para dirimir quaisquer dúvidas oriundas deste contrato.</p>
+
+<p style="margin-top:32px;">E, por estarem justas e contratadas, as partes assinam o presente instrumento.</p>
+
+<p style="text-align:center; margin-top:24px;">Barueri/SP, {{data_emissao}}</p>
 
 <div style="margin-top:48px; display:flex; justify-content:space-between;">
-  <div style="text-align:center; width:45%;">
-    <p>_______________________________________</p>
-    <p><strong>BETTER EDUCATION LTDA</strong></p>
-    <p>Gilberto Gonçalves Rodrigues</p>
-    <p>CNPJ: 46.849.730/0001-55</p>
-  </div>
-  <div style="text-align:center; width:45%;">
-    <p>_______________________________________</p>
-    <p><strong>{{nome}}</strong></p>
-    <p>CPF: {{cpf}}</p>
-  </div>
+<div style="text-align:center; width:45%;"><p>_______________________________________</p><p><strong>BETTER EDUCATION LTDA</strong></p><p>Alumni by Better</p></div>
+<div style="text-align:center; width:45%;"><p>_______________________________________</p><p><strong>{{nome}}</strong></p><p>CPF: {{cpf}}</p></div>
 </div>
-
-<p style="text-align:center; margin-top:32px; font-size:13px; color:#555;">
-  Barueri/SP, {{data_contrato}}
-</p>
 `;
 
 // ---------------------------------------------------------------------------
@@ -236,136 +306,151 @@ presente instrumento em 2 (duas) vias de igual teor e forma.</p>
 // ---------------------------------------------------------------------------
 
 export const COMMUNITY_FLOW_TEMPLATE = `
-<h1 style="text-align:center; font-size:20px; font-weight:bold; margin-bottom:8px;">
-  CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS — COMMUNITY FLOW
-</h1>
-<p style="text-align:center; font-size:13px; color:#555; margin-bottom:24px;">
-  Contrato nº {{numero_contrato}} &bull; Data: {{data_contrato}}
-</p>
+<h1>CONTRATO - CURSO COMMUNITY FLOW DE INGLÊS</h1>
+<h2>CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS</h2>
+<p>Data de Emissão: {{data_emissao}}</p>
 
-<h2>CLÁUSULA 1 — DAS PARTES</h2>
+<h2>1. PARTES CONTRATANTES</h2>
 
-<p><strong>CONTRATADA:</strong> BETTER EDUCATION LTDA, pessoa jurídica de direito privado,
-inscrita no CNPJ sob o nº 46.849.730/0001-55, com sede na Alameda Terracota, 185,
-Sala 1213, Barueri/SP, CEP 06460-110, neste ato representada por seu sócio-administrador
-<strong>Gilberto Gonçalves Rodrigues</strong>, CPF 261.791.848-08, doravante denominada
-<strong>"ALUMNI BY BETTER EDUCATION"</strong> ou simplesmente <strong>"CONTRATADA"</strong>.</p>
+<h3>1.1 CONTRATADA</h3>
+<p>Razão Social: Better Education – Alumni by Better<br>
+CNPJ: 53.286.868/0001-66<br>
+Endereço: Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville Barueri/SP – CEP 06453-008<br>
+Telefone: +55 11 97380-0517</p>
 
-<p><strong>CONTRATANTE:</strong> {{nome}}, inscrito(a) no CPF sob o nº {{cpf}},
-e-mail {{email}}, telefone {{telefone}}, residente e domiciliado(a) em {{endereco}},
-doravante denominado(a) <strong>"CONTRATANTE"</strong> ou <strong>"ALUNO(A)"</strong>.</p>
+<h3>1.2 CONTRATANTE</h3>
+<p>Nome Completo: {{nome}}<br>
+CPF: {{cpf}}<br>
+E-mail: {{email}}<br>
+Endereço Completo: {{endereco}}<br>
+Telefone: {{telefone}}</p>
 
-<h2>CLÁUSULA 2 — DO OBJETO</h2>
+<h2>2. OBJETO DO CONTRATO</h2>
+<p>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Community Flow conforme especificações abaixo:</p>
 
-<p>O presente contrato tem por objeto a prestação de serviços educacionais de ensino de
-língua inglesa na modalidade <strong>Community Flow</strong>, sob a marca "Alumni by Better
-Education", no formato <strong>{{formato}}</strong>. Esta modalidade combina aulas em
-grupo com aulas individuais, conforme condições a seguir estabelecidas.</p>
+<h3>2.1 ESPECIFICAÇÕES DO CURSO</h3>
+<p>Modalidade: Aulas em grupo e individuais</p>
+<p>Carga Horária Total: {{carga_grupo}} (grupo) + {{carga_individual}} (individual)</p>
+<p>Período de Vigência: {{vigencia}}</p>
+<p>Formato: {{formato}}</p>
+<p><em>Nota: As aulas individuais são liberadas progressivamente, sendo 1 aula individual a cada 5 presenças em aulas de grupo.</em></p>
 
-<h2>CLÁUSULA 3 — DA CARGA HORÁRIA E DURAÇÃO</h2>
+<h3>2.2 RECURSOS INCLUSOS</h3>
+<p>Acesso à plataforma digital de estudos Alumni do nível indicado</p>
+<p>Teste de nivelamento inicial</p>
+<p>Avaliações periódicas de desempenho</p>
+<p>Material didático digital (1 Módulo - Careers e um grammar practice)</p>
+<p>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% após nivelamento)</p>
+<p>Suporte pedagógico via chat/e-mail</p>
 
-<p>3.1. A carga horária contratada é composta por:</p>
-<ul>
-  <li><strong>Aulas em grupo:</strong> {{carga_grupo}};</li>
-  <li><strong>Aulas individuais:</strong> {{carga_individual}}.</li>
-</ul>
-<p>3.2. As aulas terão início em <strong>{{data_inicio}}</strong>.</p>
-<p>3.3. Os horários das aulas em grupo serão definidos pela CONTRATADA. Os horários das
-aulas individuais serão agendados de comum acordo entre o(a) CONTRATANTE e o(a)
-professor(a) designado(a).</p>
-<p>3.4. <strong>Liberação das aulas individuais por frequência:</strong> as aulas
-individuais serão liberadas de forma progressiva, vinculadas à frequência e participação
-do(a) CONTRATANTE nas aulas em grupo. Para cada ciclo de aulas em grupo efetivamente
-frequentadas, conforme critério definido pela CONTRATADA, será desbloqueada 1 (uma)
-aula individual. A não comparecimento às aulas em grupo, sem justificativa aceita pela
-CONTRATADA, poderá atrasar a liberação das aulas individuais correspondentes.</p>
-<p>3.5. A CONTRATADA reserva-se o direito de reorganizar turmas, horários e professores
-a fim de garantir a melhor experiência pedagógica, comunicando as alterações com
-antecedência mínima de 7 (sete) dias.</p>
+<h2>3. INVESTIMENTO E CONDIÇÕES DE PAGAMENTO</h2>
 
-<h2>CLÁUSULA 4 — DO VALOR E FORMA DE PAGAMENTO</h2>
+<h3>3.1 VALOR TOTAL E FORMA DE PAGAMENTO</h3>
+<p>Valor total: R$ {{valor_total}}<br>
+Parcelamento: {{parcelas}}<br>
+Opções de Pagamento: {{forma_pagamento}}<br>
+*Se trata de um parcelamento do pacote contratado</p>
 
-<p>4.1. Pela prestação dos serviços e fornecimento de materiais ora contratados, o(a)
-CONTRATANTE pagará à CONTRATADA o valor total de <strong>R$ {{valor_total}}</strong>.</p>
-<p>4.2. O pagamento será realizado em <strong>{{parcelas}}</strong>, na forma de
-<strong>{{forma_pagamento}}</strong>.</p>
-<p>4.3. <strong>Composição do valor — faturamento híbrido:</strong> do valor total
-contratado, <strong>50% (cinquenta por cento)</strong> refere-se à prestação de serviços
-educacionais e <strong>50% (cinquenta por cento)</strong> refere-se ao fornecimento de
-material didático e conteúdo pedagógico (produto), conforme legislação tributária
-vigente.</p>
-<p>4.4. O atraso no pagamento de qualquer parcela acarretará multa de 2% (dois por cento)
-sobre o valor da parcela vencida, acrescida de juros moratórios de 1% (um por cento) ao
-mês, calculados <em>pro rata die</em>.</p>
+<h3>3.2 NOTAS FISCAIS</h3>
+<p>Composição do valor — faturamento híbrido: do valor total contratado, 50% (cinquenta por cento) refere-se à prestação de serviços educacionais e 50% (cinquenta por cento) refere-se ao fornecimento de material didático e conteúdo pedagógico (produto), conforme legislação tributária vigente.</p>
 
-<h2>CLÁUSULA 5 — DAS OBRIGAÇÕES DA CONTRATADA</h2>
+<h3>3.3 ATRASO NO PAGAMENTO</h3>
+<p>Em caso de atraso, serão aplicados:</p>
+<p>Multa: 2% sobre o valor da parcela</p>
+<p>Juros: 1% ao mês (pro rata die)</p>
+<p>Suspensão: Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
 
-<p>5.1. Disponibilizar professor(a) qualificado(a) para as aulas em grupo e individuais,
-bem como material didático adequado.</p>
-<p>5.2. Manter turmas com número adequado de alunos, garantindo a qualidade do
-aprendizado.</p>
-<p>5.3. Fornecer acesso à plataforma digital e materiais complementares incluídos no
-valor contratado.</p>
-<p>5.4. Gerenciar a liberação das aulas individuais conforme a frequência do(a)
-CONTRATANTE nas aulas em grupo, informando de forma transparente o saldo de aulas
-individuais disponíveis.</p>
-<p>5.5. Acompanhar o progresso pedagógico do(a) CONTRATANTE e disponibilizar relatórios
-de evolução periodicamente.</p>
+<h2>4. AGENDAMENTO E REALIZAÇÃO DAS AULAS</h2>
 
-<h2>CLÁUSULA 6 — DAS OBRIGAÇÕES DO(A) CONTRATANTE</h2>
+<h3>4.1 CANCELAMENTO E REAGENDAMENTO</h3>
+<p>Para cancelamento - mínimo de 6h de antecedência - caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</p>
+<p>Para reagendamento - mínimo de 30 minutos de antecedência - caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</p>
+<p>Não é possível reagendar/cancelar uma mesma aula mais de uma vez.</p>
 
-<p>6.1. Efetuar o pagamento nas datas e condições pactuadas.</p>
-<p>6.2. Comparecer às aulas em grupo nos horários definidos pela CONTRATADA, ciente de
-que a frequência é requisito para liberação das aulas individuais.</p>
-<p>6.3. Agendar e comparecer às aulas individuais dentro do prazo de validade
-estabelecido após a liberação.</p>
-<p>6.4. Respeitar as regras de convivência da turma e as orientações da CONTRATADA.</p>
-<p>6.5. Não reproduzir, distribuir ou compartilhar o material didático fornecido pela
-CONTRATADA, sob pena de responsabilização civil e criminal.</p>
+<h2>5. VALIDADE E VIGÊNCIA</h2>
 
-<h2>CLÁUSULA 7 — DO CANCELAMENTO E RESCISÃO</h2>
+<h3>5.1 PERÍODO DE UTILIZAÇÃO</h3>
+<p>Início: {{data_inicio}}</p>
+<p>Término: {{data_termino}}</p>
+<p>Prazo para utilização das horas: {{vigencia}}</p>
+<p>Prorrogação: Mediante solicitação e aprovação, com cobrança proporcional</p>
 
-<p>7.1. O(A) CONTRATANTE poderá solicitar o cancelamento do presente contrato a qualquer
-momento, mediante comunicação por escrito com antecedência mínima de 30 (trinta) dias.</p>
-<p>7.2. Em caso de cancelamento, será devido o valor proporcional às aulas já ministradas
-(em grupo e individuais) e ao material didático já disponibilizado, acrescido de multa
-rescisória de 20% (vinte por cento) sobre o saldo restante do contrato.</p>
-<p>7.3. Aulas individuais já liberadas e não utilizadas até a data do cancelamento serão
-consideradas como ministradas para efeitos de cálculo do valor proporcional.</p>
-<p>7.4. O material didático e conteúdo digital eventualmente disponibilizados ao(à)
-CONTRATANTE não serão objeto de devolução ou reembolso após o acesso ter sido
-concedido.</p>
-<p>7.5. A CONTRATADA reserva-se o direito de rescindir o contrato em caso de
-inadimplência superior a 30 (trinta) dias ou por descumprimento de qualquer cláusula
-contratual por parte do(a) CONTRATANTE.</p>
+<h3>5.2 PAUSAS/TRANCAMENTO</h3>
+<p>Permitido 1 trancamento de 15 dias a cada 6 meses de contrato</p>
+<p>Solicitação com 15 dias de antecedência</p>
+<p>Período de trancamento não suspende cobranças das parcelas</p>
 
-<h2>CLÁUSULA 8 — DAS DISPOSIÇÕES GERAIS</h2>
+<h2>6. POLÍTICA DE CANCELAMENTO E REEMBOLSO</h2>
 
-<p>8.1. O presente contrato é regido pelas leis da República Federativa do Brasil.</p>
-<p>8.2. As partes elegem o foro da Comarca de <strong>Barueri/SP</strong> para dirimir
-quaisquer dúvidas ou controvérsias oriundas deste contrato, com renúncia expressa a
-qualquer outro, por mais privilegiado que seja.</p>
+<h3>6.1 DIREITO DE ARREPENDIMENTO (7 DIAS - CDC)</h3>
+<p>O CONTRATANTE poderá cancelar o contrato no prazo de até 7 (sete) dias corridos a contar da data da contratação, conforme art. 49 do Código de Defesa do Consumidor.</p>
+<p>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos;</p>
+<p>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação.</p>
 
-<p style="margin-top:32px;">E, por estarem justas e contratadas, as partes assinam o
-presente instrumento em 2 (duas) vias de igual teor e forma.</p>
+<h3>6.2 CANCELAMENTO APÓS 7 DIAS</h3>
+<p>Após o prazo de arrependimento:</p>
+<p>O valor referente aos serviços educacionais (50%) poderá ser reembolsado proporcionalmente conforme as aulas frequentadas pelo CONTRATANTE, independentemente da forma de parcelamento.</p>
+<p>O valor referente ao material didático e conteúdo pedagógico (50%) não será objeto de devolução ou reembolso após o acesso ter sido concedido.</p>
+<p>Aulas individuais já liberadas e não utilizadas até a data do cancelamento serão consideradas como frequentadas para efeitos de cálculo do valor proporcional.</p>
+<p>Sobre o valor remanescente dos serviços, será aplicada multa de 10% (dez por cento);</p>
+
+<h3>6.3 PRAZO PARA REEMBOLSO</h3>
+<p>Quando aplicável, o reembolso será efetuado em até 30 (trinta) dias úteis, contados a partir da solicitação formal de cancelamento, pelo mesmo meio de pagamento utilizado.</p>
+
+<h3>6.4 DISPOSIÇÕES GERAIS</h3>
+<p>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380 0517 e preenchimento do formulário envio pelo canal;</p>
+<p>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais;</p>
+
+<h2>7. OBRIGAÇÕES DA CONTRATADA</h2>
+<p>Fornecer professores qualificados e certificados</p>
+<p>Garantir acesso à plataforma digital 24/7</p>
+<p>Realizar avaliações periódicas de progresso</p>
+<p>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</p>
+<p>Manter sigilo sobre dados pessoais do aluno (LGPD)</p>
+
+<h2>8. OBRIGAÇÕES DO CONTRATANTE</h2>
+<p>Efetuar pagamentos nas datas acordadas</p>
+<p>Comparecer/conectar-se pontualmente às aulas agendadas</p>
+<p>Utilizar adequadamente a plataforma e materiais</p>
+<p>Respeitar professores e demais alunos</p>
+<p>Informar imediatamente problemas técnicos ou pedagógicos</p>
+
+<h2>9. PROPRIEDADE INTELECTUAL</h2>
+<p>Todo material didático é propriedade da CONTRATADA</p>
+<p>Proibida reprodução, distribuição ou comercialização</p>
+<p>Uso exclusivo para fins de estudo pessoal</p>
+
+<h2>10. PROTEÇÃO DE DADOS (LGPD)</h2>
+<p>Dados coletados exclusivamente para execução do contrato</p>
+<p>Não haverá compartilhamento com terceiros sem autorização</p>
+<p>Aluno pode solicitar exclusão de dados após término do contrato</p>
+
+<h2>11. DISPOSIÇÕES GERAIS</h2>
+
+<h3>11.1 ALTERAÇÕES</h3>
+<p>Alterações contratuais devem ser formalizadas por escrito</p>
+
+<h3>11.2 CESSÃO</h3>
+<p>Contrato não pode ser cedido sem anuência das partes</p>
+
+<h3>11.3 CASO FORTUITO/FORÇA MAIOR</h3>
+<p>Partes isentas de responsabilidade em situações imprevisíveis</p>
+
+<h3>11.4 COMUNICAÇÃO</h3>
+<p>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380 0517 via whatsapp</p>
+<p>Prazo de resposta: 48 horas úteis</p>
+
+<h2>12. FORO</h2>
+<p>As partes elegem o foro da Comarca de Barueri/SP para dirimir quaisquer dúvidas oriundas deste contrato.</p>
+
+<p style="margin-top:32px;">E, por estarem justas e contratadas, as partes assinam o presente instrumento.</p>
+
+<p style="text-align:center; margin-top:24px;">Barueri/SP, {{data_emissao}}</p>
 
 <div style="margin-top:48px; display:flex; justify-content:space-between;">
-  <div style="text-align:center; width:45%;">
-    <p>_______________________________________</p>
-    <p><strong>BETTER EDUCATION LTDA</strong></p>
-    <p>Gilberto Gonçalves Rodrigues</p>
-    <p>CNPJ: 46.849.730/0001-55</p>
-  </div>
-  <div style="text-align:center; width:45%;">
-    <p>_______________________________________</p>
-    <p><strong>{{nome}}</strong></p>
-    <p>CPF: {{cpf}}</p>
-  </div>
+<div style="text-align:center; width:45%;"><p>_______________________________________</p><p><strong>BETTER EDUCATION LTDA</strong></p><p>Alumni by Better</p></div>
+<div style="text-align:center; width:45%;"><p>_______________________________________</p><p><strong>{{nome}}</strong></p><p>CPF: {{cpf}}</p></div>
 </div>
-
-<p style="text-align:center; margin-top:32px; font-size:13px; color:#555;">
-  Barueri/SP, {{data_contrato}}
-</p>
 `;
 
 // ---------------------------------------------------------------------------
