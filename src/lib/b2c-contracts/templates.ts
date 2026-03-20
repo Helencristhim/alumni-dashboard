@@ -31,96 +31,142 @@ export const PRIVATE_TEMPLATE = `
 <p>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Particular conforme especificações abaixo:</p>
 
 <h3>2.1 ESPECIFICAÇÕES DO CURSO</h3>
-<p><strong>Modalidade:</strong> Aulas individuais</p>
-<p><strong>Carga Horária Total:</strong> {{carga_horaria}}</p>
-<p><strong>Período de Vigência:</strong> {{vigencia}}</p>
-<p><strong>Formato:</strong> {{formato}}</p>
+<ul>
+<li><strong>Modalidade:</strong> Aulas individuais</li>
+<li><strong>Carga Horária Total:</strong> {{carga_horaria}}</li>
+<li><strong>Período de Vigência:</strong> {{vigencia}}</li>
+<li><strong>Formato:</strong> {{formato}}</li>
+</ul>
 
 <h3>2.2 RECURSOS INCLUSOS</h3>
-<p>Acesso à plataforma digital de estudos Alumni do nível indicado</p>
-<p>Teste de nivelamento inicial</p>
-<p>Avaliações periódicas de desempenho</p>
-<p>Material didático digital (Um material de career a escolher e um grammar practice)</p>
-<p>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% após nivelamento)</p>
-<p>Suporte pedagógico via chat/e-mail</p>
+<ul>
+<li>Acesso à plataforma digital de estudos Alumni do nível indicado</li>
+<li>Teste de nivelamento inicial</li>
+<li>Avaliações periódicas de desempenho</li>
+<li>Material didático digital (Um material de career a escolher e um grammar practice)</li>
+<li>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% após nivelamento)</li>
+<li>Suporte pedagógico via chat/e-mail</li>
+</ul>
+
+<hr>
 
 <h2>3. INVESTIMENTO E CONDIÇÕES DE PAGAMENTO</h2>
 
 <h3>3.1 VALOR TOTAL E FORMA DE PAGAMENTO</h3>
-<p><strong>Valor por aula:</strong> R$ {{valor_por_aula}}<br>
-<strong>Valor total:</strong> R$ {{valor_total}}<br>
-<strong>Parcelamento:</strong> {{parcelas}}<br>
-<strong>Opções de Pagamento:</strong> {{forma_pagamento}}<br>
-*Se trata de um parcelamento do pacote contratado</p>
+<ul>
+<li><strong>Valor por aula:</strong> R$ {{valor_por_aula}}</li>
+<li><strong>Valor total:</strong> R$ {{valor_total}}</li>
+<li><strong>Parcelamento:</strong> {{parcelas}}</li>
+<li><strong>Opções de Pagamento:</strong> {{forma_pagamento}}</li>
+</ul>
+<p><em>*Se trata de um parcelamento do pacote contratado</em></p>
 
 <h3>3.2 ATRASO NO PAGAMENTO</h3>
 <p>Em caso de atraso, serão aplicados:</p>
-<p><strong>Multa:</strong> 2% sobre o valor da parcela</p>
-<p><strong>Juros:</strong> 1% ao mês (pro rata die)</p>
-<p><strong>Suspensão:</strong> Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
+<ul>
+<li><strong>Multa:</strong> 2% sobre o valor da parcela</li>
+<li><strong>Juros:</strong> 1% ao mês (pro rata die)</li>
+<li><strong>Suspensão:</strong> Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</li>
+</ul>
+
+<hr>
 
 <h2>4. AGENDAMENTO E REALIZAÇÃO DAS AULAS</h2>
 
 <h3>4.1 CANCELAMENTO E REAGENDAMENTO</h3>
-<p>Para cancelamento - mínimo de 48h - caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</p>
-<p>Para reagendamento - mínimo de 24h - caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</p>
-<p>Não é possível reagendar/cancelar uma mesma aula mais de uma vez.</p>
+<ul>
+<li>Para cancelamento — mínimo de <strong>48h</strong> — caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</li>
+<li>Para reagendamento — mínimo de <strong>24h</strong> — caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</li>
+<li>Não é possível reagendar/cancelar uma mesma aula mais de uma vez.</li>
+</ul>
+
+<hr>
 
 <h2>5. VALIDADE E VIGÊNCIA</h2>
 
 <h3>5.1 PERÍODO DE UTILIZAÇÃO</h3>
-<p><strong>Início:</strong> {{data_inicio}}</p>
-<p><strong>Término:</strong> {{data_termino}}</p>
-<p>Prazo para utilização das horas: {{vigencia}}</p>
-<p>Prorrogação: Mediante solicitação e aprovação, com cobrança proporcional</p>
+<ul>
+<li><strong>Início:</strong> {{data_inicio}}</li>
+<li><strong>Término:</strong> {{data_termino}}</li>
+<li><strong>Prazo para utilização das horas:</strong> {{vigencia}}</li>
+<li><strong>Prorrogação:</strong> Mediante solicitação e aprovação, com cobrança proporcional</li>
+</ul>
 
 <h3>5.2 PAUSAS/TRANCAMENTO</h3>
-<p>Permitido 1 trancamento de 15 dias a cada 6 meses de contrato</p>
-<p>Solicitação com 15 dias de antecedência</p>
-<p>Período de trancamento não suspende cobranças das parcelas</p>
+<ul>
+<li>Permitido 1 trancamento de 15 dias a cada 6 meses de contrato</li>
+<li>Solicitação com 15 dias de antecedência</li>
+<li>Período de trancamento não suspende cobranças das parcelas</li>
+</ul>
+
+<hr>
 
 <h2>6. POLÍTICA DE CANCELAMENTO E REEMBOLSO</h2>
 
 <h3>6.1 DIREITO DE ARREPENDIMENTO (7 DIAS - CDC)</h3>
 <p>O CONTRATANTE poderá cancelar o contrato no prazo de até 7 (sete) dias corridos a contar da data da contratação, conforme art. 49 do Código de Defesa do Consumidor.</p>
-<p>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos;</p>
-<p>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação.</p>
+<ul>
+<li>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos;</li>
+<li>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação.</li>
+</ul>
 
 <h3>6.2 CANCELAMENTO APÓS 7 DIAS</h3>
 <p>Após o prazo de arrependimento:</p>
-<p>O valor referente aos serviços educacionais poderá ser reembolsado conforme o consumo de aulas utilizado pelo CONTRATANTE independentemente da forma de parcelamento. O valor terá como base o valor da hora aula x aulas utilizadas</p>
-<p>Sobre o valor remanescente dos serviços, será aplicada multa de 10% (dez por cento);</p>
+<ul>
+<li>O valor referente aos serviços educacionais poderá ser reembolsado conforme o consumo de aulas utilizado pelo CONTRATANTE independentemente da forma de parcelamento. O valor terá como base o valor da hora aula x aulas utilizadas;</li>
+<li>Sobre o valor remanescente dos serviços, será aplicada multa de <strong>10% (dez por cento)</strong>;</li>
+</ul>
 
 <h3>6.3 PRAZO PARA REEMBOLSO</h3>
 <p>Quando aplicável, o reembolso será efetuado em até 30 (trinta) dias úteis, contados a partir da solicitação formal de cancelamento, pelo mesmo meio de pagamento utilizado.</p>
 
 <h3>6.4 DISPOSIÇÕES GERAIS</h3>
-<p>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380 0517 e preenchimento do formulário envio pelo canal;</p>
-<p>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais;</p>
+<ul>
+<li>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380 0517 e preenchimento do formulário enviado pelo canal;</li>
+<li>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais;</li>
+</ul>
+
+<hr>
 
 <h2>7. OBRIGAÇÕES DA CONTRATADA</h2>
-<p>Fornecer professores qualificados e certificados</p>
-<p>Garantir acesso à plataforma digital 24/7</p>
-<p>Realizar avaliações periódicas de progresso</p>
-<p>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</p>
-<p>Manter sigilo sobre dados pessoais do aluno (LGPD)</p>
+<ul>
+<li>Fornecer professores qualificados e certificados</li>
+<li>Garantir acesso à plataforma digital 24/7</li>
+<li>Realizar avaliações periódicas de progresso</li>
+<li>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</li>
+<li>Manter sigilo sobre dados pessoais do aluno (LGPD)</li>
+</ul>
+
+<hr>
 
 <h2>8. OBRIGAÇÕES DO CONTRATANTE</h2>
-<p>Efetuar pagamentos nas datas acordadas</p>
-<p>Comparecer/conectar-se pontualmente às aulas agendadas</p>
-<p>Utilizar adequadamente a plataforma e materiais</p>
-<p>Respeitar professores e demais alunos (se aplicável)</p>
-<p>Informar imediatamente problemas técnicos ou pedagógicos</p>
+<ul>
+<li>Efetuar pagamentos nas datas acordadas</li>
+<li>Comparecer/conectar-se pontualmente às aulas agendadas</li>
+<li>Utilizar adequadamente a plataforma e materiais</li>
+<li>Respeitar professores e demais alunos (se aplicável)</li>
+<li>Informar imediatamente problemas técnicos ou pedagógicos</li>
+</ul>
+
+<hr>
 
 <h2>9. PROPRIEDADE INTELECTUAL</h2>
-<p>Todo material didático é propriedade da CONTRATADA</p>
-<p>Proibida reprodução, distribuição ou comercialização</p>
-<p>Uso exclusivo para fins de estudo pessoal</p>
+<ul>
+<li>Todo material didático é propriedade da CONTRATADA</li>
+<li>Proibida reprodução, distribuição ou comercialização</li>
+<li>Uso exclusivo para fins de estudo pessoal</li>
+</ul>
+
+<hr>
 
 <h2>10. PROTEÇÃO DE DADOS (LGPD)</h2>
-<p>Dados coletados exclusivamente para execução do contrato</p>
-<p>Não haverá compartilhamento com terceiros sem autorização</p>
-<p>Aluno pode solicitar exclusão de dados após término do contrato</p>
+<ul>
+<li>Dados coletados exclusivamente para execução do contrato</li>
+<li>Não haverá compartilhamento com terceiros sem autorização</li>
+<li>Aluno pode solicitar exclusão de dados após término do contrato</li>
+</ul>
+
+<hr>
 
 <h2>11. DISPOSIÇÕES GERAIS</h2>
 
@@ -134,8 +180,12 @@ export const PRIVATE_TEMPLATE = `
 <p>Partes isentas de responsabilidade em situações imprevisíveis</p>
 
 <h3>11.4 COMUNICAÇÃO</h3>
-<p>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380 0517 via whatsapp</p>
-<p>Prazo de resposta: 48 horas úteis</p>
+<ul>
+<li>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380 0517 via whatsapp</li>
+<li>Prazo de resposta: 48 horas úteis</li>
+</ul>
+
+<hr>
 
 <h2>12. FORO</h2>
 <p>As partes elegem o foro da Comarca de Barueri/SP para dirimir quaisquer dúvidas oriundas deste contrato.</p>
@@ -178,100 +228,146 @@ export const COMMUNITY_TEMPLATE = `
 <p>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Community conforme especificações abaixo:</p>
 
 <h3>2.1 ESPECIFICAÇÕES DO CURSO</h3>
-<p><strong>Modalidade:</strong> Aulas em grupo</p>
-<p><strong>Carga Horária Total:</strong> {{carga_horaria_total}}</p>
-<p><strong>Duração da Aula:</strong> {{duracao_aula}}</p>
-<p><strong>Período de Vigência:</strong> {{vigencia}}</p>
-<p><strong>Formato:</strong> {{formato}}</p>
+<ul>
+<li><strong>Modalidade:</strong> Aulas em grupo</li>
+<li><strong>Carga Horária Total:</strong> {{carga_horaria_total}}</li>
+<li><strong>Duração da Aula:</strong> {{duracao_aula}}</li>
+<li><strong>Período de Vigência:</strong> {{vigencia}}</li>
+<li><strong>Formato:</strong> {{formato}}</li>
+</ul>
 
 <h3>2.2 RECURSOS INCLUSOS</h3>
-<p>Acesso à plataforma digital de estudos Alumni do nível indicado</p>
-<p>Teste de nivelamento inicial</p>
-<p>Avaliações periódicas de desempenho</p>
-<p>Material didático digital (1 Módulo - Careers e um grammar practice)</p>
-<p>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% após nivelamento)</p>
-<p>Suporte pedagógico via chat/e-mail</p>
+<ul>
+<li>Acesso à plataforma digital de estudos Alumni do nível indicado</li>
+<li>Teste de nivelamento inicial</li>
+<li>Avaliações periódicas de desempenho</li>
+<li>Material didático digital (1 Módulo - Careers e um grammar practice)</li>
+<li>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% após nivelamento)</li>
+<li>Suporte pedagógico via chat/e-mail</li>
+</ul>
+
+<hr>
 
 <h2>3. INVESTIMENTO E CONDIÇÕES DE PAGAMENTO</h2>
 
 <h3>3.1 VALOR TOTAL E FORMA DE PAGAMENTO</h3>
-<p><strong>Valor total:</strong> R$ {{valor_total}}<br>
-<strong>Parcelamento:</strong> {{parcelas}}<br>
-<strong>Opções de Pagamento:</strong> {{forma_pagamento}}<br>
-*Se trata de um parcelamento do pacote contratado</p>
+<ul>
+<li><strong>Valor total:</strong> R$ {{valor_total}}</li>
+<li><strong>Parcelamento:</strong> {{parcelas}}</li>
+<li><strong>Opções de Pagamento:</strong> {{forma_pagamento}}</li>
+</ul>
+<p><em>*Se trata de um parcelamento do pacote contratado</em></p>
 
 <h3>3.2 NOTAS FISCAIS</h3>
 <p>Composição do valor — faturamento híbrido: do valor total contratado, 50% (cinquenta por cento) refere-se à prestação de serviços educacionais e 50% (cinquenta por cento) refere-se ao fornecimento de material didático e conteúdo pedagógico (produto), conforme legislação tributária vigente.</p>
 
 <h3>3.3 ATRASO NO PAGAMENTO</h3>
 <p>Em caso de atraso, serão aplicados:</p>
-<p><strong>Multa:</strong> 2% sobre o valor da parcela</p>
-<p><strong>Juros:</strong> 1% ao mês (pro rata die)</p>
-<p><strong>Suspensão:</strong> Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
+<ul>
+<li><strong>Multa:</strong> 2% sobre o valor da parcela</li>
+<li><strong>Juros:</strong> 1% ao mês (pro rata die)</li>
+<li><strong>Suspensão:</strong> Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</li>
+</ul>
+
+<hr>
 
 <h2>4. AGENDAMENTO E REALIZAÇÃO DAS AULAS</h2>
 
 <h3>4.1 CANCELAMENTO E REAGENDAMENTO</h3>
-<p>Para cancelamento - mínimo de 6h de antecedência - caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</p>
-<p>Para reagendamento - mínimo de 30 minutos de antecedência - caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</p>
-<p>Não é possível reagendar/cancelar uma mesma aula mais de uma vez.</p>
+<ul>
+<li>Para cancelamento — mínimo de <strong>6h</strong> de antecedência — caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</li>
+<li>Para reagendamento — mínimo de <strong>30 minutos</strong> de antecedência — caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</li>
+<li>Não é possível reagendar/cancelar uma mesma aula mais de uma vez.</li>
+</ul>
+
+<hr>
 
 <h2>5. VALIDADE E VIGÊNCIA</h2>
 
 <h3>5.1 PERÍODO DE UTILIZAÇÃO</h3>
-<p><strong>Início:</strong> {{data_inicio}}</p>
-<p><strong>Término:</strong> {{data_termino}}</p>
-<p>Prazo para utilização das horas: {{vigencia}}</p>
-<p>Prorrogação: Mediante solicitação e aprovação, com cobrança proporcional</p>
+<ul>
+<li><strong>Início:</strong> {{data_inicio}}</li>
+<li><strong>Término:</strong> {{data_termino}}</li>
+<li><strong>Prazo para utilização das horas:</strong> {{vigencia}}</li>
+<li><strong>Prorrogação:</strong> Mediante solicitação e aprovação, com cobrança proporcional</li>
+</ul>
 
 <h3>5.2 PAUSAS/TRANCAMENTO</h3>
-<p>Permitido 1 trancamento de 15 dias a cada 3 meses de contrato</p>
-<p>Solicitação com 15 dias de antecedência</p>
-<p>Período de trancamento não suspende cobranças das parcelas</p>
+<ul>
+<li>Permitido 1 trancamento de 15 dias a cada 3 meses de contrato</li>
+<li>Solicitação com 15 dias de antecedência</li>
+<li>Período de trancamento não suspende cobranças das parcelas</li>
+</ul>
+
+<hr>
 
 <h2>6. POLÍTICA DE CANCELAMENTO E REEMBOLSO</h2>
 
 <h3>6.1 DIREITO DE ARREPENDIMENTO (7 DIAS - CDC)</h3>
 <p>O CONTRATANTE poderá cancelar o contrato no prazo de até 7 (sete) dias corridos a contar da data da contratação, conforme art. 49 do Código de Defesa do Consumidor.</p>
-<p>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos;</p>
-<p>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação.</p>
+<ul>
+<li>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos;</li>
+<li>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação.</li>
+</ul>
 
 <h3>6.2 CANCELAMENTO APÓS 7 DIAS</h3>
 <p>Após o prazo de arrependimento:</p>
-<p>O valor referente aos serviços educacionais (50%) poderá ser reembolsado proporcionalmente conforme as aulas frequentadas pelo CONTRATANTE, independentemente da forma de parcelamento.</p>
-<p>O valor referente ao material didático e conteúdo pedagógico (50%) não será objeto de devolução ou reembolso após o acesso ter sido concedido.</p>
-<p>Sobre o valor remanescente dos serviços, será aplicada multa de 10% (dez por cento);</p>
+<ul>
+<li>O valor referente aos serviços educacionais (50%) poderá ser reembolsado proporcionalmente conforme as aulas frequentadas pelo CONTRATANTE, independentemente da forma de parcelamento.</li>
+<li>O valor referente ao material didático e conteúdo pedagógico (50%) não será objeto de devolução ou reembolso após o acesso ter sido concedido.</li>
+<li>Sobre o valor remanescente dos serviços, será aplicada multa de <strong>10% (dez por cento)</strong>;</li>
+</ul>
 
 <h3>6.3 PRAZO PARA REEMBOLSO</h3>
 <p>Quando aplicável, o reembolso será efetuado em até 30 (trinta) dias úteis, contados a partir da solicitação formal de cancelamento, pelo mesmo meio de pagamento utilizado.</p>
 
 <h3>6.4 DISPOSIÇÕES GERAIS</h3>
-<p>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380 0517 e preenchimento do formulário envio pelo canal;</p>
-<p>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais;</p>
+<ul>
+<li>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380 0517 e preenchimento do formulário envio pelo canal;</li>
+<li>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais;</li>
+</ul>
+
+<hr>
 
 <h2>7. OBRIGAÇÕES DA CONTRATADA</h2>
-<p>Fornecer professores qualificados e certificados</p>
-<p>Garantir acesso à plataforma digital 24/7</p>
-<p>Realizar avaliações periódicas de progresso</p>
-<p>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</p>
-<p>Manter sigilo sobre dados pessoais do aluno (LGPD)</p>
+<ul>
+<li>Fornecer professores qualificados e certificados</li>
+<li>Garantir acesso à plataforma digital 24/7</li>
+<li>Realizar avaliações periódicas de progresso</li>
+<li>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</li>
+<li>Manter sigilo sobre dados pessoais do aluno (LGPD)</li>
+</ul>
+
+<hr>
 
 <h2>8. OBRIGAÇÕES DO CONTRATANTE</h2>
-<p>Efetuar pagamentos nas datas acordadas</p>
-<p>Comparecer/conectar-se pontualmente às aulas agendadas</p>
-<p>Utilizar adequadamente a plataforma e materiais</p>
-<p>Respeitar professores e demais alunos</p>
-<p>Informar imediatamente problemas técnicos ou pedagógicos</p>
+<ul>
+<li>Efetuar pagamentos nas datas acordadas</li>
+<li>Comparecer/conectar-se pontualmente às aulas agendadas</li>
+<li>Utilizar adequadamente a plataforma e materiais</li>
+<li>Respeitar professores e demais alunos</li>
+<li>Informar imediatamente problemas técnicos ou pedagógicos</li>
+</ul>
+
+<hr>
 
 <h2>9. PROPRIEDADE INTELECTUAL</h2>
-<p>Todo material didático é propriedade da CONTRATADA</p>
-<p>Proibida reprodução, distribuição ou comercialização</p>
-<p>Uso exclusivo para fins de estudo pessoal</p>
+<ul>
+<li>Todo material didático é propriedade da CONTRATADA</li>
+<li>Proibida reprodução, distribuição ou comercialização</li>
+<li>Uso exclusivo para fins de estudo pessoal</li>
+</ul>
+
+<hr>
 
 <h2>10. PROTEÇÃO DE DADOS (LGPD)</h2>
-<p>Dados coletados exclusivamente para execução do contrato</p>
-<p>Não haverá compartilhamento com terceiros sem autorização</p>
-<p>Aluno pode solicitar exclusão de dados após término do contrato</p>
+<ul>
+<li>Dados coletados exclusivamente para execução do contrato</li>
+<li>Não haverá compartilhamento com terceiros sem autorização</li>
+<li>Aluno pode solicitar exclusão de dados após término do contrato</li>
+</ul>
+
+<hr>
 
 <h2>11. DISPOSIÇÕES GERAIS</h2>
 
@@ -285,8 +381,12 @@ export const COMMUNITY_TEMPLATE = `
 <p>Partes isentas de responsabilidade em situações imprevisíveis</p>
 
 <h3>11.4 COMUNICAÇÃO</h3>
-<p>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380 0517 via whatsapp</p>
-<p>Prazo de resposta: 48 horas úteis</p>
+<ul>
+<li>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380 0517 via whatsapp</li>
+<li>Prazo de resposta: 48 horas úteis</li>
+</ul>
+
+<hr>
 
 <h2>12. FORO</h2>
 <p>As partes elegem o foro da Comarca de Barueri/SP para dirimir quaisquer dúvidas oriundas deste contrato.</p>
@@ -329,101 +429,147 @@ export const COMMUNITY_FLOW_TEMPLATE = `
 <p>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Community Flow conforme especificações abaixo:</p>
 
 <h3>2.1 ESPECIFICAÇÕES DO CURSO</h3>
-<p><strong>Modalidade:</strong> Aulas em grupo e individuais</p>
-<p><strong>Carga Horária Total:</strong> {{carga_grupo}} (grupo) + {{carga_individual}} (individual)</p>
-<p><strong>Período de Vigência:</strong> {{vigencia}}</p>
-<p><strong>Formato:</strong> {{formato}}</p>
+<ul>
+<li><strong>Modalidade:</strong> Aulas em grupo e individuais</li>
+<li><strong>Carga Horária Total:</strong> {{carga_grupo}} (grupo) + {{carga_individual}} (individual)</li>
+<li><strong>Período de Vigência:</strong> {{vigencia}}</li>
+<li><strong>Formato:</strong> {{formato}}</li>
+</ul>
 <p><em>Nota: As aulas individuais são liberadas progressivamente, sendo 1 aula individual a cada 5 presenças em aulas de grupo.</em></p>
 
 <h3>2.2 RECURSOS INCLUSOS</h3>
-<p>Acesso à plataforma digital de estudos Alumni do nível indicado</p>
-<p>Teste de nivelamento inicial</p>
-<p>Avaliações periódicas de desempenho</p>
-<p>Material didático digital (1 Módulo - Careers e um grammar practice)</p>
-<p>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% após nivelamento)</p>
-<p>Suporte pedagógico via chat/e-mail</p>
+<ul>
+<li>Acesso à plataforma digital de estudos Alumni do nível indicado</li>
+<li>Teste de nivelamento inicial</li>
+<li>Avaliações periódicas de desempenho</li>
+<li>Material didático digital (1 Módulo - Careers e um grammar practice)</li>
+<li>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% após nivelamento)</li>
+<li>Suporte pedagógico via chat/e-mail</li>
+</ul>
+
+<hr>
 
 <h2>3. INVESTIMENTO E CONDIÇÕES DE PAGAMENTO</h2>
 
 <h3>3.1 VALOR TOTAL E FORMA DE PAGAMENTO</h3>
-<p><strong>Valor total:</strong> R$ {{valor_total}}<br>
-<strong>Parcelamento:</strong> {{parcelas}}<br>
-<strong>Opções de Pagamento:</strong> {{forma_pagamento}}<br>
-*Se trata de um parcelamento do pacote contratado</p>
+<ul>
+<li><strong>Valor total:</strong> R$ {{valor_total}}</li>
+<li><strong>Parcelamento:</strong> {{parcelas}}</li>
+<li><strong>Opções de Pagamento:</strong> {{forma_pagamento}}</li>
+</ul>
+<p><em>*Se trata de um parcelamento do pacote contratado</em></p>
 
 <h3>3.2 NOTAS FISCAIS</h3>
 <p>Composição do valor — faturamento híbrido: do valor total contratado, 50% (cinquenta por cento) refere-se à prestação de serviços educacionais e 50% (cinquenta por cento) refere-se ao fornecimento de material didático e conteúdo pedagógico (produto), conforme legislação tributária vigente.</p>
 
 <h3>3.3 ATRASO NO PAGAMENTO</h3>
 <p>Em caso de atraso, serão aplicados:</p>
-<p><strong>Multa:</strong> 2% sobre o valor da parcela</p>
-<p><strong>Juros:</strong> 1% ao mês (pro rata die)</p>
-<p><strong>Suspensão:</strong> Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
+<ul>
+<li><strong>Multa:</strong> 2% sobre o valor da parcela</li>
+<li><strong>Juros:</strong> 1% ao mês (pro rata die)</li>
+<li><strong>Suspensão:</strong> Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</li>
+</ul>
+
+<hr>
 
 <h2>4. AGENDAMENTO E REALIZAÇÃO DAS AULAS</h2>
 
 <h3>4.1 CANCELAMENTO E REAGENDAMENTO</h3>
-<p>Para cancelamento - mínimo de 6h de antecedência - caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</p>
-<p>Para reagendamento - mínimo de 30 minutos de antecedência - caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</p>
-<p>Não é possível reagendar/cancelar uma mesma aula mais de uma vez.</p>
+<ul>
+<li>Para cancelamento — mínimo de <strong>6h</strong> de antecedência — caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</li>
+<li>Para reagendamento — mínimo de <strong>30 minutos</strong> de antecedência — caso o pedido seja feito em período inferior ao estipulado a aula será considerada como frequentada</li>
+<li>Não é possível reagendar/cancelar uma mesma aula mais de uma vez.</li>
+</ul>
+
+<hr>
 
 <h2>5. VALIDADE E VIGÊNCIA</h2>
 
 <h3>5.1 PERÍODO DE UTILIZAÇÃO</h3>
-<p><strong>Início:</strong> {{data_inicio}}</p>
-<p><strong>Término:</strong> {{data_termino}}</p>
-<p>Prazo para utilização das horas: {{vigencia}}</p>
-<p>Prorrogação: Mediante solicitação e aprovação, com cobrança proporcional</p>
+<ul>
+<li><strong>Início:</strong> {{data_inicio}}</li>
+<li><strong>Término:</strong> {{data_termino}}</li>
+<li><strong>Prazo para utilização das horas:</strong> {{vigencia}}</li>
+<li><strong>Prorrogação:</strong> Mediante solicitação e aprovação, com cobrança proporcional</li>
+</ul>
 
 <h3>5.2 PAUSAS/TRANCAMENTO</h3>
-<p>Permitido 1 trancamento de 15 dias a cada 6 meses de contrato</p>
-<p>Solicitação com 15 dias de antecedência</p>
-<p>Período de trancamento não suspende cobranças das parcelas</p>
+<ul>
+<li>Permitido 1 trancamento de 15 dias a cada 6 meses de contrato</li>
+<li>Solicitação com 15 dias de antecedência</li>
+<li>Período de trancamento não suspende cobranças das parcelas</li>
+</ul>
+
+<hr>
 
 <h2>6. POLÍTICA DE CANCELAMENTO E REEMBOLSO</h2>
 
 <h3>6.1 DIREITO DE ARREPENDIMENTO (7 DIAS - CDC)</h3>
 <p>O CONTRATANTE poderá cancelar o contrato no prazo de até 7 (sete) dias corridos a contar da data da contratação, conforme art. 49 do Código de Defesa do Consumidor.</p>
-<p>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos;</p>
-<p>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação.</p>
+<ul>
+<li>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos;</li>
+<li>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação.</li>
+</ul>
 
 <h3>6.2 CANCELAMENTO APÓS 7 DIAS</h3>
 <p>Após o prazo de arrependimento:</p>
-<p>O valor referente aos serviços educacionais (50%) poderá ser reembolsado proporcionalmente conforme as aulas frequentadas pelo CONTRATANTE, independentemente da forma de parcelamento.</p>
-<p>O valor referente ao material didático e conteúdo pedagógico (50%) não será objeto de devolução ou reembolso após o acesso ter sido concedido.</p>
-<p>Aulas individuais já liberadas e não utilizadas até a data do cancelamento serão consideradas como frequentadas para efeitos de cálculo do valor proporcional.</p>
-<p>Sobre o valor remanescente dos serviços, será aplicada multa de 10% (dez por cento);</p>
+<ul>
+<li>O valor referente aos serviços educacionais (50%) poderá ser reembolsado proporcionalmente conforme as aulas frequentadas pelo CONTRATANTE, independentemente da forma de parcelamento.</li>
+<li>O valor referente ao material didático e conteúdo pedagógico (50%) não será objeto de devolução ou reembolso após o acesso ter sido concedido.</li>
+<li>Aulas individuais já liberadas e não utilizadas até a data do cancelamento serão consideradas como frequentadas para efeitos de cálculo do valor proporcional.</li>
+<li>Sobre o valor remanescente dos serviços, será aplicada multa de <strong>10% (dez por cento)</strong>;</li>
+</ul>
 
 <h3>6.3 PRAZO PARA REEMBOLSO</h3>
 <p>Quando aplicável, o reembolso será efetuado em até 30 (trinta) dias úteis, contados a partir da solicitação formal de cancelamento, pelo mesmo meio de pagamento utilizado.</p>
 
 <h3>6.4 DISPOSIÇÕES GERAIS</h3>
-<p>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380 0517 e preenchimento do formulário envio pelo canal;</p>
-<p>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais;</p>
+<ul>
+<li>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380 0517 e preenchimento do formulário envio pelo canal;</li>
+<li>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais;</li>
+</ul>
+
+<hr>
 
 <h2>7. OBRIGAÇÕES DA CONTRATADA</h2>
-<p>Fornecer professores qualificados e certificados</p>
-<p>Garantir acesso à plataforma digital 24/7</p>
-<p>Realizar avaliações periódicas de progresso</p>
-<p>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</p>
-<p>Manter sigilo sobre dados pessoais do aluno (LGPD)</p>
+<ul>
+<li>Fornecer professores qualificados e certificados</li>
+<li>Garantir acesso à plataforma digital 24/7</li>
+<li>Realizar avaliações periódicas de progresso</li>
+<li>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</li>
+<li>Manter sigilo sobre dados pessoais do aluno (LGPD)</li>
+</ul>
+
+<hr>
 
 <h2>8. OBRIGAÇÕES DO CONTRATANTE</h2>
-<p>Efetuar pagamentos nas datas acordadas</p>
-<p>Comparecer/conectar-se pontualmente às aulas agendadas</p>
-<p>Utilizar adequadamente a plataforma e materiais</p>
-<p>Respeitar professores e demais alunos</p>
-<p>Informar imediatamente problemas técnicos ou pedagógicos</p>
+<ul>
+<li>Efetuar pagamentos nas datas acordadas</li>
+<li>Comparecer/conectar-se pontualmente às aulas agendadas</li>
+<li>Utilizar adequadamente a plataforma e materiais</li>
+<li>Respeitar professores e demais alunos</li>
+<li>Informar imediatamente problemas técnicos ou pedagógicos</li>
+</ul>
+
+<hr>
 
 <h2>9. PROPRIEDADE INTELECTUAL</h2>
-<p>Todo material didático é propriedade da CONTRATADA</p>
-<p>Proibida reprodução, distribuição ou comercialização</p>
-<p>Uso exclusivo para fins de estudo pessoal</p>
+<ul>
+<li>Todo material didático é propriedade da CONTRATADA</li>
+<li>Proibida reprodução, distribuição ou comercialização</li>
+<li>Uso exclusivo para fins de estudo pessoal</li>
+</ul>
+
+<hr>
 
 <h2>10. PROTEÇÃO DE DADOS (LGPD)</h2>
-<p>Dados coletados exclusivamente para execução do contrato</p>
-<p>Não haverá compartilhamento com terceiros sem autorização</p>
-<p>Aluno pode solicitar exclusão de dados após término do contrato</p>
+<ul>
+<li>Dados coletados exclusivamente para execução do contrato</li>
+<li>Não haverá compartilhamento com terceiros sem autorização</li>
+<li>Aluno pode solicitar exclusão de dados após término do contrato</li>
+</ul>
+
+<hr>
 
 <h2>11. DISPOSIÇÕES GERAIS</h2>
 
@@ -437,8 +583,12 @@ export const COMMUNITY_FLOW_TEMPLATE = `
 <p>Partes isentas de responsabilidade em situações imprevisíveis</p>
 
 <h3>11.4 COMUNICAÇÃO</h3>
-<p>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380 0517 via whatsapp</p>
-<p>Prazo de resposta: 48 horas úteis</p>
+<ul>
+<li>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380 0517 via whatsapp</li>
+<li>Prazo de resposta: 48 horas úteis</li>
+</ul>
+
+<hr>
 
 <h2>12. FORO</h2>
 <p>As partes elegem o foro da Comarca de Barueri/SP para dirimir quaisquer dúvidas oriundas deste contrato.</p>
