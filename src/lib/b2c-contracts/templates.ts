@@ -10,31 +10,31 @@
 export const PRIVATE_TEMPLATE = `
 <h1>CONTRATO - CURSO PARTICULAR DE INGLÊS</h1>
 <h2>CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS</h2>
-<p>Data de Emissão: {{data_emissao}}</p>
+<p><strong>Data de Emissão:</strong> {{data_emissao}}</p>
 
 <h2>1. PARTES CONTRATANTES</h2>
 
 <h3>1.1 CONTRATADA</h3>
-<p>Razão Social: Better Education – Alumni by Better<br>
-CNPJ: 53.286.868/0001-66<br>
-Endereço: Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville Barueri/SP – CEP 06453-008<br>
-Telefone: +55 11 97380-0517</p>
+<p><strong>Razão Social:</strong> Better Education – Alumni by Better<br>
+<strong>CNPJ:</strong> 53.286.868/0001-66<br>
+<strong>Endereço:</strong> Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville Barueri/SP – CEP 06453-008<br>
+<strong>Telefone:</strong> +55 11 97380-0517</p>
 
 <h3>1.2 CONTRATANTE</h3>
-<p>Nome Completo: {{nome}}<br>
-CPF: {{cpf}}<br>
-E-mail: {{email}}<br>
-Endereço Completo: {{endereco}}<br>
-Telefone: {{telefone}}</p>
+<p><strong>Nome Completo:</strong> {{nome}}<br>
+<strong>CPF:</strong> {{cpf}}<br>
+<strong>E-mail:</strong> {{email}}<br>
+<strong>Endereço Completo:</strong> {{endereco}}<br>
+<strong>Telefone:</strong> {{telefone}}</p>
 
 <h2>2. OBJETO DO CONTRATO</h2>
 <p>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Particular conforme especificações abaixo:</p>
 
 <h3>2.1 ESPECIFICAÇÕES DO CURSO</h3>
-<p>Modalidade: Aulas individuais</p>
-<p>Carga Horária Total: {{carga_horaria}}</p>
-<p>Período de Vigência: {{vigencia}}</p>
-<p>Formato: {{formato}}</p>
+<p><strong>Modalidade:</strong> Aulas individuais</p>
+<p><strong>Carga Horária Total:</strong> {{carga_horaria}}</p>
+<p><strong>Período de Vigência:</strong> {{vigencia}}</p>
+<p><strong>Formato:</strong> {{formato}}</p>
 
 <h3>2.2 RECURSOS INCLUSOS</h3>
 <p>Acesso à plataforma digital de estudos Alumni do nível indicado</p>
@@ -47,17 +47,17 @@ Telefone: {{telefone}}</p>
 <h2>3. INVESTIMENTO E CONDIÇÕES DE PAGAMENTO</h2>
 
 <h3>3.1 VALOR TOTAL E FORMA DE PAGAMENTO</h3>
-<p>Valor por aula: R$ {{valor_por_aula}}<br>
-Valor total: R$ {{valor_total}}<br>
-Parcelamento: {{parcelas}}<br>
-Opções de Pagamento: {{forma_pagamento}}<br>
+<p><strong>Valor por aula:</strong> R$ {{valor_por_aula}}<br>
+<strong>Valor total:</strong> R$ {{valor_total}}<br>
+<strong>Parcelamento:</strong> {{parcelas}}<br>
+<strong>Opções de Pagamento:</strong> {{forma_pagamento}}<br>
 *Se trata de um parcelamento do pacote contratado</p>
 
 <h3>3.2 ATRASO NO PAGAMENTO</h3>
 <p>Em caso de atraso, serão aplicados:</p>
-<p>Multa: 2% sobre o valor da parcela</p>
-<p>Juros: 1% ao mês (pro rata die)</p>
-<p>Suspensão: Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
+<p><strong>Multa:</strong> 2% sobre o valor da parcela</p>
+<p><strong>Juros:</strong> 1% ao mês (pro rata die)</p>
+<p><strong>Suspensão:</strong> Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
 
 <h2>4. AGENDAMENTO E REALIZAÇÃO DAS AULAS</h2>
 
@@ -69,8 +69,8 @@ Opções de Pagamento: {{forma_pagamento}}<br>
 <h2>5. VALIDADE E VIGÊNCIA</h2>
 
 <h3>5.1 PERÍODO DE UTILIZAÇÃO</h3>
-<p>Início: {{data_inicio}}</p>
-<p>Término: {{data_termino}}</p>
+<p><strong>Início:</strong> {{data_inicio}}</p>
+<p><strong>Término:</strong> {{data_termino}}</p>
 <p>Prazo para utilização das horas: {{vigencia}}</p>
 <p>Prorrogação: Mediante solicitação e aprovação, com cobrança proporcional</p>
 
@@ -157,32 +157,32 @@ Opções de Pagamento: {{forma_pagamento}}<br>
 export const COMMUNITY_TEMPLATE = `
 <h1>CONTRATO - CURSO COMMUNITY DE INGLÊS</h1>
 <h2>CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS</h2>
-<p>Data de Emissão: {{data_emissao}}</p>
+<p><strong>Data de Emissão:</strong> {{data_emissao}}</p>
 
 <h2>1. PARTES CONTRATANTES</h2>
 
 <h3>1.1 CONTRATADA</h3>
-<p>Razão Social: Better Education – Alumni by Better<br>
-CNPJ: 53.286.868/0001-66<br>
-Endereço: Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville Barueri/SP – CEP 06453-008<br>
-Telefone: +55 11 97380-0517</p>
+<p><strong>Razão Social:</strong> Better Education – Alumni by Better<br>
+<strong>CNPJ:</strong> 53.286.868/0001-66<br>
+<strong>Endereço:</strong> Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville Barueri/SP – CEP 06453-008<br>
+<strong>Telefone:</strong> +55 11 97380-0517</p>
 
 <h3>1.2 CONTRATANTE</h3>
-<p>Nome Completo: {{nome}}<br>
-CPF: {{cpf}}<br>
-E-mail: {{email}}<br>
-Endereço Completo: {{endereco}}<br>
-Telefone: {{telefone}}</p>
+<p><strong>Nome Completo:</strong> {{nome}}<br>
+<strong>CPF:</strong> {{cpf}}<br>
+<strong>E-mail:</strong> {{email}}<br>
+<strong>Endereço Completo:</strong> {{endereco}}<br>
+<strong>Telefone:</strong> {{telefone}}</p>
 
 <h2>2. OBJETO DO CONTRATO</h2>
 <p>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Community conforme especificações abaixo:</p>
 
 <h3>2.1 ESPECIFICAÇÕES DO CURSO</h3>
-<p>Modalidade: Aulas em grupo</p>
-<p>Carga Horária Total: {{carga_horaria_total}}</p>
-<p>Duração da Aula: {{duracao_aula}}</p>
-<p>Período de Vigência: {{vigencia}}</p>
-<p>Formato: {{formato}}</p>
+<p><strong>Modalidade:</strong> Aulas em grupo</p>
+<p><strong>Carga Horária Total:</strong> {{carga_horaria_total}}</p>
+<p><strong>Duração da Aula:</strong> {{duracao_aula}}</p>
+<p><strong>Período de Vigência:</strong> {{vigencia}}</p>
+<p><strong>Formato:</strong> {{formato}}</p>
 
 <h3>2.2 RECURSOS INCLUSOS</h3>
 <p>Acesso à plataforma digital de estudos Alumni do nível indicado</p>
@@ -195,9 +195,9 @@ Telefone: {{telefone}}</p>
 <h2>3. INVESTIMENTO E CONDIÇÕES DE PAGAMENTO</h2>
 
 <h3>3.1 VALOR TOTAL E FORMA DE PAGAMENTO</h3>
-<p>Valor total: R$ {{valor_total}}<br>
-Parcelamento: {{parcelas}}<br>
-Opções de Pagamento: {{forma_pagamento}}<br>
+<p><strong>Valor total:</strong> R$ {{valor_total}}<br>
+<strong>Parcelamento:</strong> {{parcelas}}<br>
+<strong>Opções de Pagamento:</strong> {{forma_pagamento}}<br>
 *Se trata de um parcelamento do pacote contratado</p>
 
 <h3>3.2 NOTAS FISCAIS</h3>
@@ -205,9 +205,9 @@ Opções de Pagamento: {{forma_pagamento}}<br>
 
 <h3>3.3 ATRASO NO PAGAMENTO</h3>
 <p>Em caso de atraso, serão aplicados:</p>
-<p>Multa: 2% sobre o valor da parcela</p>
-<p>Juros: 1% ao mês (pro rata die)</p>
-<p>Suspensão: Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
+<p><strong>Multa:</strong> 2% sobre o valor da parcela</p>
+<p><strong>Juros:</strong> 1% ao mês (pro rata die)</p>
+<p><strong>Suspensão:</strong> Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
 
 <h2>4. AGENDAMENTO E REALIZAÇÃO DAS AULAS</h2>
 
@@ -219,8 +219,8 @@ Opções de Pagamento: {{forma_pagamento}}<br>
 <h2>5. VALIDADE E VIGÊNCIA</h2>
 
 <h3>5.1 PERÍODO DE UTILIZAÇÃO</h3>
-<p>Início: {{data_inicio}}</p>
-<p>Término: {{data_termino}}</p>
+<p><strong>Início:</strong> {{data_inicio}}</p>
+<p><strong>Término:</strong> {{data_termino}}</p>
 <p>Prazo para utilização das horas: {{vigencia}}</p>
 <p>Prorrogação: Mediante solicitação e aprovação, com cobrança proporcional</p>
 
@@ -308,31 +308,31 @@ Opções de Pagamento: {{forma_pagamento}}<br>
 export const COMMUNITY_FLOW_TEMPLATE = `
 <h1>CONTRATO - CURSO COMMUNITY FLOW DE INGLÊS</h1>
 <h2>CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS</h2>
-<p>Data de Emissão: {{data_emissao}}</p>
+<p><strong>Data de Emissão:</strong> {{data_emissao}}</p>
 
 <h2>1. PARTES CONTRATANTES</h2>
 
 <h3>1.1 CONTRATADA</h3>
-<p>Razão Social: Better Education – Alumni by Better<br>
-CNPJ: 53.286.868/0001-66<br>
-Endereço: Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville Barueri/SP – CEP 06453-008<br>
-Telefone: +55 11 97380-0517</p>
+<p><strong>Razão Social:</strong> Better Education – Alumni by Better<br>
+<strong>CNPJ:</strong> 53.286.868/0001-66<br>
+<strong>Endereço:</strong> Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville Barueri/SP – CEP 06453-008<br>
+<strong>Telefone:</strong> +55 11 97380-0517</p>
 
 <h3>1.2 CONTRATANTE</h3>
-<p>Nome Completo: {{nome}}<br>
-CPF: {{cpf}}<br>
-E-mail: {{email}}<br>
-Endereço Completo: {{endereco}}<br>
-Telefone: {{telefone}}</p>
+<p><strong>Nome Completo:</strong> {{nome}}<br>
+<strong>CPF:</strong> {{cpf}}<br>
+<strong>E-mail:</strong> {{email}}<br>
+<strong>Endereço Completo:</strong> {{endereco}}<br>
+<strong>Telefone:</strong> {{telefone}}</p>
 
 <h2>2. OBJETO DO CONTRATO</h2>
 <p>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Community Flow conforme especificações abaixo:</p>
 
 <h3>2.1 ESPECIFICAÇÕES DO CURSO</h3>
-<p>Modalidade: Aulas em grupo e individuais</p>
-<p>Carga Horária Total: {{carga_grupo}} (grupo) + {{carga_individual}} (individual)</p>
-<p>Período de Vigência: {{vigencia}}</p>
-<p>Formato: {{formato}}</p>
+<p><strong>Modalidade:</strong> Aulas em grupo e individuais</p>
+<p><strong>Carga Horária Total:</strong> {{carga_grupo}} (grupo) + {{carga_individual}} (individual)</p>
+<p><strong>Período de Vigência:</strong> {{vigencia}}</p>
+<p><strong>Formato:</strong> {{formato}}</p>
 <p><em>Nota: As aulas individuais são liberadas progressivamente, sendo 1 aula individual a cada 5 presenças em aulas de grupo.</em></p>
 
 <h3>2.2 RECURSOS INCLUSOS</h3>
@@ -346,9 +346,9 @@ Telefone: {{telefone}}</p>
 <h2>3. INVESTIMENTO E CONDIÇÕES DE PAGAMENTO</h2>
 
 <h3>3.1 VALOR TOTAL E FORMA DE PAGAMENTO</h3>
-<p>Valor total: R$ {{valor_total}}<br>
-Parcelamento: {{parcelas}}<br>
-Opções de Pagamento: {{forma_pagamento}}<br>
+<p><strong>Valor total:</strong> R$ {{valor_total}}<br>
+<strong>Parcelamento:</strong> {{parcelas}}<br>
+<strong>Opções de Pagamento:</strong> {{forma_pagamento}}<br>
 *Se trata de um parcelamento do pacote contratado</p>
 
 <h3>3.2 NOTAS FISCAIS</h3>
@@ -356,9 +356,9 @@ Opções de Pagamento: {{forma_pagamento}}<br>
 
 <h3>3.3 ATRASO NO PAGAMENTO</h3>
 <p>Em caso de atraso, serão aplicados:</p>
-<p>Multa: 2% sobre o valor da parcela</p>
-<p>Juros: 1% ao mês (pro rata die)</p>
-<p>Suspensão: Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
+<p><strong>Multa:</strong> 2% sobre o valor da parcela</p>
+<p><strong>Juros:</strong> 1% ao mês (pro rata die)</p>
+<p><strong>Suspensão:</strong> Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</p>
 
 <h2>4. AGENDAMENTO E REALIZAÇÃO DAS AULAS</h2>
 
@@ -370,8 +370,8 @@ Opções de Pagamento: {{forma_pagamento}}<br>
 <h2>5. VALIDADE E VIGÊNCIA</h2>
 
 <h3>5.1 PERÍODO DE UTILIZAÇÃO</h3>
-<p>Início: {{data_inicio}}</p>
-<p>Término: {{data_termino}}</p>
+<p><strong>Início:</strong> {{data_inicio}}</p>
+<p><strong>Término:</strong> {{data_termino}}</p>
 <p>Prazo para utilização das horas: {{vigencia}}</p>
 <p>Prorrogação: Mediante solicitação e aprovação, com cobrança proporcional</p>
 
