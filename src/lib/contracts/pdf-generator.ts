@@ -1,8 +1,9 @@
-import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage, PDFImage } from 'pdf-lib';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // ============================================================
-// GERADOR DE PDF PARA CONTRATOS
-// Usa pdf-lib para criar PDFs server-side sem dependências nativas
+// GERADOR DE PDF PARA CONTRATOS (com papel timbrado)
 // ============================================================
 
 interface PdfOptions {
@@ -14,7 +15,6 @@ interface PdfOptions {
 function htmlToTextBlocks(html: string): Array<{ text: string; type: 'h1' | 'h2' | 'h3' | 'p' | 'li' | 'br' }> {
   const blocks: Array<{ text: string; type: 'h1' | 'h2' | 'h3' | 'p' | 'li' | 'br' }> = [];
 
-  // Separar por tags de bloco
   const parts = html
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p>/gi, '</p>\n')
@@ -67,6 +67,32 @@ function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: numbe
   return lines.length > 0 ? lines : [''];
 }
 
+// Tentar carregar logo do disco
+async function loadLogo(pdfDoc: PDFDocument): Promise<PDFImage | null> {
+  try {
+    // Tentar vários caminhos possíveis
+    const possiblePaths = [
+      path.join(process.cwd(), 'public', 'logos', 'alumni-by-better.png'),
+      path.join(process.cwd(), '.next', 'static', 'media', 'alumni-by-better.png'),
+      '/var/task/public/logos/alumni-by-better.png',
+    ];
+
+    for (const logoPath of possiblePaths) {
+      if (fs.existsSync(logoPath)) {
+        const logoBytes = fs.readFileSync(logoPath);
+        return await pdfDoc.embedPng(logoBytes);
+      }
+    }
+    return null;
+  } catch (err) {
+    console.error('Erro ao carregar logo para PDF:', err);
+    return null;
+  }
+}
+
+// Cor vermelha Alumni
+const ALUMNI_RED = rgb(0.831, 0.125, 0.153); // #D42027
+
 export async function generateContractPdf(
   htmlContent: string,
   options?: PdfOptions
@@ -75,20 +101,107 @@ export async function generateContractPdf(
   const timesFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
   const timesBoldFont = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
 
-  // Configuração de página
-  const pageWidth = 595.28; // A4
+  const isAlumni = !options?.brand || options.brand === 'alumni';
+
+  // Carregar logo se marca Alumni
+  let logo: PDFImage | null = null;
+  if (isAlumni) {
+    logo = await loadLogo(pdfDoc);
+  }
+
+  // Configuração de página A4
+  const pageWidth = 595.28;
   const pageHeight = 841.89;
-  const marginTop = 70;
-  const marginBottom = 60;
   const marginLeft = 60;
   const marginRight = 60;
   const contentWidth = pageWidth - marginLeft - marginRight;
 
+  // Margens ajustadas para papel timbrado
+  const headerHeight = isAlumni ? 80 : 0;
+  const footerHeight = isAlumni ? 55 : 0;
+  const marginTop = 50 + headerHeight;
+  const marginBottom = 40 + footerHeight;
+
   let currentPage: PDFPage = pdfDoc.addPage([pageWidth, pageHeight]);
   let yPosition = pageHeight - marginTop;
+  let pageCount = 1;
+
+  // Desenhar papel timbrado Alumni em uma página
+  const drawLetterhead = (page: PDFPage) => {
+    if (!isAlumni) return;
+
+    // === HEADER ===
+    // Logo centralizado no topo
+    if (logo) {
+      const logoAspect = logo.width / logo.height;
+      const logoHeight = 40;
+      const logoWidth = logoHeight * logoAspect;
+      const logoX = (pageWidth - logoWidth) / 2;
+      page.drawImage(logo, {
+        x: logoX,
+        y: pageHeight - 55,
+        width: logoWidth,
+        height: logoHeight,
+      });
+    } else {
+      // Fallback texto se logo não carregou
+      page.drawText('ALUMNI by Better', {
+        x: pageWidth / 2 - 60,
+        y: pageHeight - 45,
+        size: 16,
+        font: timesBoldFont,
+        color: ALUMNI_RED,
+      });
+    }
+
+    // Linha vermelha header
+    page.drawRectangle({
+      x: marginLeft - 10,
+      y: pageHeight - 68,
+      width: contentWidth + 20,
+      height: 2,
+      color: ALUMNI_RED,
+    });
+
+    // === FOOTER ===
+    // Linha vermelha footer
+    page.drawRectangle({
+      x: marginLeft - 10,
+      y: footerHeight - 10,
+      width: contentWidth + 20,
+      height: 2,
+      color: ALUMNI_RED,
+    });
+
+    // Logo pequeno no rodapé à direita
+    if (logo) {
+      const logoAspect = logo.width / logo.height;
+      const smallLogoHeight = 24;
+      const smallLogoWidth = smallLogoHeight * logoAspect;
+      page.drawImage(logo, {
+        x: pageWidth - marginRight - smallLogoWidth,
+        y: footerHeight - 38,
+        width: smallLogoWidth,
+        height: smallLogoHeight,
+      });
+    } else {
+      page.drawText('ALUMNI by Better', {
+        x: pageWidth - marginRight - 110,
+        y: footerHeight - 30,
+        size: 10,
+        font: timesBoldFont,
+        color: ALUMNI_RED,
+      });
+    }
+  };
+
+  // Desenhar timbrado na primeira página
+  drawLetterhead(currentPage);
 
   const addNewPage = () => {
     currentPage = pdfDoc.addPage([pageWidth, pageHeight]);
+    pageCount++;
+    drawLetterhead(currentPage);
     yPosition = pageHeight - marginTop;
   };
 
@@ -103,9 +216,9 @@ export async function generateContractPdf(
     font: PDFFont,
     size: number,
     x: number,
-    options?: { color?: typeof rgb extends (...args: infer P) => infer R ? R : never; maxWidth?: number; align?: 'left' | 'center' }
+    opts?: { color?: ReturnType<typeof rgb>; maxWidth?: number; align?: 'left' | 'center' }
   ) => {
-    const maxWidth = options?.maxWidth ?? contentWidth;
+    const maxWidth = opts?.maxWidth ?? contentWidth;
     const lines = wrapText(text, font, size, maxWidth);
     const lineHeight = size * 1.4;
 
@@ -113,7 +226,7 @@ export async function generateContractPdf(
       ensureSpace(lineHeight);
 
       let drawX = x;
-      if (options?.align === 'center') {
+      if (opts?.align === 'center') {
         const textWidth = font.widthOfTextAtSize(line, size);
         drawX = marginLeft + (contentWidth - textWidth) / 2;
       }
@@ -123,13 +236,13 @@ export async function generateContractPdf(
         y: yPosition,
         size,
         font,
-        color: options?.color ?? rgb(0.1, 0.1, 0.1),
+        color: opts?.color ?? rgb(0.1, 0.1, 0.1),
       });
       yPosition -= lineHeight;
     }
   };
 
-  // Título do documento (se fornecido)
+  // Título do documento
   if (options?.title) {
     drawText(options.title, timesBoldFont, 16, marginLeft, { align: 'center' });
     yPosition -= 20;
@@ -191,6 +304,5 @@ export async function generateContractPdf(
     }
   }
 
-  // Gerar bytes do PDF
   return pdfDoc.save();
 }
