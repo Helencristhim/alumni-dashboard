@@ -372,8 +372,8 @@ model B2CContract {
 
   // Dados do aluno
   nomeAluno       String
-  cpfAluno        String
-  emailAluno      String
+  cpfAluno        String?
+  emailAluno      String?
   telefoneAluno   String?
   enderecoAluno   String?
 
