@@ -67,10 +67,18 @@ export async function POST(request: NextRequest) {
       htmlContent,
     } = body;
 
-    // Gerar numero sequencial
-    const count = await prisma.b2CContract.count();
+    // Gerar numero sequencial baseado no ultimo contrato do ano
     const year = new Date().getFullYear();
-    const number = `B2C-${year}-${String(count + 1).padStart(4, '0')}`;
+    const prefix = `B2C-${year}-`;
+    const lastContract = await prisma.b2CContract.findFirst({
+      where: { number: { startsWith: prefix } },
+      orderBy: { number: 'desc' },
+      select: { number: true },
+    });
+    const lastSeq = lastContract
+      ? parseInt(lastContract.number.replace(prefix, ''), 10)
+      : 0;
+    const number = `${prefix}${String(lastSeq + 1).padStart(4, '0')}`;
 
     // Auto-set faturamentoHibrido para COMMUNITY e COMMUNITY_FLOW
     const faturamentoHibrido = type === 'COMMUNITY' || type === 'COMMUNITY_FLOW';
