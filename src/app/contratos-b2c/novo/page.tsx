@@ -173,11 +173,12 @@ export default function NovoContratoB2CPage() {
       if (result.success) {
         router.push(`/contratos-b2c/${result.data.id}`);
       } else {
-        alert('Erro ao salvar contrato');
+        console.error('Erro ao salvar contrato:', result.error);
+        alert(`Erro ao salvar contrato: ${result.error || 'Erro desconhecido'}`);
       }
     } catch (err) {
       console.error('Erro ao salvar:', err);
-      alert('Erro ao salvar contrato');
+      alert(`Erro ao salvar contrato: ${err instanceof Error ? err.message : 'Erro de conexão'}`);
     } finally {
       setSaving(false);
     }

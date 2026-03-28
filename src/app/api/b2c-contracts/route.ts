@@ -112,8 +112,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data: contract }, { status: 201 });
   } catch (error) {
     console.error('Erro ao criar contrato B2C:', error);
+    const message = error instanceof Error ? error.message : 'Erro ao criar contrato B2C';
     return NextResponse.json(
-      { success: false, error: 'Erro ao criar contrato B2C' },
+      { success: false, error: message },
       { status: 500 }
     );
   }
