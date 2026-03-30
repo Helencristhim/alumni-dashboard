@@ -500,6 +500,9 @@ function B2CSignatureStatusPanel({
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [editingEmailId, setEditingEmailId] = useState<string | null>(null);
+  const [editEmailValue, setEditEmailValue] = useState('');
+  const [savingEmail, setSavingEmail] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -530,6 +533,41 @@ function B2CSignatureStatusPanel({
   const handleRefresh = () => {
     setRefreshing(true);
     fetchStatus();
+  };
+
+  const handleEditEmail = (signatory: SignatoryData) => {
+    setEditingEmailId(signatory.id || signatory.email);
+    setEditEmailValue(signatory.email);
+  };
+
+  const handleSaveEmail = async (signatoryId: string) => {
+    if (!editEmailValue || !editEmailValue.includes('@')) return;
+    setSavingEmail(true);
+    try {
+      const response = await fetch(
+        `/api/b2c-contracts/${contractId}/signatories/${signatoryId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: editEmailValue }),
+        }
+      );
+      const result = await response.json();
+      if (result.success) {
+        setSignatories((prev) =>
+          prev.map((s) =>
+            s.id === signatoryId ? { ...s, email: editEmailValue } : s
+          )
+        );
+        setEditingEmailId(null);
+      } else {
+        alert(result.error || 'Erro ao atualizar email');
+      }
+    } catch {
+      alert('Erro ao atualizar email');
+    } finally {
+      setSavingEmail(false);
+    }
   };
 
   const copyLink = async (signUrl: string, signId: string) => {
@@ -602,12 +640,49 @@ function B2CSignatureStatusPanel({
                 <p className="text-sm font-medium text-gray-900">
                   {signatory.name}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {signatory.signatoryType === 'responsavel'
-                    ? 'Responsavel'
-                    : 'Testemunha'}{' '}
-                  &middot; {signatory.email}
-                </p>
+                {editingEmailId === (signatory.id || signatory.email) ? (
+                  <div className="flex items-center gap-1 mt-1">
+                    <input
+                      type="email"
+                      value={editEmailValue}
+                      onChange={(e) => setEditEmailValue(e.target.value)}
+                      className="text-xs border border-gray-300 rounded px-2 py-1 w-48 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && signatory.id) handleSaveEmail(signatory.id);
+                        if (e.key === 'Escape') setEditingEmailId(null);
+                      }}
+                    />
+                    <button
+                      onClick={() => signatory.id && handleSaveEmail(signatory.id)}
+                      disabled={savingEmail}
+                      className="text-xs text-green-600 hover:text-green-800 font-medium"
+                    >
+                      {savingEmail ? '...' : 'Salvar'}
+                    </button>
+                    <button
+                      onClick={() => setEditingEmailId(null)}
+                      className="text-xs text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    {signatory.signatoryType === 'responsavel'
+                      ? 'Responsavel'
+                      : 'Testemunha'}{' '}
+                    &middot; {signatory.email}
+                    {signatory.status !== 'signed' && (
+                      <button
+                        onClick={() => handleEditEmail(signatory)}
+                        className="ml-1 text-purple-500 hover:text-purple-700 hover:underline"
+                      >
+                        (editar)
+                      </button>
+                    )}
+                  </p>
+                )}
               </div>
             </div>
             <span
