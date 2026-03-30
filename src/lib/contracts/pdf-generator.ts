@@ -11,6 +11,25 @@ interface PdfOptions {
   brand?: string;
 }
 
+// Substitui caracteres Unicode incompatíveis com WinAnsi
+function sanitizeForWinAnsi(text: string): string {
+  return text
+    .replace(/\u2265/g, '>=')  // ≥
+    .replace(/\u2264/g, '<=')  // ≤
+    .replace(/\u2260/g, '!=')  // ≠
+    .replace(/\u2013/g, '-')   // –
+    .replace(/\u2014/g, '--')  // —
+    .replace(/\u2018/g, "'")   // '
+    .replace(/\u2019/g, "'")   // '
+    .replace(/\u201C/g, '"')   // "
+    .replace(/\u201D/g, '"')   // "
+    .replace(/\u2026/g, '...')  // …
+    .replace(/\u00A0/g, ' ')   // non-breaking space
+    .replace(/\u2022/g, '-')   // •
+    .replace(/\u25CF/g, '-')   // ●
+    .replace(/[^\x00-\xFF]/g, ''); // remove qualquer outro caractere fora do WinAnsi
+}
+
 // Converte HTML para texto limpo com estrutura
 function htmlToTextBlocks(html: string): Array<{ text: string; type: 'h1' | 'h2' | 'h3' | 'p' | 'li' | 'br' }> {
   const blocks: Array<{ text: string; type: 'h1' | 'h2' | 'h3' | 'p' | 'li' | 'br' }> = [];
@@ -39,7 +58,7 @@ function htmlToTextBlocks(html: string): Array<{ text: string; type: 'h1' | 'h2'
     else if (/<h3/i.test(part)) type = 'h3';
     else if (/<li/i.test(part)) type = 'li';
 
-    blocks.push({ text: cleanText, type });
+    blocks.push({ text: sanitizeForWinAnsi(cleanText), type });
   }
 
   return blocks;
@@ -244,7 +263,7 @@ export async function generateContractPdf(
 
   // Título do documento
   if (options?.title) {
-    drawText(options.title, timesBoldFont, 16, marginLeft, { align: 'center' });
+    drawText(sanitizeForWinAnsi(options.title), timesBoldFont, 16, marginLeft, { align: 'center' });
     yPosition -= 20;
   }
 
@@ -291,7 +310,7 @@ export async function generateContractPdf(
 
       case 'li':
         ensureSpace(16);
-        drawText(`\u2022  ${block.text}`, timesFont, 11, marginLeft + 15, {
+        drawText(`-  ${block.text}`, timesFont, 11, marginLeft + 15, {
           maxWidth: contentWidth - 15,
         });
         break;
