@@ -353,6 +353,28 @@ export default function EditContratoB2CPage({ params }: { params: Promise<{ id: 
               PDF
             </button>
 
+            {/* Botão Status Assinatura */}
+            {(contractStatus === 'SENT_FOR_SIGNATURE' || contractStatus === 'SIGNED') && (
+              <button
+                onClick={() => {
+                  setShowSignatureStatus(!showSignatureStatus);
+                  setShowVersions(false);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  showSignatureStatus
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {contractStatus === 'SIGNED' ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                ) : (
+                  <Clock className="w-4 h-4 text-yellow-600" />
+                )}
+                Assinaturas
+              </button>
+            )}
+
             {(!isLocked || isPendingSignature) && (
               <button
                 onClick={() => setShowSignature(true)}
