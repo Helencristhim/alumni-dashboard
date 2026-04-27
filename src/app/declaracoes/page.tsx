@@ -136,14 +136,25 @@ const conteudoProgramatico: Record<string, { nivel: string; topicos: string[] }>
 
 const cursos = Object.keys(conteudoProgramatico);
 
-function formatarData(dateStr: string): string {
-  if (!dateStr) return 'xx de xxxx de 202x';
-  const date = new Date(dateStr + 'T00:00:00');
+function formatarDataInput(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function formatarDataExtenso(dateStr: string): string {
+  if (!dateStr || dateStr.length < 10) return 'xx de xxxx de 202x';
+  const parts = dateStr.split('/');
+  if (parts.length !== 3) return dateStr;
+  const [dia, mes, ano] = parts;
   const meses = [
     'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
     'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
   ];
-  return `${date.getDate()} de ${meses[date.getMonth()]} de ${date.getFullYear()}`;
+  const mesIndex = parseInt(mes, 10) - 1;
+  if (mesIndex < 0 || mesIndex > 11) return dateStr;
+  return `${parseInt(dia, 10)} de ${meses[mesIndex]} de ${ano}`;
 }
 
 function dataHoje(): string {
@@ -357,9 +368,10 @@ export default function DeclaracoesPage() {
                 Data de fim do contrato
               </label>
               <input
-                type="date"
+                type="text"
                 value={dataFimContrato}
-                onChange={(e) => setDataFimContrato(e.target.value)}
+                onChange={(e) => setDataFimContrato(formatarDataInput(e.target.value))}
+                placeholder="dd/mm/aaaa"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
               />
             </div>
@@ -414,7 +426,7 @@ export default function DeclaracoesPage() {
                 Centro Binacional Brasil - Estados Unidos, CNPJ 62.572.789/0001-02, no
                 curso <strong>{curso}</strong>, administrado por Better Education – Alumni by Better,
                 CNPJ 53.286.868/0001-66, no módulo <strong>{modulo}</strong>, com carga horária total
-                de <strong>{cargaHoraria}</strong> a ser concluída até <strong>{formatarData(dataFimContrato)}</strong>.
+                de <strong>{cargaHoraria}</strong> a ser concluída até <strong>{formatarDataExtenso(dataFimContrato)}</strong>.
               </p>
 
               <p className="text-justify leading-8 mt-4" style={{ textIndent: '2em' }}>
