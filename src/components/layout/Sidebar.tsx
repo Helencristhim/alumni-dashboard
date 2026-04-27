@@ -17,6 +17,7 @@ import {
   Target,
   Clock,
   FileText,
+  FileSignature,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -118,6 +119,17 @@ const navItems: NavItem[] = [
     href: '/marketing',
     color: '#EC4899',
     moduleId: 'marketing'
+  }
+];
+
+// Itens de documentos
+const docItems: NavItem[] = [
+  {
+    id: 'declaracoes',
+    label: 'Declarações',
+    icon: <FileSignature className="w-5 h-5" />,
+    href: '/declaracoes',
+    color: '#0891B2',
   }
 ];
 
@@ -233,6 +245,15 @@ export function Sidebar() {
       <nav className="flex-1 py-6 px-3 overflow-y-auto">
         <ul className="space-y-1">
           {filteredNavItems.map(renderNavItem)}
+        </ul>
+
+        {/* Separador e Itens de Documentos */}
+        <div className="my-4 border-t border-gray-800" />
+        <p className="px-3 text-xs text-gray-500 uppercase tracking-wider mb-2">
+          Documentos
+        </p>
+        <ul className="space-y-1">
+          {docItems.map(renderNavItem)}
         </ul>
 
         {/* Separador e Itens Administrativos */}
