@@ -49,7 +49,7 @@ function createAlumniHeader(logoBuffer: Buffer | null): Header {
         children: [
           new ImageRun({
             data: logoBuffer,
-            transformation: { width: 180, height: 45 },
+            transformation: { width: 128, height: 56 },
             type: 'png',
           }),
         ],
@@ -119,7 +119,7 @@ function createAlumniFooter(logoBuffer: Buffer | null): Footer {
         children: [
           new ImageRun({
             data: logoBuffer,
-            transformation: { width: 120, height: 30 },
+            transformation: { width: 82, height: 36 },
             type: 'png',
           }),
         ],
