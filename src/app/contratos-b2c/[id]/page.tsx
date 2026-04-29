@@ -215,6 +215,28 @@ export default function EditContratoB2CPage({ params }: { params: Promise<{ id: 
     }
   };
 
+  // Download DOCX
+  const handleDownloadDocx = async () => {
+    try {
+      const response = await fetch(`/api/b2c-contracts/${contractId}/generate-docx`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = response.headers.get('Content-Disposition')?.split('filename="')[1]?.replace('"', '') || 'contrato.docx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Erro ao gerar DOCX:', err);
+    }
+  };
+
   // Enviar para assinatura (B2C: 1 aluno + 1 representante)
   const handleSendSignature = async (signatories: B2CSignatoryData[]) => {
     try {
@@ -351,6 +373,14 @@ export default function EditContratoB2CPage({ params }: { params: Promise<{ id: 
             >
               <FileDown className="w-4 h-4" />
               PDF
+            </button>
+            <button
+              onClick={handleDownloadDocx}
+              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm"
+              title="Download Word"
+            >
+              <FileDown className="w-4 h-4" />
+              Word
             </button>
 
             {/* Botão Status Assinatura */}
