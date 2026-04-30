@@ -690,15 +690,9 @@ export default function CalculadoraCancelamentosPage() {
                 <DollarSign className="w-3.5 h-3.5 inline mr-1" />
                 Tipo de Pagamento
               </label>
-              <select
-                value={tipoPagamento}
-                onChange={(e) => setTipoPagamento(e.target.value as 'recorrente' | 'parcelado' | 'avista')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white"
-              >
-                <option value="parcelado">Parcelado</option>
-                <option value="avista">À Vista</option>
-                <option value="recorrente">Recorrente</option>
-              </select>
+              <div className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-900 font-medium">
+                {tipoPagamento === 'recorrente' ? 'Recorrência' : tipoPagamento === 'avista' ? 'À Vista / Pix' : 'Parcelado'}
+              </div>
             </div>
 
             {/* Data da Compra */}
