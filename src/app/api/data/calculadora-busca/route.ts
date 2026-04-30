@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
       return -1;
     };
 
-    const colEmail = findCol(['email', 'e-mail', 'e_mail']);
+    const colEmail = findCol(['cliente', 'email', 'e-mail', 'e_mail']);
     const colNome = findCol(['nome', 'name']);
     const colDataVenda = findCol(['data_venda', 'data da venda', 'data venda']);
     const colUltimaParcela = findCol(['ultima parcela', 'ultima_parcela', 'última parcela']);
