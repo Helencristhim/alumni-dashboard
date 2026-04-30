@@ -426,10 +426,12 @@ export default function CalculadoraCancelamentosPage() {
     }
 
     if (r.tipo_pagamento === 'recorrente') {
+      // Recorrência: cancelar cobranças do serviço + multa 10% sobre meses restantes
       return [
         `Data da matrícula: ${r.data_compra} (Valor total ${formatCurrency(r.valor_total_contrato)})`,
         `Data da solicitação: ${r.data_cancelamento}`,
         ``,
+        `Tipo de pagamento: Recorrência`,
         `Meses utilizados: ${r.meses_utilizados}`,
         `Meses restantes: ${r.meses_restantes}`,
         ``,
@@ -437,17 +439,19 @@ export default function CalculadoraCancelamentosPage() {
         `Produto - ${formatCurrency(r.valor_produto)} - Não cancelável`,
         ``,
         `Ações:`,
-        `As cobranças futuras (${r.parcelas_restantes} parcelas) serão canceladas.`,
-        `Valor devido referente à multa: R$ ${formatCurrency(r.multa)}`,
+        `Cancelar cobranças futuras do serviço (${r.parcelas_restantes} parcelas de R$ ${formatCurrency(r.valor_mensal)})`,
+        `Multa de 10% sobre os meses restantes: R$ ${formatCurrency(r.multa)}`,
         `Material permanece a cobrança conforme informado em contrato`,
       ].join('\n');
     }
 
-    // À vista ou parcelado
+    // À vista ou Parcelado: estorno = valor restante - multa 10%
+    const tipoLabel = r.tipo_pagamento === 'avista' ? 'À Vista' : 'Parcelado';
     return [
       `Data da matrícula: ${r.data_compra} (Valor total ${formatCurrency(r.valor_total_contrato)})`,
       `Data da solicitação: ${r.data_cancelamento}`,
       ``,
+      `Tipo de pagamento: ${tipoLabel}`,
       `Meses utilizados: ${r.meses_utilizados}`,
       `Meses restantes: ${r.meses_restantes}`,
       ``,
