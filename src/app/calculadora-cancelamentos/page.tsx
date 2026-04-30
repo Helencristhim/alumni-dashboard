@@ -277,11 +277,12 @@ export default function CalculadoraCancelamentosPage() {
     const d = String(hoje.getDate()).padStart(2, '0');
     setDataCancelamento(`${y}-${m}-${d}`);
 
-    // Determinar tipo de pagamento
-    const forma = (aluno.forma_pagamento || '').toLowerCase();
-    if (forma.includes('recorr')) {
+    // Determinar tipo de pagamento baseado na coluna "forma" da planilha
+    // Valores possíveis: Parcelado, Recorrência, À vista, Pix
+    const forma = (aluno.forma_pagamento || '').toLowerCase().trim();
+    if (forma === 'recorrência' || forma === 'recorrencia' || forma.includes('recorr')) {
       setTipoPagamento('recorrente');
-    } else if (forma.includes('vista') || forma.includes('à vista') || forma.includes('a vista') || forma.includes('pix')) {
+    } else if (forma === 'à vista' || forma === 'a vista' || forma === 'pix') {
       setTipoPagamento('avista');
     } else {
       setTipoPagamento('parcelado');
