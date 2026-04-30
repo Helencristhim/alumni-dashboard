@@ -18,6 +18,7 @@ import {
   Clock,
   FileText,
   FileSignature,
+  Calculator,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -86,6 +87,14 @@ const navItems: NavItem[] = [
     icon: <UserX className="w-5 h-5" />,
     href: '/cancelamentos',
     color: '#EF4444',
+    moduleId: 'cancelamentos'
+  },
+  {
+    id: 'calculadora-cancelamentos',
+    label: 'Calc. Cancelamentos',
+    icon: <Calculator className="w-5 h-5" />,
+    href: '/calculadora-cancelamentos',
+    color: '#DC2626',
     moduleId: 'cancelamentos'
   },
   {
