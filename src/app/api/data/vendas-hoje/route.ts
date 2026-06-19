@@ -233,6 +233,16 @@ export async function GET() {
     // Filtra vendas de hoje
     const vendasHoje = vendasMes.filter(v => v.data === today);
 
+    // Aviso: vendas sem o número da coluna "Vendas QTD" preenchido (qtd = 0).
+    // Elas já entram no total normalmente, mas a equipe deve preencher a QTD na planilha.
+    const semQtd = vendasMes.filter(v => !v.qtd);
+    const avisoQtd =
+      semQtd.length > 0
+        ? `Atenção: ${semQtd.length} venda(s) estão sem o número na coluna "Vendas QTD" na planilha (já contabilizadas no total). Preencher: ${semQtd
+            .map(v => `${v.nome} (${v.data})`)
+            .join(', ')}.`
+        : undefined;
+
     // Calcula totais
     const calcTotais = (vendas: VendaHoje[]) => ({
       quantidade: vendas.length,
@@ -253,6 +263,7 @@ export async function GET() {
         dataReferencia: today,
         mesReferencia: currentMonth,
         lastUpdated: new Date().toISOString(),
+        message: avisoQtd,
       },
       {
         headers: {
