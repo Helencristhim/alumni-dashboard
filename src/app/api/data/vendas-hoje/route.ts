@@ -172,11 +172,16 @@ async function fetchMonthData(sheetName: string): Promise<VendaHoje[]> {
     const row = rows[i];
 
     // Pula linhas vazias ou sem QTD
-    const qtdRaw = colIdx.qtd >= 0 ? row[colIdx.qtd] : '';
-    if (!qtdRaw || isNaN(parseInt(qtdRaw))) continue;
-
+    // Considera a linha uma venda válida quando tem DATA e NOME.
+    // A coluna "Vendas QTD" às vezes fica em branco mesmo em vendas reais,
+    // então NÃO pode ser usada como critério de validação (senão some venda do total).
     const dataRaw = colIdx.data >= 0 ? row[colIdx.data] : '';
     if (!dataRaw || !dataRaw.includes('/')) continue;
+
+    const nomeRaw = colIdx.nome >= 0 ? row[colIdx.nome] : '';
+    if (!nomeRaw) continue;
+
+    const qtdRaw = colIdx.qtd >= 0 ? row[colIdx.qtd] : '';
 
     vendas.push({
       qtd: parseInt(qtdRaw) || 0,

@@ -19,6 +19,8 @@ import {
   FileText,
   FileSignature,
   Calculator,
+  GraduationCap,
+  Award,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -134,11 +136,25 @@ const navItems: NavItem[] = [
 // Itens de documentos
 const docItems: NavItem[] = [
   {
-    id: 'declaracoes',
-    label: 'Declarações',
-    icon: <FileSignature className="w-5 h-5" />,
-    href: '/declaracoes',
-    color: '#0891B2',
+    id: 'proposta-private',
+    label: 'Proposta Private',
+    icon: <GraduationCap className="w-5 h-5" />,
+    href: '/proposta-private',
+    color: '#003080',
+  },
+{
+    id: 'comprovante-matricula',
+    label: 'Comprov. Matrícula',
+    icon: <ClipboardCheck className="w-5 h-5" />,
+    href: '/comprovante-matricula',
+    color: '#10B981',
+  },
+  {
+    id: 'certificados',
+    label: 'Certificados',
+    icon: <Award className="w-5 h-5" />,
+    href: '/certificados',
+    color: '#F59E0B',
   }
 ];
 
