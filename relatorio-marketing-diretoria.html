@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Marketing | Alumni - Diretoria</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --green: #00c897;
+            --green-soft: #e6faf4;
+            --red: #e94560;
+            --red-soft: #fde8ec;
+            --yellow: #f5a623;
+            --yellow-soft: #fef7e8;
+            --blue: #3b82f6;
+            --blue-soft: #eff6ff;
+            --purple: #8b5cf6;
+            --purple-soft: #f3f0ff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, #1a365d 100%);
+            color: white;
+            padding: 40px 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(233,69,96,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-area h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-area span {
+            color: var(--highlight);
+        }
+
+        .header-meta {
+            text-align: right;
+            opacity: 0.85;
+            font-size: 14px;
+        }
+
+        .header-meta .period {
+            font-size: 18px;
+            font-weight: 600;
+            opacity: 1;
+        }
+
+        .header-summary {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-kpi {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 20px 24px;
+            transition: transform 0.2s;
+        }
+
+        .header-kpi:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .header-kpi .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .header-kpi .value {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .header-kpi .sub {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+
+        .header-kpi .value.green { color: var(--green); }
+        .header-kpi .value.highlight { color: var(--highlight); }
+
+        /* ===== MAIN ===== */
+        .main {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 40px 60px;
+        }
+
+        /* ===== SECTION ===== */
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .section-title .icon.blue { background: var(--blue-soft); }
+        .section-title .icon.green { background: var(--green-soft); }
+        .section-title .icon.red { background: var(--red-soft); }
+        .section-title .icon.yellow { background: var(--yellow-soft); }
+        .section-title .icon.purple { background: var(--purple-soft); }
+
+        /* ===== CHANNEL TABLE ===== */
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: var(--gray-800);
+            color: white;
+            padding: 14px 18px;
+            text-align: right;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        thead th:first-child {
+            text-align: left;
+            border-radius: 0;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--gray-100);
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        tbody tr.total-row {
+            background: var(--gray-50);
+            font-weight: 700;
+            border-top: 2px solid var(--gray-300);
+        }
+
+        tbody td {
+            padding: 14px 18px;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        tbody td:first-child {
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .channel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .channel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .dot-meta { background: #1877f2; }
+        .dot-google { background: #ea4335; }
+        .dot-email { background: #f5a623; }
+        .dot-instagram { background: #e1306c; }
+        .dot-tiktok { background: #010101; }
+        .dot-site { background: var(--green); }
+        .dot-parcerias { background: var(--purple); }
+
+        .badge-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        .badge-paid { background: #fde8ec; color: #e94560; }
+        .badge-organic { background: #e6faf4; color: #059669; }
+        .badge-partner { background: #f3f0ff; color: #7c3aed; }
+
+        .val-green { color: #059669; font-weight: 600; }
+        .val-red { color: #dc2626; font-weight: 600; }
+        .val-muted { color: var(--gray-400); }
+        .val-bold { font-weight: 700; }
+
+        /* ===== CARDS GRID ===== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .cards-grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid transparent;
+        }
+
+        .card.win { border-left-color: var(--green); }
+        .card.alert { border-left-color: var(--red); }
+        .card.info { border-left-color: var(--blue); }
+        .card.action { border-left-color: var(--yellow); }
+        .card.insight { border-left-color: var(--purple); }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .card-tag {
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-win { background: var(--green-soft); color: #059669; }
+        .tag-alert { background: var(--red-soft); color: #dc2626; }
+        .tag-action { background: var(--yellow-soft); color: #b45309; }
+        .tag-insight { background: var(--purple-soft); color: #7c3aed; }
+        .tag-info { background: var(--blue-soft); color: #2563eb; }
+
+        .card p {
+            font-size: 13px;
+            color: var(--gray-600);
+            line-height: 1.7;
+        }
+
+        .card .metric-highlight {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin: 8px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .card .metric-highlight.green { color: #059669; }
+        .card .metric-highlight.red { color: #dc2626; }
+
+        /* ===== EVOLUTION TABLE ===== */
+        .evo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .evo-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .evo-card .evo-header {
+            padding: 18px 24px;
+            font-weight: 700;
+            font-size: 15px;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .evo-card table thead th {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            font-size: 11px;
+            padding: 10px 14px;
+        }
+
+        .evo-card table tbody td {
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+
+        /* ===== BAR CHART ===== */
+        .bar-chart-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            padding: 28px;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .bar-label {
+            width: 160px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 32px;
+            background: var(--gray-100);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            min-width: 60px;
+            transition: width 1s ease;
+        }
+
+        .bar-value {
+            width: 100px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* ===== FUNNEL ===== */
+        .funnel-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            padding: 32px;
+        }
+
+        .funnel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin: 20px 0;
+        }
+
+        .funnel-step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .funnel-number {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--gray-900);
+            letter-spacing: -1px;
+        }
+
+        .funnel-label {
+            font-size: 12px;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .funnel-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 8px;
+            flex-shrink: 0;
+        }
+
+        .funnel-arrow .arrow {
+            font-size: 24px;
+            color: var(--gray-300);
+        }
+
+        .funnel-arrow .rate {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--highlight);
+            margin-top: 2px;
+        }
+
+        /* ===== TICKET / PIE ===== */
+        .split-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .donut-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            padding: 28px;
+        }
+
+        .donut-chart {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .donut-svg {
+            width: 180px;
+            height: 180px;
+            flex-shrink: 0;
+        }
+
+        .donut-legend {
+            flex: 1;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .legend-value {
+            margin-left: auto;
+            font-weight: 700;
+        }
+
+        /* ===== QA SECTION ===== */
+        .qa-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .qa-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 20px 24px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .qa-question {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .qa-answer {
+            font-size: 13px;
+            color: var(--gray-600);
+            line-height: 1.7;
+        }
+
+        .qa-answer strong {
+            color: var(--gray-800);
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 30px 60px;
+            color: var(--gray-400);
+            font-size: 12px;
+            border-top: 1px solid var(--gray-200);
+            margin-top: 20px;
+        }
+
+        /* ===== MOM TABLE ===== */
+        .mom-table {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .trend-up { color: #059669; }
+        .trend-down { color: #dc2626; }
+        .trend-neutral { color: var(--gray-400); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .header-summary { grid-template-columns: repeat(3, 1fr); }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+            .evo-grid { grid-template-columns: 1fr; }
+            .split-row { grid-template-columns: 1fr; }
+            .qa-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 24px; }
+            .main { padding: 24px; }
+            .header-summary { grid-template-columns: 1fr 1fr; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .funnel { flex-direction: column; }
+        }
+
+        /* ===== PRINT ===== */
+        @media print {
+            body { background: white; }
+            .header { padding: 20px 30px; }
+            .main { padding: 20px 30px; }
+            .card, .table-container, .bar-chart-section, .funnel-container, .donut-container, .evo-card, .qa-card {
+                box-shadow: none;
+                border: 1px solid var(--gray-200);
+                break-inside: avoid;
+            }
+        }
+
+        .disclaimer {
+            background: var(--yellow-soft);
+            border: 1px solid #fcd34d;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 13px;
+            color: #92400e;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .disclaimer strong {
+            white-space: nowrap;
+        }
+
+        /* Tab system */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: var(--gray-100);
+            padding: 4px;
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-500);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--gray-900);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .stat-mini {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .stat-mini.up { background: var(--green-soft); color: #059669; }
+        .stat-mini.down { background: var(--red-soft); color: #dc2626; }
+    </style>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<div class="header">
+    <div class="header-top">
+        <div class="logo-area">
+            <h1>Alumni <span>English School</span></h1>
+            <p style="opacity:0.7; font-size:14px; margin-top:4px;">Relatório de Performance de Marketing</p>
+        </div>
+        <div class="header-meta">
+            <div class="period">Outubro 2025 — Fevereiro 2026</div>
+            <div>5 meses de operação | 7 canais ativos</div>
+            <div style="margin-top:4px; opacity:0.6;">Atualizado em Março 2026</div>
+        </div>
+    </div>
+    <div class="header-summary">
+        <div class="header-kpi">
+            <div class="label">Investimento Total</div>
+            <div class="value">R$ 48,4k</div>
+            <div class="sub">Meta Ads + Google Ads</div>
+        </div>
+        <div class="header-kpi">
+            <div class="label">Leads CRM Gerados</div>
+            <div class="value">2.204</div>
+            <div class="sub">Todos os canais</div>
+        </div>
+        <div class="header-kpi">
+            <div class="label">Vendas Totais</div>
+            <div class="value green">241</div>
+            <div class="sub">Taxa geral: 11%</div>
+        </div>
+        <div class="header-kpi">
+            <div class="label">Receita Total</div>
+            <div class="value green">R$ 1,07M</div>
+            <div class="sub">Ticket médio: R$ 4.460</div>
+        </div>
+        <div class="header-kpi">
+            <div class="label">ROAS Geral</div>
+            <div class="value green">22x</div>
+            <div class="sub">Receita / Investimento</div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MAIN ========== -->
+<div class="main">
+
+    <!-- DISCLAIMER -->
+    <div class="disclaimer">
+        <strong>Nota:</strong> Site Orgânico possui tracking de leads apenas a partir de Janeiro/2026. Emails B2C e Google Ads com gaps de dados em Novembro/Outubro. Os totais reais da operação são potencialmente superiores aos apresentados.
+    </div>
+
+    <!-- ===== FUNIL GERAL ===== -->
+    <div class="section">
+        <div class="section-title">
+            <div class="icon blue">&#9684;</div>
+            Funil Geral da Operação
+        </div>
+        <div class="funnel-container">
+            <div class="funnel">
+                <div class="funnel-step">
+                    <div class="funnel-number">571.760</div>
+                    <div class="funnel-label">Impressões (Meta)</div>
+                </div>
+                <div class="funnel-arrow">
+                    <div class="arrow">&#10132;</div>
+                    <div class="rate"></div>
+                </div>
+                <div class="funnel-step">
+                    <div class="funnel-number">13.198</div>
+                    <div class="funnel-label">Cliques (Ads)</div>
+                </div>
+                <div class="funnel-arrow">
+                    <div class="arrow">&#10132;</div>
+                    <div class="rate">16,7%</div>
+                </div>
+                <div class="funnel-step">
+                    <div class="funnel-number">2.201</div>
+                    <div class="funnel-label">Conversões LP</div>
+                </div>
+                <div class="funnel-arrow">
+                    <div class="arrow">&#10132;</div>
+                    <div class="rate">53,8%</div>
+                </div>
+                <div class="funnel-step">
+                    <div class="funnel-number">1.187</div>
+                    <div class="funnel-label">Leads CRM (Ads)</div>
+                </div>
+                <div class="funnel-arrow">
+                    <div class="arrow">&#10132;</div>
+                    <div class="rate">14%</div>
+                </div>
+                <div class="funnel-step">
+                    <div class="funnel-number" style="color: var(--green);">241</div>
+                    <div class="funnel-label">Vendas Totais</div>
+                </div>
+                <div class="funnel-arrow">
+                    <div class="arrow">&#10132;</div>
+                    <div class="rate"></div>
+                </div>
+                <div class="funnel-step">
+                    <div class="funnel-number" style="color: var(--green);">R$ 1,07M</div>
+                    <div class="funnel-label">Receita</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PERFORMANCE POR CANAL ===== -->
+    <div class="section">
+        <div class="section-title">
+            <div class="icon blue">&#9632;</div>
+            Performance por Canal
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:180px;">Canal</th>
+                        <th>Investimento</th>
+                        <th>Leads CRM</th>
+                        <th>CPL</th>
+                        <th>Vendas</th>
+                        <th>Tx Conv.</th>
+                        <th>CAC</th>
+                        <th>Receita</th>
+                        <th>Ticket Médio</th>
+                        <th>ROAS</th>
+                        <th>% Receita</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="channel-badge">
+                                <div class="channel-dot dot-google"></div>
+                                Google Ads
+                                <span class="badge-tag badge-paid">PAGO</span>
+                            </div>
+                        </td>
+                        <td>R$ 17.589</td>
+                        <td>512</td>
+                        <td class="val-green">R$ 34,35</td>
+                        <td class="val-bold">71</td>
+                        <td>14%</td>
+                        <td class="val-green">R$ 248</td>
+                        <td class="val-bold">R$ 399.003</td>
+                        <td>R$ 5.620</td>
+                        <td class="val-green">22x</td>
+                        <td>37%</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="channel-badge">
+                                <div class="channel-dot dot-meta"></div>
+                                Meta Ads
+                                <span class="badge-tag badge-paid">PAGO</span>
+                            </div>
+                        </td>
+                        <td>R$ 30.816</td>
+                        <td>675</td>
+                        <td>R$ 45,65</td>
+                        <td class="val-bold">95</td>
+                        <td>14%</td>
+                        <td>R$ 324</td>
+                        <td class="val-bold">R$ 257.691</td>
+                        <td>R$ 2.713</td>
+                        <td>7x</td>
+                        <td>24%</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="channel-badge">
+                                <div class="channel-dot dot-site"></div>
+                                Site Orgânico
+                                <span class="badge-tag badge-organic">ORG.</span>
+                            </div>
+                        </td>
+                        <td class="val-muted">R$ 0</td>
+                        <td>426 *</td>
+                        <td class="val-green">R$ 0</td>
+                        <td class="val-bold">47 *</td>
+                        <td>11%</td>
+                        <td class="val-green">R$ 0</td>
+                        <td class="val-bold">R$ 256.078 *</td>
+                        <td>R$ 5.448</td>
+                        <td class="val-green">&#8734;</td>
+                        <td>24%</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="channel-badge">
+                                <div class="channel-dot dot-email"></div>
+                                Emails B2C
+                                <span class="badge-tag badge-organic">ORG.</span>
+                            </div>
+                        </td>
+                        <td class="val-muted">R$ 0</td>
+                        <td>—</td>
+                        <td class="val-green">R$ 0</td>
+                        <td>7</td>
+                        <td>—</td>
+                        <td class="val-green">R$ 0</td>
+                        <td>R$ 65.194</td>
+                        <td class="val-green">R$ 9.313</td>
+                        <td class="val-green">&#8734;</td>
+                        <td>6%</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="channel-badge">
+                                <div class="channel-dot dot-parcerias"></div>
+                                Parcerias B2B2C
+                                <span class="badge-tag badge-partner">B2B</span>
+                            </div>
+                        </td>
+                        <td class="val-muted">R$ 0</td>
+                        <td>455</td>
+                        <td class="val-green">R$ 0</td>
+                        <td>14</td>
+                        <td class="val-red">3%</td>
+                        <td class="val-green">R$ 0</td>
+                        <td>R$ 55.935</td>
+                        <td>R$ 3.995</td>
+                        <td class="val-green">&#8734;</td>
+                        <td>5%</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="channel-badge">
+                                <div class="channel-dot dot-instagram"></div>
+                                Instagram Org.
+                                <span class="badge-tag badge-organic">ORG.</span>
+                            </div>
+                        </td>
+                        <td class="val-muted">R$ 0</td>
+                        <td>136</td>
+                        <td class="val-green">R$ 0</td>
+                        <td>7</td>
+                        <td class="val-red">5%</td>
+                        <td class="val-green">R$ 0</td>
+                        <td>R$ 41.037</td>
+                        <td>R$ 5.862</td>
+                        <td class="val-green">&#8734;</td>
+                        <td>4%</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="channel-badge">
+                                <div class="channel-dot dot-tiktok"></div>
+                                TikTok Org.
+                                <span class="badge-tag badge-organic">ORG.</span>
+                            </div>
+                        </td>
+                        <td class="val-muted">R$ 0</td>
+                        <td class="val-red">0</td>
+                        <td class="val-muted">—</td>
+                        <td class="val-red">0</td>
+                        <td class="val-muted">—</td>
+                        <td class="val-muted">—</td>
+                        <td class="val-red">R$ 0</td>
+                        <td class="val-muted">—</td>
+                        <td class="val-muted">—</td>
+                        <td class="val-red">0%</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>TOTAL</td>
+                        <td>R$ 48.405</td>
+                        <td>2.204</td>
+                        <td>R$ 21,97</td>
+                        <td>241</td>
+                        <td>11%</td>
+                        <td>R$ 201</td>
+                        <td>R$ 1.074.938</td>
+                        <td>R$ 4.460</td>
+                        <td>22x</td>
+                        <td>100%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="font-size: 11px; color: var(--gray-400); margin-top: 8px;">* Site Orgânico: dados de leads/vendas apenas Jan-Fev. Receita real estimada é superior.</p>
+    </div>
+
+    <!-- ===== DISTRIBUIÇÃO DE RECEITA ===== -->
+    <div class="section">
+        <div class="split-row">
+            <!-- RECEITA POR CANAL -->
+            <div class="donut-container">
+                <div class="section-title" style="margin-bottom:16px;">
+                    <div class="icon green">&#9673;</div>
+                    Distribuição de Receita por Canal
+                </div>
+                <div class="donut-chart">
+                    <svg class="donut-svg" viewBox="0 0 42 42">
+                        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#ea4335" stroke-width="4" stroke-dasharray="37 63" stroke-dashoffset="25"></circle>
+                        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#1877f2" stroke-width="4" stroke-dasharray="24 76" stroke-dashoffset="88"></circle>
+                        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#00c897" stroke-width="4" stroke-dasharray="24 76" stroke-dashoffset="64"></circle>
+                        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#f5a623" stroke-width="4" stroke-dasharray="6 94" stroke-dashoffset="40"></circle>
+                        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#8b5cf6" stroke-width="4" stroke-dasharray="5 95" stroke-dashoffset="34"></circle>
+                        <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#e1306c" stroke-width="4" stroke-dasharray="4 96" stroke-dashoffset="29"></circle>
+                    </svg>
+                    <div class="donut-legend">
+                        <div class="legend-item"><div class="legend-dot" style="background:#ea4335"></div> Google Ads <span class="legend-value">37%</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#1877f2"></div> Meta Ads <span class="legend-value">24%</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#00c897"></div> Site Orgânico <span class="legend-value">24%</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#f5a623"></div> Emails B2C <span class="legend-value">6%</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div> Parcerias B2B2C <span class="legend-value">5%</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#e1306c"></div> Instagram Org. <span class="legend-value">4%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INVESTIMENTO vs RECEITA -->
+            <div class="donut-container">
+                <div class="section-title" style="margin-bottom:16px;">
+                    <div class="icon purple">&#9650;</div>
+                    Eficiência: Investimento vs Receita
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <div class="bar-row">
+                        <div class="bar-label">Google Ads</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 100%; background: linear-gradient(90deg, #ea4335, #ff6b6b);">R$ 399k</div>
+                        </div>
+                    </div>
+                    <div class="bar-row" style="margin-bottom:24px;">
+                        <div class="bar-label" style="font-size:11px; color: var(--gray-400);">Investido</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 4.4%; background: #fca5a5; min-width:80px;">R$ 17,6k</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label">Meta Ads</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 64.5%; background: linear-gradient(90deg, #1877f2, #4da3ff);">R$ 258k</div>
+                        </div>
+                    </div>
+                    <div class="bar-row" style="margin-bottom:24px;">
+                        <div class="bar-label" style="font-size:11px; color: var(--gray-400);">Investido</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 7.7%; background: #93c5fd; min-width:80px;">R$ 30,8k</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label">Canais Orgânicos</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 93%; background: linear-gradient(90deg, #059669, #34d399);">R$ 418k</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label" style="font-size:11px; color: var(--gray-400);">Investido</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: 0.5%; background: #6ee7b7; min-width:60px;">R$ 0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== EVOLUÇÃO MÊS A MÊS ===== -->
+    <div class="section">
+        <div class="section-title">
+            <div class="icon purple">&#9650;</div>
+            Evolução Mensal — Mídia Paga (Meta + Google)
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:180px;">Métrica</th>
+                        <th>Outubro</th>
+                        <th>Novembro</th>
+                        <th>Dezembro</th>
+                        <th>Janeiro</th>
+                        <th>Fevereiro</th>
+                        <th>Tendência</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Investimento</strong></td>
+                        <td>R$ 7.790</td>
+                        <td>R$ 16.402</td>
+                        <td>R$ 6.640</td>
+                        <td>R$ 7.031</td>
+                        <td>R$ 10.542</td>
+                        <td><span class="stat-mini up">&#9650; Escalando</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Leads CRM</strong></td>
+                        <td>59</td>
+                        <td>410</td>
+                        <td>175</td>
+                        <td>260</td>
+                        <td>370</td>
+                        <td><span class="stat-mini up">&#9650; Crescente</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>CPL Médio</strong></td>
+                        <td>R$ 132,04</td>
+                        <td>R$ 34,46</td>
+                        <td>R$ 35,74</td>
+                        <td>R$ 27,04</td>
+                        <td>R$ 28,49</td>
+                        <td><span class="stat-mini up">&#9650; Otimizando</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Vendas</strong></td>
+                        <td>7</td>
+                        <td>43</td>
+                        <td>49</td>
+                        <td>36</td>
+                        <td>41</td>
+                        <td><span class="stat-mini up">&#9650; Estável</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tx Conv. Comercial</strong></td>
+                        <td>12%</td>
+                        <td>10%</td>
+                        <td>28%</td>
+                        <td>14%</td>
+                        <td>11%</td>
+                        <td><span class="stat-mini down">&#9660; Atenção</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>CAC</strong></td>
+                        <td>R$ 1.113</td>
+                        <td>R$ 342</td>
+                        <td>R$ 133</td>
+                        <td>R$ 195</td>
+                        <td>R$ 257</td>
+                        <td><span class="stat-mini down">&#9660; Subindo</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Receita</strong></td>
+                        <td>R$ 32.539</td>
+                        <td>R$ 203.082</td>
+                        <td>R$ 84.271</td>
+                        <td>R$ 186.818</td>
+                        <td>R$ 207.903</td>
+                        <td><span class="stat-mini up">&#9650; Crescente</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>ROAS</strong></td>
+                        <td>3x</td>
+                        <td>12x</td>
+                        <td>13x</td>
+                        <td>27x</td>
+                        <td>20x</td>
+                        <td><span class="stat-mini up">&#9650; Saudável</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== WINS ===== -->
+    <div class="section">
+        <div class="section-title">
+            <div class="icon green">&#10003;</div>
+            Principais Conquistas (Wins)
+        </div>
+        <div class="cards-grid">
+            <div class="card win">
+                <div class="card-header">
+                    <h3>ROAS de 22x Geral</h3>
+                    <span class="card-tag tag-win">WIN</span>
+                </div>
+                <div class="metric-highlight green">R$ 22 retornados por R$ 1 investido</div>
+                <p>A cada R$ 1 investido em mídia paga, a operação retorna R$ 22 em receita. Benchmark de mercado para educação gira em torno de 3-5x. A operação está <strong>4x acima do benchmark</strong>.</p>
+            </div>
+            <div class="card win">
+                <div class="card-header">
+                    <h3>Google Ads: Melhor Canal Pago</h3>
+                    <span class="card-tag tag-win">WIN</span>
+                </div>
+                <div class="metric-highlight green">ROAS 22x | CAC R$ 248</div>
+                <p>Entrega 55% mais receita que Meta Ads com 43% menos investimento. Janeiro teve ROAS de <strong>48x</strong>. Lead de busca ativa = maior intenção de compra.</p>
+            </div>
+            <div class="card win">
+                <div class="card-header">
+                    <h3>Site Orgânico: Potência Escondida</h3>
+                    <span class="card-tag tag-win">WIN</span>
+                </div>
+                <div class="metric-highlight green">R$ 256k em apenas 2 meses</div>
+                <p>Com tracking apenas a partir de Janeiro, já é o 3º canal em receita. Custo zero, ticket alto (R$ 5.448). O novo site (lançado Dez/25) dobrou a taxa de engajamento de 25% para 48%.</p>
+            </div>
+            <div class="card win">
+                <div class="card-header">
+                    <h3>CPL em Queda Consistente</h3>
+                    <span class="card-tag tag-win">WIN</span>
+                </div>
+                <div class="metric-highlight green">R$ 132 → R$ 28</div>
+                <p>O Custo por Lead caiu <strong>78% de Outubro a Fevereiro</strong>. As otimizações de campanha e landing page estão funcionando. A operação está amadurecendo.</p>
+            </div>
+            <div class="card win">
+                <div class="card-header">
+                    <h3>R$ 1M+ em Receita</h3>
+                    <span class="card-tag tag-win">WIN</span>
+                </div>
+                <div class="metric-highlight green">R$ 1.074.938</div>
+                <p>Ultrapassamos a marca de R$ 1 milhão em receita acumulada em 5 meses de operação, com investimento inferior a R$ 50k em mídia.</p>
+            </div>
+            <div class="card win">
+                <div class="card-header">
+                    <h3>Instagram: Crescimento Orgânico</h3>
+                    <span class="card-tag tag-win">WIN</span>
+                </div>
+                <div class="metric-highlight green">Leads: 3 → 58/mês</div>
+                <p>Crescimento de <strong>1.833% em geração de leads</strong> de Outubro a Fevereiro. Views em Fev atingiram 353k. O conteúdo orgânico está ganhando tração real.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PONTOS DE ATENÇÃO ===== -->
+    <div class="section">
+        <div class="section-title">
+            <div class="icon red">&#9888;</div>
+            Pontos de Atenção e Melhorias Necessárias
+        </div>
+        <div class="cards-grid">
+            <div class="card alert">
+                <div class="card-header">
+                    <h3>Taxa de Conversão Comercial em Queda</h3>
+                    <span class="card-tag tag-alert">ALERTA</span>
+                </div>
+                <div class="metric-highlight red">28% (Dez) → 11% (Fev)</div>
+                <p>A taxa de conversão de leads em vendas caiu de 28% em Dezembro para 11% em Fevereiro. Estamos gerando mais leads, mas o comercial não está acompanhando. Possíveis causas: time sobrecarregado, qualidade do lead caindo, ou tempo de resposta aumentando.</p>
+            </div>
+            <div class="card alert">
+                <div class="card-header">
+                    <h3>Email B2C: Entregabilidade Crítica</h3>
+                    <span class="card-tag tag-alert">ALERTA</span>
+                </div>
+                <div class="metric-highlight red">57% de bounce em Fevereiro</div>
+                <p>Taxa de abertura geral de ~1%. Fevereiro teve 57% de emails devolvidos — reputação do domínio em risco. Apenas 1 campanha enviada no mês. Canal com <strong>maior ticket médio (R$ 9.313)</strong> está sendo sub-utilizado e mal operado.</p>
+            </div>
+            <div class="card alert">
+                <div class="card-header">
+                    <h3>TikTok: Zero Contribuição</h3>
+                    <span class="card-tag tag-alert">DECISÃO</span>
+                </div>
+                <div class="metric-highlight red">0 leads | 0 vendas | 0 receita</div>
+                <p>Média de 699 views/mês, 5 curtidas, 0 comentários. Em 6 meses não gerou um único lead. O esforço de produção de conteúdo para este canal tem <strong>ROI zero</strong>. Decisão necessária: investir seriamente ou descontinuar.</p>
+            </div>
+            <div class="card alert">
+                <div class="card-header">
+                    <h3>Tráfego Orgânico do Site em Queda</h3>
+                    <span class="card-tag tag-alert">ALERTA</span>
+                </div>
+                <div class="metric-highlight red">9.588 → 3.856 sessões</div>
+                <p>Queda de <strong>60% nas sessões orgânicas</strong> desde Outubro. Provável perda de posicionamento SEO após migração do novo site em Dezembro. Impacto direto na geração de leads orgânicos — canal que gera R$ 128k/mês em receita.</p>
+            </div>
+            <div class="card alert">
+                <div class="card-header">
+                    <h3>Gaps de Tracking / Atribuição</h3>
+                    <span class="card-tag tag-action">AÇÃO</span>
+                </div>
+                <div class="metric-highlight red">4+ meses sem dados completos</div>
+                <p>Site Orgânico sem tracking até Jan/26. Google Ads sem dados CRM em Nov. Email sem correspondência em vários meses. Sem tracking, <strong>não sabemos o real ROI de cada canal</strong> e decisões de budget ficam comprometidas.</p>
+            </div>
+            <div class="card alert">
+                <div class="card-header">
+                    <h3>Meta Ads: CAC Instável</h3>
+                    <span class="card-tag tag-action">AÇÃO</span>
+                </div>
+                <div class="metric-highlight red">R$ 107 → R$ 477 → R$ 418</div>
+                <p>Após o excelente CAC de Dezembro (R$ 107, efeito pipeline BF), o custo de aquisição subiu 4x. Meta Ads consome <strong>64% do budget mas gera apenas 24% da receita</strong>. Necessário reavaliar a alocação.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RECOMENDAÇÕES ESTRATÉGICAS ===== -->
+    <div class="section">
+        <div class="section-title">
+            <div class="icon yellow">&#9733;</div>
+            Recomendações Estratégicas — Próximos Passos
+        </div>
+        <div class="cards-grid cards-grid-2">
+            <div class="card action">
+                <div class="card-header">
+                    <h3>1. Realocar Budget: Meta → Google</h3>
+                    <span class="card-tag tag-action">BUDGET</span>
+                </div>
+                <p><strong>Hoje:</strong> Meta recebe 64% do budget (R$ 30,8k) e Google 36% (R$ 17,6k).<br>
+                <strong>Proposta:</strong> Inverter para 40% Meta / 60% Google.<br>
+                <strong>Impacto estimado:</strong> Se Google mantiver ROAS de 22x, cada R$ 1.000 realocado gera +R$ 15.000 em receita incremental. Potencial de +R$ 100k em receita apenas com redistribuição.</p>
+            </div>
+            <div class="card action">
+                <div class="card-header">
+                    <h3>2. Recuperar SEO do Novo Site</h3>
+                    <span class="card-tag tag-action">URGENTE</span>
+                </div>
+                <p><strong>Problema:</strong> Migração do site causou queda de 60% no tráfego orgânico.<br>
+                <strong>Ação:</strong> Auditoria técnica de SEO (redirects, indexação, sitemap), otimização de conteúdo para palavras-chave prioritárias.<br>
+                <strong>Impacto:</strong> Cada 1.000 sessões orgânicas recuperadas = ~11 leads = ~1,2 vendas = ~R$ 6.500 em receita com custo zero.</p>
+            </div>
+            <div class="card action">
+                <div class="card-header">
+                    <h3>3. Revitalizar Canal de Email</h3>
+                    <span class="card-tag tag-action">RECEITA</span>
+                </div>
+                <p><strong>Problema:</strong> Base suja, frequência inconsistente, entregabilidade em colapso.<br>
+                <strong>Ação:</strong> Limpar base (remover bounces), segmentar por engajamento, criar cadência fixa (2-3 emails/semana), implementar fluxos automatizados.<br>
+                <strong>Impacto:</strong> Canal com maior ticket médio (R$ 9.313) e custo zero. Se dobrar de 7 para 14 vendas = +R$ 65k em receita.</p>
+            </div>
+            <div class="card action">
+                <div class="card-header">
+                    <h3>4. Melhorar Conversão Comercial</h3>
+                    <span class="card-tag tag-action">VENDAS</span>
+                </div>
+                <p><strong>Problema:</strong> Taxa caiu de 28% para 11%. Estamos "desperdiçando" leads.<br>
+                <strong>Ação:</strong> Medir tempo de primeiro contato (speed-to-lead), implementar SLA de resposta <5min, criar scoring de leads por canal, revisar script comercial.<br>
+                <strong>Impacto:</strong> Cada 1% de melhoria na conversão = ~22 leads convertidos = ~R$ 98k em receita incremental.</p>
+            </div>
+            <div class="card action">
+                <div class="card-header">
+                    <h3>5. Escalar Parcerias Corporativas</h3>
+                    <span class="card-tag tag-action">CRESCIMENTO</span>
+                </div>
+                <p><strong>Hoje:</strong> 3 parcerias ativas (AACD, Daycoval, Finnet/Bosque) gerando R$ 56k.<br>
+                <strong>Proposta:</strong> Meta de 10+ parcerias ativas até Jun/26. Cada nova parceria = ~130 leads/ano.<br>
+                <strong>Impacto:</strong> Canal escala com quantidade de parcerias, não com investimento. Fluxo de nutrição específico para converter o lead B2B2C (hoje com apenas 3% de conversão).</p>
+            </div>
+            <div class="card action">
+                <div class="card-header">
+                    <h3>6. Decidir sobre TikTok</h3>
+                    <span class="card-tag tag-action">DECISÃO</span>
+                </div>
+                <p><strong>Opção A:</strong> Descontinuar e realocar horas do time para canais que convertem (Instagram, Email).<br>
+                <strong>Opção B:</strong> Investir seriamente — creator dedicado, 5+ posts/semana, trends, formato nativo.<br>
+                <strong>Recomendação:</strong> Opção A, a menos que haja budget para contratação dedicada. O custo de oportunidade atual é alto demais.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PERGUNTAS DA DIRETORIA ===== -->
+    <div class="section">
+        <div class="section-title">
+            <div class="icon blue">&#63;</div>
+            Perguntas Frequentes da Diretoria — Respostas com Dados
+        </div>
+        <div class="qa-grid">
+            <div class="qa-card">
+                <div class="qa-question">"Quanto custa adquirir um aluno?"</div>
+                <div class="qa-answer">O <strong>CAC médio geral é R$ 201</strong> (considerando todos os canais). Apenas mídia paga: R$ 292. Google Ads é o mais eficiente (R$ 248) e Meta Ads o mais caro (R$ 324). Canais orgânicos têm CAC zero mas exigem investimento em equipe/conteúdo.</div>
+            </div>
+            <div class="qa-card">
+                <div class="qa-question">"Qual o retorno do investimento em marketing?"</div>
+                <div class="qa-answer">Para cada <strong>R$ 1 investido, retornam R$ 22</strong> (ROAS 22x). O investimento total foi R$ 48,4k e a receita gerada R$ 1,07M. Descontando canais orgânicos (que não têm custo de mídia), o ROAS da mídia paga é de <strong>13,6x</strong>.</div>
+            </div>
+            <div class="qa-card">
+                <div class="qa-question">"Por que não investimos mais em Google se é melhor?"</div>
+                <div class="qa-answer">Google Ads (Search) tem teto de demanda — depende do volume de buscas. Já estamos escalando: investimento subiu de R$ 2.464 (Dez) para R$ 7.199 (Fev). Meta Ads gera <strong>demanda</strong> (awareness), Google <strong>captura</strong> demanda existente. Os dois são complementares.</div>
+            </div>
+            <div class="qa-card">
+                <div class="qa-question">"Qual o ticket médio por canal?"</div>
+                <div class="qa-answer"><strong>Email B2C: R$ 9.313</strong> (maior). Site Orgânico: R$ 5.448. Instagram: R$ 5.862. Google Ads: R$ 5.620. Parcerias: R$ 3.995. Meta Ads: R$ 2.713 (menor). Leads de busca orgânica e email tendem a ser mais qualificados e comprarem planos mais longos.</div>
+            </div>
+            <div class="qa-card">
+                <div class="qa-question">"Se aumentarmos o budget, a receita cresce proporcional?"</div>
+                <div class="qa-answer">Não linearmente. Google tem teto de busca, Meta tem fadiga de audiência. Estimativa conservadora: <strong>aumentar budget em 50% (para ~R$ 72k) geraria ~30-40% mais receita</strong>. Além disso, o gargalo muda para o comercial — precisaríamos garantir que a conversão não caia mais.</div>
+            </div>
+            <div class="qa-card">
+                <div class="qa-question">"Novembro foi excepcional por Black Friday. É sustentável?"</div>
+                <div class="qa-answer">Novembro teve efeito BF, mas <strong>Janeiro e Fevereiro mantiveram receita de R$ 200k+/mês em mídia paga</strong>, sem sazonalidade. O patamar é sustentável. O ROAS de Dezembro (28%) inclui pipeline de Nov convertendo — efeito esperado e saudável.</div>
+            </div>
+            <div class="qa-card">
+                <div class="qa-question">"Qual canal devemos priorizar?"</div>
+                <div class="qa-answer"><strong>Curto prazo:</strong> Escalar Google Ads (maior ROAS) e recuperar SEO do site (maior potencial com custo zero). <strong>Médio prazo:</strong> Revitalizar Email B2C (maior ticket) e expandir Parcerias (escalável). <strong>Longo prazo:</strong> Fortalecer Instagram orgânico como canal de branding e nutrição.</div>
+            </div>
+            <div class="qa-card">
+                <div class="qa-question">"Quantos leads precisamos por mês para bater a meta?"</div>
+                <div class="qa-answer">Com taxa de conversão atual de <strong>11%</strong> e ticket médio de R$ 4.460: para R$ 300k/mês de receita = 67 vendas = <strong>~610 leads/mês</strong>. Para R$ 500k/mês = 112 vendas = <strong>~1.018 leads/mês</strong>. Fevereiro gerou ~530 leads (todos os canais) — estamos próximos do primeiro cenário.</div>
+            </div>
+            <div class="qa-card">
+                <div class="qa-question">"Quanto da receita vem de canais gratuitos?"</div>
+                <div class="qa-answer">Canais orgânicos (Site, Email, Instagram, Parcerias) geraram <strong>R$ 418.244 (39% da receita total)</strong> com investimento zero em mídia. Porém, exigem investimento em equipe, conteúdo e ferramentas. Mesmo assim, o custo é significativamente menor que mídia paga.</div>
+            </div>
+            <div class="qa-card">
+                <div class="qa-question">"Estamos perdendo leads no processo comercial?"</div>
+                <div class="qa-answer"><strong>Sim.</strong> De 2.204 leads, convertemos 241 (11%). Isso significa que <strong>1.963 leads não compraram</strong>. Se melhorarmos a conversão de 11% para 15% (benchmark do setor), seriam +88 vendas = <strong>+R$ 392k em receita</strong> sem investir mais um real em mídia.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RESUMO EXECUTIVO FINAL ===== -->
+    <div class="section">
+        <div class="section-title">
+            <div class="icon green">&#10004;</div>
+            Resumo Executivo
+        </div>
+        <div class="table-container" style="padding: 32px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px;">
+                <div>
+                    <h3 style="font-size: 14px; color: var(--green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">O que está funcionando</h3>
+                    <ul style="list-style: none; font-size: 14px; line-height: 2;">
+                        <li>&#10003; ROAS geral de 22x (benchmark: 3-5x)</li>
+                        <li>&#10003; Google Ads como motor principal de receita</li>
+                        <li>&#10003; CPL em queda consistente (-78%)</li>
+                        <li>&#10003; Novo site com engajamento 2x melhor</li>
+                        <li>&#10003; Instagram orgânico em crescimento acelerado</li>
+                        <li>&#10003; Ticket médio saudável (R$ 4.460)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="font-size: 14px; color: var(--red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">O que precisa de atenção</h3>
+                    <ul style="list-style: none; font-size: 14px; line-height: 2;">
+                        <li>&#9888; Conversão comercial caindo (28% → 11%)</li>
+                        <li>&#9888; SEO em queda após migração do site (-60%)</li>
+                        <li>&#9888; Email com entregabilidade crítica (57% bounce)</li>
+                        <li>&#9888; TikTok com contribuição zero</li>
+                        <li>&#9888; Gaps de tracking em vários canais</li>
+                        <li>&#9888; Meta Ads com CAC crescente</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="font-size: 14px; color: var(--blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">Próximas ações prioritárias</h3>
+                    <ul style="list-style: none; font-size: 14px; line-height: 2;">
+                        <li>&#9658; Realocar budget Meta → Google (40/60)</li>
+                        <li>&#9658; Auditoria SEO urgente no novo site</li>
+                        <li>&#9658; Limpar base e reativar canal de email</li>
+                        <li>&#9658; SLA de resposta comercial <5 minutos</li>
+                        <li>&#9658; Expandir parcerias corporativas (meta: 10+)</li>
+                        <li>&#9658; Decidir futuro do TikTok</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ========== FOOTER ========== -->
+<div class="footer">
+    Alumni English School — Relatório de Marketing para Diretoria | Período: Out/2025 — Fev/2026 | Gerado em Março 2026
+</div>
+
+</body>
+</html>

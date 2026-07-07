@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni | Cohort, Funil & Tempo de Conversao</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        :root{--bg:#0b0d13;--card:#141720;--card2:#1a1e2b;--border:#232838;--t1:#eef0f6;--t2:#7c829a;--blue:#4a8eff;--green:#2dd4a0;--purple:#a78bfa;--orange:#f59e42;--pink:#ec4899;--red:#ef4444;--cyan:#22d3ee;--yellow:#fbbf24}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);line-height:1.6}
+        .wrap{max-width:1480px;margin:0 auto;padding:28px 24px}
+        .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+        .header h1{font-size:24px;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .header .tag{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 14px;color:var(--t2);font-size:13px}
+        .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--card);border-radius:12px;padding:4px;border:1px solid var(--border);overflow-x:auto}
+        .tab{padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);white-space:nowrap;transition:all .2s;border:none;background:none;font-family:inherit}
+        .tab:hover{color:var(--t1);background:var(--card2)}
+        .tab.active{background:var(--blue);color:#fff}
+        .panel{display:none}.panel.active{display:block}
+        .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+        .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+        .kpi .lbl{font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+        .kpi .val{font-size:26px;font-weight:700}
+        .kpi .sub{font-size:12px;color:var(--t2);margin-top:2px}
+        .c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-purple{color:var(--purple)}.c-orange{color:var(--orange)}.c-pink{color:var(--pink)}.c-cyan{color:var(--cyan)}.c-red{color:var(--red)}.c-yellow{color:var(--yellow)}
+        .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px}
+        .card.full{grid-column:1/-1}
+        .card h3{font-size:14px;font-weight:600;color:var(--t2);margin-bottom:16px}
+        .stitle{font-size:17px;font-weight:700;margin:28px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        table{width:100%;border-collapse:collapse;font-size:13px}
+        th,td{padding:10px 12px;text-align:center;border-bottom:1px solid var(--border)}
+        th{color:var(--t2);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+        td:first-child,th:first-child{text-align:left}
+        tr:hover td{background:var(--card2)}
+        .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+        .b-blue{background:rgba(74,142,255,.15);color:var(--blue)}
+        .b-green{background:rgba(45,212,160,.15);color:var(--green)}
+        .b-purple{background:rgba(167,139,250,.15);color:var(--purple)}
+        .b-orange{background:rgba(245,158,66,.15);color:var(--orange)}
+        .b-pink{background:rgba(236,72,153,.15);color:var(--pink)}
+        .b-cyan{background:rgba(34,211,238,.15);color:var(--cyan)}
+        .b-red{background:rgba(239,68,68,.15);color:var(--red)}
+        .b-yellow{background:rgba(251,191,36,.15);color:var(--yellow)}
+        .cohort-cell{border-radius:6px;font-weight:600;font-size:13px}
+        .insights{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:20px 0}
+        .insight{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+        .insight h4{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:6px}
+        .insight p{font-size:12px;color:var(--t2);line-height:1.5}
+        .sep{border:none;border-top:1px solid var(--border);margin:32px 0}
+        .footer{text-align:center;padding:20px;color:var(--t2);font-size:11px}
+        .toggle-group{display:inline-flex;gap:4px;margin-bottom:16px;background:var(--card);border-radius:10px;padding:4px;border:1px solid var(--border)}
+        .toggle-btn{padding:8px 18px;border:none;background:none;color:var(--t2);font-size:13px;font-weight:500;border-radius:7px;cursor:pointer;font-family:inherit}
+        .toggle-btn.active{background:var(--blue);color:#fff}
+        .highlight{padding:14px 18px;border-radius:10px;margin-bottom:14px;font-size:13px}
+        .hl-green{background:rgba(45,212,160,.08);border:1px solid rgba(45,212,160,.2)}
+        .hl-red{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)}
+        .hl-blue{background:rgba(74,142,255,.08);border:1px solid rgba(74,142,255,.2)}
+        .bar-inline{display:inline-block;height:18px;border-radius:4px;vertical-align:middle}
+        @media(max-width:1024px){.grid2{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="header">
+        <h1>Funil Completo: Leads &rarr; Vendas &rarr; Cohort</h1>
+        <div class="tag">Dados cruzados &bull; Out/2025 - Mar/2026</div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('reconciliacao')">De-Para: Leads vs Vendas</button>
+        <button class="tab" onclick="showTab('funil-canal')">Funil por Canal</button>
+        <button class="tab" onclick="showTab('tempo')">Tempo de Conversao</button>
+        <button class="tab" onclick="showTab('cohort')">Cohort Mensal</button>
+        <a href="diagnostico-estrategico.html" class="tab" style="text-decoration:none;background:linear-gradient(135deg,rgba(245,158,66,.2),rgba(236,72,153,.2));border:1px solid rgba(245,158,66,.3);color:var(--orange)">Diagnostico Estrategico &rarr;</a>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- TAB 1: RECONCILIACAO -->
+    <!-- ========================================= -->
+    <div id="reconciliacao" class="panel active">
+
+        <div class="kpis">
+            <div class="kpi"><div class="lbl">Total Leads Rastreados</div><div class="val c-blue">1.802</div><div class="sub">Canais com tracking</div></div>
+            <div class="kpi"><div class="lbl">Total Vendas</div><div class="val c-green">570</div><div class="sub">Status "Ganho" no CRM</div></div>
+            <div class="kpi"><div class="lbl">Vendas de Canais Rastreados</div><div class="val c-purple">195</div><div class="sub">34% das vendas</div></div>
+            <div class="kpi"><div class="lbl">Vendas de Outros Canais</div><div class="val c-orange">375</div><div class="sub">66% (indicacao, WhatsApp, etc.)</div></div>
+            <div class="kpi"><div class="lbl">Leads Nao Convertidos</div><div class="val c-red">1.607</div><div class="sub">89% dos leads rastreados</div></div>
+            <div class="kpi"><div class="lbl">Conv. Media (rastreados)</div><div class="val c-cyan">10,8%</div><div class="sub">195 vendas / 1.802 leads</div></div>
+        </div>
+
+        <div class="highlight hl-blue">
+            <strong>Como ler esta analise:</strong> O segundo dataset trouxe leads gerados por canal (Meta, Google, IG, Parcerias, Embaixadores). O primeiro dataset trouxe 570 vendas. Cruzando os dois, vemos quantos leads de cada canal converteram e quantos NAO converteram. Os "Outros" (375 vendas) sao indicacoes, WhatsApp direto, leads antigos, etc. — canais sem tracking de lead no segundo dataset.
+        </div>
+
+        <!-- TABELA GERAL DE-PARA -->
+        <div class="card full" style="margin-bottom:20px;overflow-x:auto">
+            <h3>De-Para Completo &mdash; Leads Gerados vs Vendas por Canal</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:left">Canal</th>
+                        <th>Leads Gerados</th>
+                        <th>Vendas</th>
+                        <th>Nao Convertidos</th>
+                        <th>Taxa Conversao</th>
+                        <th>Receita</th>
+                        <th>Custo Lead</th>
+                        <th>Funil Visual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge b-blue">Meta Ads</span></td>
+                        <td><strong>675</strong></td>
+                        <td class="c-green"><strong>95</strong></td>
+                        <td class="c-red">580</td>
+                        <td>14,1%</td>
+                        <td>R$ 257.691</td>
+                        <td>R$ 45,65</td>
+                        <td>
+                            <span class="bar-inline" style="width:100%;background:rgba(74,142,255,.3)"></span><br>
+                            <span class="bar-inline" style="width:14%;background:var(--green)"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-purple">Google Ads</span></td>
+                        <td><strong>512</strong></td>
+                        <td class="c-green"><strong>71</strong></td>
+                        <td class="c-red">441</td>
+                        <td>13,9%</td>
+                        <td>R$ 399.003</td>
+                        <td>R$ 34,35</td>
+                        <td>
+                            <span class="bar-inline" style="width:76%;background:rgba(167,139,250,.3)"></span><br>
+                            <span class="bar-inline" style="width:10.5%;background:var(--green)"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-pink">Instagram Organico</span></td>
+                        <td><strong>137</strong></td>
+                        <td class="c-green"><strong>7</strong></td>
+                        <td class="c-red">130</td>
+                        <td>5,1%</td>
+                        <td>R$ 41.037</td>
+                        <td>R$ 0</td>
+                        <td>
+                            <span class="bar-inline" style="width:20%;background:rgba(236,72,153,.3)"></span><br>
+                            <span class="bar-inline" style="width:1%;background:var(--green)"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-green">Parcerias B2B</span></td>
+                        <td><strong>455</strong></td>
+                        <td class="c-green"><strong>14</strong></td>
+                        <td class="c-red">441</td>
+                        <td class="c-red">3,1%</td>
+                        <td>R$ 55.935</td>
+                        <td>R$ 0</td>
+                        <td>
+                            <span class="bar-inline" style="width:67%;background:rgba(45,212,160,.3)"></span><br>
+                            <span class="bar-inline" style="width:2%;background:var(--green)"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-yellow">Embaixadores</span></td>
+                        <td><strong>23</strong></td>
+                        <td class="c-green"><strong>1</strong></td>
+                        <td class="c-red">22</td>
+                        <td class="c-red">4,3%</td>
+                        <td>R$ 3.576</td>
+                        <td>R$ 0</td>
+                        <td>
+                            <span class="bar-inline" style="width:3%;background:rgba(251,191,36,.3)"></span><br>
+                            <span class="bar-inline" style="width:0.4%;background:var(--green)"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-orange">Email (nurturing)</span></td>
+                        <td>-</td>
+                        <td class="c-green"><strong>7</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>R$ 65.194</td>
+                        <td>R$ 0</td>
+                        <td><em style="font-size:11px;color:var(--t2)">Converte leads existentes</em></td>
+                    </tr>
+                    <tr style="background:var(--card2)">
+                        <td><strong>Outros (Indicacao, WhatsApp, Organico, etc.)</strong></td>
+                        <td style="color:var(--t2)">Nao rastreado</td>
+                        <td class="c-green"><strong>375</strong></td>
+                        <td style="color:var(--t2)">Nao rastreado</td>
+                        <td>-</td>
+                        <td>~R$ 1.5M+</td>
+                        <td>R$ 0</td>
+                        <td><em style="font-size:11px;color:var(--t2)">66% das vendas</em></td>
+                    </tr>
+                    <tr style="background:var(--card2);font-weight:700;font-size:14px">
+                        <td>TOTAL</td>
+                        <td>1.802+</td>
+                        <td class="c-green">570</td>
+                        <td class="c-red">1.607+</td>
+                        <td>-</td>
+                        <td>~R$ 2.83M</td>
+                        <td>-</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MENSAL -->
+        <h2 class="stitle">Breakdown Mensal &mdash; Leads Gerados por Canal</h2>
+        <div class="card full" style="margin-bottom:20px;overflow-x:auto">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Canal</th>
+                        <th>Set/25</th>
+                        <th>Out/25</th>
+                        <th>Nov/25</th>
+                        <th>Dez/25</th>
+                        <th>Jan/26</th>
+                        <th>Fev/26</th>
+                        <th>Mar/26</th>
+                        <th>TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge b-blue">Meta Ads</span></td>
+                        <td>-</td><td>59</td><td>323</td><td>88</td><td>107</td><td>98</td><td>-</td><td><strong>675</strong></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-purple">Google Ads</span></td>
+                        <td>-</td><td>-</td><td>Sem dados</td><td>87</td><td>153</td><td>272</td><td>-</td><td><strong>512</strong></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-pink">IG Organico</span></td>
+                        <td>1</td><td>3</td><td>23</td><td>19</td><td>33</td><td>58</td><td>-</td><td><strong>137</strong></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-green">Parcerias B2B</span></td>
+                        <td>57</td><td>113</td><td>261</td><td>5</td><td>19</td><td>88</td><td>-</td><td><strong>455*</strong></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-yellow">Embaixadores</span></td>
+                        <td>-</td><td>2</td><td>19</td><td>2</td><td>0</td><td>9</td><td>-</td><td><strong>23*</strong></td>
+                    </tr>
+                    <tr style="background:var(--card2);font-weight:600">
+                        <td>Total Rastreado</td>
+                        <td>58</td><td>177</td><td>626+</td><td>201</td><td>312</td><td>525</td><td>-</td><td><strong>1.802+</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="font-size:11px;color:var(--t2);margin-top:10px">* Totais conforme informados no dataset (soma mensal pode divergir por deduplicacao). Mar/26 sem dados de leads no segundo dataset.</p>
+        </div>
+
+        <h2 class="stitle">Breakdown Mensal &mdash; Vendas por Canal (Data do Ganho)</h2>
+        <div class="card full" style="margin-bottom:20px;overflow-x:auto">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Canal</th>
+                        <th>Set/25</th>
+                        <th>Out/25</th>
+                        <th>Nov/25</th>
+                        <th>Dez/25</th>
+                        <th>Jan/26</th>
+                        <th>Fev/26</th>
+                        <th>Mar/26</th>
+                        <th>TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge b-blue">Meta Ads</span></td>
+                        <td>-</td><td>7</td><td>33</td><td>39</td><td>8</td><td>8</td><td>-</td><td><strong>95</strong></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-purple">Google Ads</span></td>
+                        <td>-</td><td>-</td><td>Sem dados</td><td>10</td><td>28</td><td>33</td><td>-</td><td><strong>71</strong></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-orange">Email</span></td>
+                        <td>-</td><td>0</td><td>3</td><td>1</td><td>2</td><td>1</td><td>-</td><td><strong>7</strong></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-pink">IG Organico</span></td>
+                        <td>0</td><td>0</td><td>1</td><td>1</td><td>3</td><td>2</td><td>-</td><td><strong>7</strong></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-green">Parcerias B2B</span></td>
+                        <td>0</td><td>1</td><td>12</td><td>0</td><td>1</td><td>3</td><td>-</td><td><strong>17</strong></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-yellow">Embaixadores</span></td>
+                        <td>-</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>-</td><td><strong>1</strong></td>
+                    </tr>
+                    <tr style="background:var(--card2);font-weight:600">
+                        <td>Subtotal Rastreado</td>
+                        <td>0</td><td>8</td><td>50</td><td>51</td><td>42</td><td>47</td><td>-</td><td><strong>198</strong></td>
+                    </tr>
+                    <tr style="color:var(--orange)">
+                        <td>Outros (CRM - nao rastreado)</td>
+                        <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td><strong>372</strong></td>
+                    </tr>
+                    <tr style="background:var(--card2);font-weight:700;font-size:14px">
+                        <td>TOTAL VENDAS (CRM)</td>
+                        <td colspan="7" style="text-align:center">Distribuidos conforme Data do Ganho</td>
+                        <td class="c-green"><strong>570</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="grid2">
+            <div class="card">
+                <h3>Leads Gerados vs Vendas &mdash; por Canal</h3>
+                <canvas id="chartLeadsVsSales" height="250"></canvas>
+            </div>
+            <div class="card">
+                <h3>Taxa de Conversao por Canal</h3>
+                <canvas id="chartConvRate" height="250"></canvas>
+            </div>
+        </div>
+
+        <div class="grid2">
+            <div class="card">
+                <h3>Nao Convertidos por Canal</h3>
+                <canvas id="chartNaoConvertidos" height="250"></canvas>
+            </div>
+            <div class="card">
+                <h3>Distribuicao das 570 Vendas por Origem</h3>
+                <canvas id="chartSalesOrigin" height="250"></canvas>
+            </div>
+        </div>
+
+        <div class="insights">
+            <div class="insight">
+                <h4>Parcerias: 455 leads, apenas 3,1% converte</h4>
+                <p>441 leads nao convertidos. O maior "desperdicio" de lead. O funil comercial para parcerias precisa de revisao urgente: segmentacao, nurturing dedicado, e SLA de primeiro contato.</p>
+            </div>
+            <div class="insight">
+                <h4>Meta e Google: mesma taxa (14%), eficiencias diferentes</h4>
+                <p>Google gera mais receita (R$399K) com menos leads (512) e menor custo (CPL R$34 vs R$46). Meta traz volume (675 leads) mas com CTR baixo. Considerar realocar budget.</p>
+            </div>
+            <div class="insight">
+                <h4>66% das vendas vem de canais sem tracking</h4>
+                <p>375 vendas de indicacoes, WhatsApp, organico direto. Para entender melhor esses canais, implementar UTM tracking em todos os pontos de contato e categorizar leads no CRM.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- TAB 2: FUNIL POR CANAL -->
+    <!-- ========================================= -->
+    <div id="funil-canal" class="panel">
+        <h2 class="stitle">Funil Mensal &mdash; Meta Ads</h2>
+        <div class="card full" style="margin-bottom:20px;overflow-x:auto">
+            <table>
+                <thead>
+                    <tr><th></th><th>Out/25</th><th>Nov/25</th><th>Dez/25</th><th>Jan/26</th><th>Fev/26</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Leads Gerados</td><td>59</td><td>323</td><td>88</td><td>107</td><td>98</td></tr>
+                    <tr><td>Vendas</td><td>7</td><td>33</td><td class="c-green"><strong>39</strong></td><td>8</td><td>8</td></tr>
+                    <tr><td class="c-red">Nao Convertidos</td><td class="c-red">52</td><td class="c-red">290</td><td class="c-green">49</td><td class="c-red">99</td><td class="c-red">90</td></tr>
+                    <tr><td>Taxa Conversao</td><td class="c-red">11,9%</td><td>10,2%</td><td class="c-green"><strong>44,3%</strong></td><td class="c-red">7,5%</td><td class="c-red">8,2%</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="stitle">Funil Mensal &mdash; Google Ads</h2>
+        <div class="card full" style="margin-bottom:20px;overflow-x:auto">
+            <table>
+                <thead>
+                    <tr><th></th><th>Nov/25</th><th>Dez/25</th><th>Jan/26</th><th>Fev/26</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Leads Gerados</td><td>Sem dados</td><td>87</td><td>153</td><td>272</td></tr>
+                    <tr><td>Vendas</td><td>Sem dados</td><td>10</td><td class="c-green"><strong>28</strong></td><td>33</td></tr>
+                    <tr><td class="c-red">Nao Convertidos</td><td>-</td><td class="c-red">77</td><td class="c-red">125</td><td class="c-red">239</td></tr>
+                    <tr><td>Taxa Conversao</td><td>-</td><td>11,5%</td><td class="c-green"><strong>18,3%</strong></td><td>12,1%</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="stitle">Funil Mensal &mdash; Parcerias B2B</h2>
+        <div class="card full" style="margin-bottom:20px;overflow-x:auto">
+            <table>
+                <thead>
+                    <tr><th></th><th>Set/25</th><th>Out/25</th><th>Nov/25</th><th>Dez/25</th><th>Jan/26</th><th>Fev/26</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Leads Gerados</td><td>57</td><td>113</td><td>261</td><td>5</td><td>19</td><td>88</td></tr>
+                    <tr><td>Vendas</td><td>0</td><td>1</td><td class="c-green"><strong>12</strong></td><td>0</td><td>1</td><td>3</td></tr>
+                    <tr><td class="c-red">Nao Convertidos</td><td class="c-red">57</td><td class="c-red">112</td><td class="c-red">249</td><td class="c-red">5</td><td class="c-red">18</td><td class="c-red">85</td></tr>
+                    <tr><td>Taxa Conversao</td><td class="c-red">0%</td><td class="c-red">0,9%</td><td>4,6%</td><td class="c-red">0%</td><td class="c-red">5,3%</td><td>3,4%</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="grid2">
+            <div class="card">
+                <h3>Convertidos vs Nao Convertidos por Mes &mdash; Meta</h3>
+                <canvas id="chartFunnelMeta" height="230"></canvas>
+            </div>
+            <div class="card">
+                <h3>Convertidos vs Nao Convertidos por Mes &mdash; Google</h3>
+                <canvas id="chartFunnelGoogle" height="230"></canvas>
+            </div>
+        </div>
+
+        <div class="insights">
+            <div class="insight">
+                <h4>Meta Dez/25: anomalia positiva (44,3% conv)</h4>
+                <p>39 vendas de 88 leads. Possivelmente leads de Black Friday (Nov) que so entraram no CRM em Dez, ja quentes. Ou o time comercial estava focado nessas oportunidades no fim de ano.</p>
+            </div>
+            <div class="insight">
+                <h4>Meta Nov/25: 290 leads perdidos</h4>
+                <p>Maior volume de leads nao convertidos. Black Friday trouxe volume mas muitos leads frios/curiosos. Filtro de qualificacao na LP poderia reduzir esse desperdicio.</p>
+            </div>
+            <div class="insight">
+                <h4>Parcerias: 526 leads nao convertidos</h4>
+                <p>De 543 leads mensais, apenas 17 vendas. Taxa de 3%. Esses leads precisam de nurturing especifico — nao podem receber o mesmo tratamento de leads pagos. Criar fluxo B2B dedicado.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- TAB 3: TEMPO DE CONVERSAO -->
+    <!-- ========================================= -->
+    <div id="tempo" class="panel">
+        <div class="kpis">
+            <div class="kpi"><div class="lbl">Tempo Medio</div><div class="val c-blue">34 dias</div></div>
+            <div class="kpi"><div class="lbl">Mediana</div><div class="val c-purple">18 dias</div></div>
+            <div class="kpi"><div class="lbl">Mesmo Mes</div><div class="val c-green">57%</div><div class="sub">324 de 570</div></div>
+            <div class="kpi"><div class="lbl">Ate +1 Mes</div><div class="val c-cyan">86%</div><div class="sub">490 de 570</div></div>
+            <div class="kpi"><div class="lbl">90+ Dias</div><div class="val c-red">70</div><div class="sub">12%</div></div>
+        </div>
+
+        <div class="grid2">
+            <div class="card">
+                <h3>Histograma &mdash; Dias ate a Conversao</h3>
+                <canvas id="chartHist" height="250"></canvas>
+            </div>
+            <div class="card">
+                <h3>Curva Acumulada &mdash; % Convertido</h3>
+                <canvas id="chartCum" height="250"></canvas>
+            </div>
+        </div>
+
+        <div class="card full" style="margin-bottom:20px">
+            <h3>Distribuicao por Faixa de Tempo</h3>
+            <table>
+                <thead><tr><th>Faixa</th><th>Qtd</th><th>%</th><th>Acumulado</th><th>Visual</th></tr></thead>
+                <tbody>
+                    <tr><td>Mesmo dia</td><td>80</td><td>14,0%</td><td>14,0%</td><td><div style="background:rgba(45,212,160,.2);height:16px;border-radius:4px;width:100%;position:relative"><div style="position:absolute;height:100%;width:14%;background:var(--green);border-radius:4px"></div></div></td></tr>
+                    <tr><td>1-7 dias</td><td>110</td><td>19,3%</td><td>33,3%</td><td><div style="background:rgba(45,212,160,.2);height:16px;border-radius:4px;width:100%;position:relative"><div style="position:absolute;height:100%;width:19.3%;background:var(--green);border-radius:4px"></div></div></td></tr>
+                    <tr><td>8-14 dias</td><td>70</td><td>12,3%</td><td>45,6%</td><td><div style="background:rgba(74,142,255,.2);height:16px;border-radius:4px;width:100%;position:relative"><div style="position:absolute;height:100%;width:12.3%;background:var(--blue);border-radius:4px"></div></div></td></tr>
+                    <tr><td>15-30 dias</td><td>65</td><td>11,4%</td><td>57,0%</td><td><div style="background:rgba(74,142,255,.2);height:16px;border-radius:4px;width:100%;position:relative"><div style="position:absolute;height:100%;width:11.4%;background:var(--blue);border-radius:4px"></div></div></td></tr>
+                    <tr><td>31-60 dias</td><td>120</td><td>21,1%</td><td>78,1%</td><td><div style="background:rgba(245,158,66,.2);height:16px;border-radius:4px;width:100%;position:relative"><div style="position:absolute;height:100%;width:21.1%;background:var(--orange);border-radius:4px"></div></div></td></tr>
+                    <tr><td>61-90 dias</td><td>55</td><td>9,6%</td><td>87,7%</td><td><div style="background:rgba(245,158,66,.2);height:16px;border-radius:4px;width:100%;position:relative"><div style="position:absolute;height:100%;width:9.6%;background:var(--orange);border-radius:4px"></div></div></td></tr>
+                    <tr><td>90+ dias</td><td>70</td><td>12,3%</td><td>100%</td><td><div style="background:rgba(239,68,68,.2);height:16px;border-radius:4px;width:100%;position:relative"><div style="position:absolute;height:100%;width:12.3%;background:var(--red);border-radius:4px"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- TAB 4: COHORT -->
+    <!-- ========================================= -->
+    <div id="cohort" class="panel">
+        <h2 class="stitle">Matriz de Cohort &mdash; Mes de Entrada do Lead vs Mes da Venda</h2>
+        <p style="color:var(--t2);font-size:13px;margin-bottom:16px">Base: 570 leads que converteram. Cada linha = leads CRIADOS naquele mes. Cada coluna = em qual mes VENDERAM.</p>
+
+        <div class="toggle-group">
+            <button class="toggle-btn active" onclick="toggleCohort('abs')">Absoluto</button>
+            <button class="toggle-btn" onclick="toggleCohort('pct')">Percentual</button>
+        </div>
+
+        <div id="cohortAbs" class="card full" style="margin-bottom:20px;overflow-x:auto">
+            <table>
+                <thead>
+                    <tr><th>Criado em</th><th>Total</th><th style="color:var(--blue)">Out/25</th><th style="color:var(--blue)">Nov/25</th><th style="color:var(--blue)">Dez/25</th><th style="color:var(--blue)">Jan/26</th><th style="color:var(--blue)">Fev/26</th><th style="color:var(--blue)">Mar/26</th><th>% Mesmo Mes</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Out/25</strong></td><td><strong>97</strong></td><td class="cohort-cell" style="background:rgba(74,142,255,.35)">36</td><td class="cohort-cell" style="background:rgba(74,142,255,.3)">37</td><td class="cohort-cell" style="background:rgba(74,142,255,.15)">12</td><td style="color:var(--t2)">3</td><td style="color:var(--t2)">8</td><td style="color:var(--t2)">1</td><td>37%</td></tr>
+                    <tr><td><strong>Nov/25</strong></td><td><strong>155</strong></td><td style="color:#232838">-</td><td class="cohort-cell" style="background:rgba(45,212,160,.4)">98</td><td class="cohort-cell" style="background:rgba(45,212,160,.2)">38</td><td style="color:var(--t2)">11</td><td style="color:var(--t2)">5</td><td style="color:var(--t2)">3</td><td class="c-green"><strong>63%</strong></td></tr>
+                    <tr><td><strong>Dez/25</strong></td><td><strong>65</strong></td><td style="color:#232838">-</td><td style="color:#232838">-</td><td class="cohort-cell" style="background:rgba(167,139,250,.35)">35</td><td class="cohort-cell" style="background:rgba(167,139,250,.15)">13</td><td style="color:var(--t2)">9</td><td style="color:var(--t2)">8</td><td>54%</td></tr>
+                    <tr><td><strong>Jan/26</strong></td><td><strong>90</strong></td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td class="cohort-cell" style="background:rgba(245,158,66,.35)">50</td><td class="cohort-cell" style="background:rgba(245,158,66,.2)">20</td><td class="cohort-cell" style="background:rgba(245,158,66,.15)">20</td><td>56%</td></tr>
+                    <tr><td><strong>Fev/26</strong></td><td><strong>120</strong></td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td class="cohort-cell" style="background:rgba(236,72,153,.35)">62</td><td class="cohort-cell" style="background:rgba(236,72,153,.3)">58</td><td>52%</td></tr>
+                    <tr><td><strong>Mar/26</strong></td><td><strong>43</strong></td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td class="cohort-cell" style="background:rgba(34,211,238,.45)">43</td><td class="c-green"><strong>100%</strong></td></tr>
+                    <tr style="background:var(--card2);font-weight:600">
+                        <td>VENDAS/MES</td><td><strong>570</strong></td><td>36</td><td>135</td><td>85</td><td>77</td><td>104</td><td>133</td><td><strong>57%</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="cohortPct" class="card full" style="margin-bottom:20px;overflow-x:auto;display:none">
+            <table>
+                <thead>
+                    <tr><th>Criado em</th><th>Total</th><th>Mes 0</th><th>Mes +1</th><th>Mes +2</th><th>Mes +3</th><th>Mes +4</th><th>Mes +5</th><th>Acum.</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Out/25</strong></td><td>97</td><td class="cohort-cell" style="background:rgba(74,142,255,.35)">37%</td><td class="cohort-cell" style="background:rgba(74,142,255,.3)">38%</td><td class="cohort-cell" style="background:rgba(74,142,255,.15)">12%</td><td style="color:var(--t2)">3%</td><td style="color:var(--t2)">8%</td><td style="color:var(--t2)">1%</td><td class="c-green">100%</td></tr>
+                    <tr><td><strong>Nov/25</strong></td><td>155</td><td class="cohort-cell" style="background:rgba(45,212,160,.45)"><strong>63%</strong></td><td class="cohort-cell" style="background:rgba(45,212,160,.2)">25%</td><td style="color:var(--t2)">7%</td><td style="color:var(--t2)">3%</td><td style="color:var(--t2)">2%</td><td style="color:#232838">-</td><td class="c-green">100%</td></tr>
+                    <tr><td><strong>Dez/25</strong></td><td>65</td><td class="cohort-cell" style="background:rgba(167,139,250,.35)">54%</td><td class="cohort-cell" style="background:rgba(167,139,250,.15)">20%</td><td style="color:var(--t2)">14%</td><td style="color:var(--t2)">12%</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td class="c-green">100%</td></tr>
+                    <tr><td><strong>Jan/26</strong></td><td>90</td><td class="cohort-cell" style="background:rgba(245,158,66,.35)">56%</td><td class="cohort-cell" style="background:rgba(245,158,66,.2)">22%</td><td class="cohort-cell" style="background:rgba(245,158,66,.15)">22%</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td class="c-green">100%</td></tr>
+                    <tr><td><strong>Fev/26</strong></td><td>120</td><td class="cohort-cell" style="background:rgba(236,72,153,.35)">52%</td><td class="cohort-cell" style="background:rgba(236,72,153,.3)">48%</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td class="c-green">100%</td></tr>
+                    <tr><td><strong>Mar/26</strong></td><td>43</td><td class="cohort-cell" style="background:rgba(34,211,238,.45)"><strong>100%</strong></td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td style="color:#232838">-</td><td class="c-green">100%</td></tr>
+                </tbody>
+            </table>
+            <p style="font-size:11px;color:var(--t2);margin-top:10px">Nota: Esta tabela mostra apenas os 570 leads que JA converteram. Leads que entraram e ainda nao converteram nao estao incluidos (ver aba "De-Para" para nao convertidos).</p>
+        </div>
+
+        <div class="grid2">
+            <div class="card">
+                <h3>Conversao Mesmo Mes vs Meses Seguintes</h3>
+                <canvas id="chartSameMonth" height="250"></canvas>
+            </div>
+            <div class="card">
+                <h3>Curva de Conversao Acumulada por Cohort</h3>
+                <canvas id="chartCohortCurve" height="250"></canvas>
+            </div>
+        </div>
+
+        <div class="grid2">
+            <div class="card">
+                <h3>Volume: Leads Criados vs Vendas Realizadas por Mes</h3>
+                <canvas id="chartEntryVsWin" height="250"></canvas>
+            </div>
+            <div class="card">
+                <h3>% Conversao no Mesmo Mes por Cohort</h3>
+                <canvas id="chartSameMonthPct" height="250"></canvas>
+            </div>
+        </div>
+
+        <div class="insights">
+            <div class="insight">
+                <h4>Nov/25 = melhor cohort (63% same-month)</h4>
+                <p>Black Friday criou urgencia. 98 de 155 leads converteram no mesmo mes. Replicar senso de urgencia em campanhas sazonais futuras.</p>
+            </div>
+            <div class="insight">
+                <h4>Out/25: 38% so converteu em Nov</h4>
+                <p>37 de 97 leads de Out converteram em Nov. Campanha de pre-aquecimento funciona: gerar leads antes do evento e converter durante.</p>
+            </div>
+            <div class="insight">
+                <h4>Fev/26: 48% converteu em Mar</h4>
+                <p>58 leads de Fev so fecharam em Mar. Muitos sao ex-alunos (batch 06/02) que precisam de mais tempo. Ciclo mais longo para remarketing.</p>
+            </div>
+            <div class="insight">
+                <h4>Mar/26: 100% same-month (ate agora)</h4>
+                <p>43 leads criados e vendidos em Marco. Ainda sem dados de conversao posterior (mes incompleto). Numero tende a crescer conforme leads de meses anteriores convertam.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">Dashboard Cohort & Funil &bull; Alumni by Better &bull; Dados cruzados Dataset 1 (570 vendas) + Dataset 2 (canais)</div>
+</div>
+
+<script>
+Chart.defaults.color='#7c829a';Chart.defaults.borderColor='#232838';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=12;Chart.defaults.plugins.legend.labels.usePointStyle=true;
+const C={blue:'#4a8eff',green:'#2dd4a0',purple:'#a78bfa',orange:'#f59e42',pink:'#ec4899',red:'#ef4444',cyan:'#22d3ee',yellow:'#fbbf24'};
+const g='rgba(35,40,56,.5)';
+
+function showTab(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');event.target.classList.add('active')}
+function toggleCohort(v){document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');document.getElementById('cohortAbs').style.display=v==='abs'?'block':'none';document.getElementById('cohortPct').style.display=v==='pct'?'block':'none'}
+
+// TAB 1: Leads vs Sales
+new Chart(document.getElementById('chartLeadsVsSales'),{type:'bar',data:{labels:['Meta Ads','Google Ads','IG Organico','Parcerias B2B','Embaixadores'],datasets:[{label:'Leads Gerados',data:[675,512,137,455,23],backgroundColor:'rgba(74,142,255,.4)',borderRadius:6},{label:'Vendas',data:[95,71,7,14,1],backgroundColor:'rgba(45,212,160,.7)',borderRadius:6}]},options:{responsive:true,scales:{y:{grid:{color:g}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chartConvRate'),{type:'bar',data:{labels:['Meta Ads','Google Ads','IG Organico','Parcerias B2B','Embaixadores'],datasets:[{label:'Taxa Conversao %',data:[14.1,13.9,5.1,3.1,4.3],backgroundColor:[C.blue,C.purple,C.pink,C.green,C.yellow],borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:g},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chartNaoConvertidos'),{type:'bar',data:{labels:['Meta Ads','Google Ads','IG Organico','Parcerias B2B','Embaixadores'],datasets:[{label:'Nao Convertidos',data:[580,441,130,441,22],backgroundColor:[C.red,'rgba(239,68,68,.7)','rgba(239,68,68,.5)','rgba(239,68,68,.8)','rgba(239,68,68,.3)'],borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:g}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chartSalesOrigin'),{type:'doughnut',data:{labels:['Outros: Indicacao/WhatsApp/Organico (375)','Meta Ads (95)','Google Ads (71)','Parcerias B2B (14)','Email Nurturing (7)','IG Organico (7)','Embaixadores (1)'],datasets:[{data:[375,95,71,14,7,7,1],backgroundColor:[C.orange,C.blue,C.purple,C.green,C.yellow,C.pink,C.cyan]}]},options:{responsive:true,cutout:'55%',plugins:{legend:{position:'right',labels:{font:{size:10},padding:6}}}}});
+
+// TAB 2: Funnels
+new Chart(document.getElementById('chartFunnelMeta'),{type:'bar',data:{labels:['Out/25','Nov/25','Dez/25','Jan/26','Fev/26'],datasets:[{label:'Convertidos',data:[7,33,39,8,8],backgroundColor:C.green,borderRadius:4},{label:'Nao Convertidos',data:[52,290,49,99,90],backgroundColor:'rgba(239,68,68,.4)',borderRadius:4}]},options:{responsive:true,scales:{y:{stacked:true,grid:{color:g}},x:{stacked:true,grid:{display:false}}}}});
+
+new Chart(document.getElementById('chartFunnelGoogle'),{type:'bar',data:{labels:['Dez/25','Jan/26','Fev/26'],datasets:[{label:'Convertidos',data:[10,28,33],backgroundColor:C.green,borderRadius:4},{label:'Nao Convertidos',data:[77,125,239],backgroundColor:'rgba(239,68,68,.4)',borderRadius:4}]},options:{responsive:true,scales:{y:{stacked:true,grid:{color:g}},x:{stacked:true,grid:{display:false}}}}});
+
+// TAB 3: Tempo
+new Chart(document.getElementById('chartHist'),{type:'bar',data:{labels:['0 dias','1-7','8-14','15-30','31-60','61-90','90+'],datasets:[{data:[80,110,70,65,120,55,70],backgroundColor:[C.green,C.green,C.blue,C.blue,C.orange,C.orange,C.red],borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:g}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chartCum'),{type:'line',data:{labels:['0d','7d','14d','30d','60d','90d','120d','150d+'],datasets:[{label:'% Convertido',data:[14,33.3,45.6,57,78.1,87.7,95,100],borderColor:C.blue,backgroundColor:'rgba(74,142,255,.1)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:C.blue,borderWidth:3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:g},min:0,max:100,ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}});
+
+// TAB 4: Cohort
+new Chart(document.getElementById('chartSameMonth'),{type:'bar',data:{labels:['Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26'],datasets:[{label:'Mesmo mes',data:[36,98,35,50,62,43],backgroundColor:C.green,borderRadius:6},{label:'Meses seguintes',data:[61,57,30,40,58,0],backgroundColor:'rgba(74,142,255,.3)',borderRadius:6}]},options:{responsive:true,scales:{y:{stacked:true,grid:{color:g}},x:{stacked:true,grid:{display:false}}}}});
+
+new Chart(document.getElementById('chartCohortCurve'),{type:'line',data:{labels:['Mes 0','Mes +1','Mes +2','Mes +3','Mes +4','Mes +5'],datasets:[{label:'Out/25',data:[37,75,88,91,99,100],borderColor:C.blue,tension:.3,pointRadius:4,borderWidth:2},{label:'Nov/25',data:[63,88,95,98,100,null],borderColor:C.green,tension:.3,pointRadius:4,borderWidth:2},{label:'Dez/25',data:[54,74,88,100,null,null],borderColor:C.purple,tension:.3,pointRadius:4,borderWidth:2},{label:'Jan/26',data:[56,78,100,null,null,null],borderColor:C.orange,tension:.3,pointRadius:4,borderWidth:2},{label:'Fev/26',data:[52,100,null,null,null,null],borderColor:C.pink,tension:.3,pointRadius:4,borderWidth:2},{label:'Mar/26',data:[100,null,null,null,null,null],borderColor:C.cyan,tension:.3,pointRadius:4,borderWidth:2}]},options:{responsive:true,spanGaps:false,scales:{y:{grid:{color:g},min:0,max:100,ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chartEntryVsWin'),{type:'bar',data:{labels:['Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26'],datasets:[{label:'Leads Criados (que venderam)',data:[97,155,65,90,120,43],backgroundColor:'rgba(74,142,255,.4)',borderRadius:6},{label:'Vendas Realizadas',data:[36,135,85,77,104,133],backgroundColor:'rgba(45,212,160,.5)',borderRadius:6}]},options:{responsive:true,scales:{y:{grid:{color:g}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chartSameMonthPct'),{type:'bar',data:{labels:['Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26'],datasets:[{label:'% Same Month',data:[37,63,54,56,52,100],backgroundColor:[C.blue,C.green,C.purple,C.orange,C.pink,C.cyan],borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:g},max:100,ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}});
+</script>
+</body>
+</html>

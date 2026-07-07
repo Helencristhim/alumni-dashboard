@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni | Diagnostico Estrategico</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        :root{--bg:#0b0d13;--card:#141720;--card2:#1a1e2b;--border:#232838;--t1:#eef0f6;--t2:#7c829a;--blue:#4a8eff;--green:#2dd4a0;--purple:#a78bfa;--orange:#f59e42;--pink:#ec4899;--red:#ef4444;--cyan:#22d3ee;--yellow:#fbbf24}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);line-height:1.7;font-size:14px}
+        .wrap{max-width:1440px;margin:0 auto;padding:28px 24px}
+        .header{margin-bottom:28px}
+        .header h1{font-size:24px;font-weight:800;background:linear-gradient(135deg,var(--orange),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+        .header p{color:var(--t2);font-size:13px}
+        .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--card);border-radius:12px;padding:4px;border:1px solid var(--border);overflow-x:auto}
+        .tab{padding:10px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);white-space:nowrap;border:none;background:none;font-family:inherit;transition:all .2s}
+        .tab:hover{color:var(--t1);background:var(--card2)}.tab.active{background:var(--blue);color:#fff}
+        .panel{display:none}.panel.active{display:block}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px}
+        .card h3{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--t1)}
+        .card h3 span{color:var(--blue)}
+        .card h4{font-size:13px;font-weight:600;color:var(--orange);margin:16px 0 8px}
+        .stitle{font-size:17px;font-weight:700;margin:28px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        table{width:100%;border-collapse:collapse;font-size:13px}
+        th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+        th{color:var(--t2);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+        .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;margin:2px}
+        .b-blue{background:rgba(74,142,255,.15);color:var(--blue)}
+        .b-green{background:rgba(45,212,160,.15);color:var(--green)}
+        .b-purple{background:rgba(167,139,250,.15);color:var(--purple)}
+        .b-orange{background:rgba(245,158,66,.15);color:var(--orange)}
+        .b-pink{background:rgba(236,72,153,.15);color:var(--pink)}
+        .b-cyan{background:rgba(34,211,238,.15);color:var(--cyan)}
+        .b-red{background:rgba(239,68,68,.15);color:var(--red)}
+        .b-yellow{background:rgba(251,191,36,.15);color:var(--yellow)}
+        .b-gray{background:rgba(124,130,154,.15);color:var(--t2)}
+        .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
+        .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+        .hl{padding:14px 18px;border-radius:10px;margin-bottom:14px}
+        .hl-red{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)}
+        .hl-green{background:rgba(45,212,160,.08);border:1px solid rgba(45,212,160,.2)}
+        .hl-blue{background:rgba(74,142,255,.08);border:1px solid rgba(74,142,255,.2)}
+        .hl-orange{background:rgba(245,158,66,.08);border:1px solid rgba(245,158,66,.2)}
+        .c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-purple{color:var(--purple)}.c-orange{color:var(--orange)}.c-pink{color:var(--pink)}.c-red{color:var(--red)}.c-cyan{color:var(--cyan)}
+        .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+        .kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+        .kpi .lbl{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+        .kpi .val{font-size:24px;font-weight:700;margin-top:2px}
+        .kpi .sub{font-size:11px;color:var(--t2);margin-top:2px}
+        .action-item{padding:12px 16px;border-left:3px solid var(--blue);background:var(--card2);border-radius:0 8px 8px 0;margin-bottom:8px}
+        .action-item.urgent{border-left-color:var(--red)}
+        .action-item.important{border-left-color:var(--orange)}
+        .action-item.normal{border-left-color:var(--green)}
+        .action-item strong{font-size:13px}
+        .action-item .meta{font-size:11px;color:var(--t2);margin-top:4px}
+        .sep{border:none;border-top:1px solid var(--border);margin:28px 0}
+        .footer{text-align:center;padding:20px;color:var(--t2);font-size:11px}
+        .back-link{display:inline-block;margin-bottom:16px;color:var(--blue);text-decoration:none;font-size:13px}
+        .tag-cloud{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+        @media(max-width:1024px){.grid2,.grid3{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <a href="cohort-analysis.html" class="back-link">&larr; Voltar para Cohort & Funil</a>
+    <div class="header">
+        <h1>Diagnostico Estrategico &mdash; Alumni by Better</h1>
+        <p>Cruzamento: 570 vendas (CRM) + Dados de canal + Taxonomia de tags + Ata de reuniao de heads</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('tags')">Analise de Tags</button>
+        <button class="tab" onclick="showTab('estrategia')">Dados vs Estrategia (Ata)</button>
+        <button class="tab" onclick="showTab('acoes')">Plano de Acao com Dados</button>
+    </div>
+
+    <!-- ================================================ -->
+    <!-- TAB 1: ANALISE DE TAGS -->
+    <!-- ================================================ -->
+    <div id="tags" class="panel active">
+
+        <div class="hl hl-blue">
+            <strong>O que sao as tags?</strong> Cada lead no CRM recebe multiplas tags ao longo da jornada. Um unico lead pode ter 5, 10, ate 20+ tags. Analisando as tags dos 570 leads que converteram, podemos entender: por quais canais passaram, quantas vezes foram tocados por remarketing, se sao ex-alunos, se vieram de parcerias, etc.
+        </div>
+
+        <h2 class="stitle">Taxonomia de Tags &mdash; 13 Categorias Identificadas</h2>
+        <div class="card">
+            <table>
+                <thead><tr><th>Categoria</th><th>Exemplos</th><th>Qtd Tags Unicas</th><th>% dos 570 leads com tag</th><th>Insight</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge b-green">Status</span></td>
+                        <td>Aluno Ativo, Welcome, CANCELADO, Perdido 1, Inadimplente</td>
+                        <td>~15</td>
+                        <td><strong>98%</strong></td>
+                        <td>Quase todos tem "Aluno Ativo" + "Welcome". Alguns tem "CANCELADO" historico (reativados)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-blue">Campanha</span></td>
+                        <td>Black Friday 2025, LP Imersao, Espanhol, Modulo Negocios, SVM - GOOGLE ADS</td>
+                        <td>~35</td>
+                        <td><strong>~45%</strong></td>
+                        <td>256 leads passaram por pelo menos 1 campanha rastreavel</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-red">Remarketing</span></td>
+                        <td>RMKTL, MSG VALOR BLACK RMKT, rmkt-35%-CP, Disparo FinalFev, blck_eng_spa_price</td>
+                        <td>~30</td>
+                        <td><strong>~43%</strong></td>
+                        <td>245 leads foram tocados por remarketing antes de converter. Remarketing e ESSENCIAL no funil</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-purple">Origem/Base</span></td>
+                        <td>Base Fer, Lista Fernanda, MO_MSI_2022, Black_MSI_EX, ex_alunos_MSI</td>
+                        <td>~18</td>
+                        <td><strong>~25%</strong></td>
+                        <td>143 leads vieram de bases/listas antigas — leads reativados de MSI, ex-alunos</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-cyan">Origem/Organico</span></td>
+                        <td>Lead Site 2026, Site Alumni, SITE-ALUMNI-ORG, WHATSAPP - ATIVO CLIENTE</td>
+                        <td>~12</td>
+                        <td><strong>~35%</strong></td>
+                        <td>200 leads entraram via canais organicos (site, WhatsApp, social)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-orange">Parceria B2B2C</span></td>
+                        <td>Parceria Daycoval, FAAP, CAASP, Centro Binacional, Nuvvra, Bosque das Letras</td>
+                        <td>~12</td>
+                        <td><strong>~12%</strong></td>
+                        <td>68 leads vieram de parcerias corporativas. Daycoval e FAAP sao as maiores</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-pink">Indicacao</span></td>
+                        <td>Indicacao Alumni</td>
+                        <td>1</td>
+                        <td><strong>~13%</strong></td>
+                        <td>74 leads vieram de indicacao direta de alunos. Custo zero, alta conversao</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-yellow">ID Vendedor</span></td>
+                        <td>leads fer, LEADS FERR, LEADS RO G, Leads Carlos</td>
+                        <td>~8</td>
+                        <td><strong>~40%</strong></td>
+                        <td>228 leads tem tag de identificacao de vendedor. Usado para routing interno</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-gray">ID Celular</span></td>
+                        <td>Celular Fe, CELULAR FERNANDA S, Celular Rodrigo, Tel Corp Fernanda</td>
+                        <td>~8</td>
+                        <td><strong>~15%</strong></td>
+                        <td>85 leads marcados com celular do vendedor. Indica contato via WhatsApp pessoal</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-green">Landing Page</span></td>
+                        <td>LP Meta - Cursos Alumni, LP DA BLACK, LP-CBN-META-F-D, LP Imersao</td>
+                        <td>~15</td>
+                        <td><strong>~30%</strong></td>
+                        <td>171 leads passaram por LP rastreavel. "LP Meta - Cursos Alumni" e a principal</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-cyan">NPS</span></td>
+                        <td>NPS 1, nps_quali_horar</td>
+                        <td>2</td>
+                        <td><strong>~18%</strong></td>
+                        <td>103 leads tem tag NPS. Indica que ja foram alunos e responderam pesquisa</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-orange">Canal</span></td>
+                        <td>SVM - GOOGLE ADS, SVM - META ADS, Leads Site - Plugin WhatsApp</td>
+                        <td>~6</td>
+                        <td><strong>~22%</strong></td>
+                        <td>125 leads tem canal de midia paga marcado</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge b-gray">Customer Care</span></td>
+                        <td>Masterclass1, Atendimento CC, Telefone CC Alumni</td>
+                        <td>~3</td>
+                        <td><strong>~5%</strong></td>
+                        <td>28 leads passaram por customer care antes da venda</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="grid2">
+            <div class="card">
+                <h3>Distribuicao de Tags por Categoria</h3>
+                <canvas id="chartTagDist" height="280"></canvas>
+            </div>
+            <div class="card">
+                <h3>Multi-touch: Quantas categorias de tag por lead?</h3>
+                <canvas id="chartMultiTouch" height="280"></canvas>
+            </div>
+        </div>
+
+        <h2 class="stitle">Problemas Criticos na Taxonomia de Tags</h2>
+        <div class="grid2">
+            <div class="card">
+                <h3 style="color:var(--red)">Problemas Encontrados</h3>
+                <div class="action-item urgent"><strong>Tags duplicadas com nomes diferentes</strong><div class="meta">"leads fer" vs "LEADS FERR" vs "Base Fer" vs "Lista Fernanda Soares" — 4 tags para o mesmo conceito</div></div>
+                <div class="action-item urgent"><strong>Sem padrao de nomenclatura</strong><div class="meta">Mix de MAIUSCULAS, minusculas, snake_case, espacos, emojis (📆👥). Impossibilita automacao</div></div>
+                <div class="action-item urgent"><strong>Tags de remarketing como "lixeira"</strong><div class="meta">30+ tags de remarketing acumulando. Lead com 15 tags de rmkt perde legibilidade. Criar campo separado</div></div>
+                <div class="action-item important"><strong>Status misturado com origem</strong><div class="meta">"CANCELADO" e status mas tambem indica ex-aluno que reativou. Criar campo de historico separado</div></div>
+                <div class="action-item important"><strong>Tags operacionais poluindo analytics</strong><div class="meta">"Celular Fe", "BUG", "PARAR ENVIO MSG" sao operacionais, nao deviam impactar analise de marketing</div></div>
+            </div>
+            <div class="card">
+                <h3 style="color:var(--green)">Recomendacoes de Padronizacao</h3>
+                <div class="action-item normal"><strong>Criar campos dedicados no CRM</strong><div class="meta">Canal (dropdown), Campanha (dropdown), Vendedor (lookup), Status (workflow). Tags somente para segmentacao</div></div>
+                <div class="action-item normal"><strong>Unificar nomenclatura</strong><div class="meta">Padrao: snake_case_minusculo. Ex: "parceria_daycoval", "campanha_black_friday_2025", "rmkt_jan_2026"</div></div>
+                <div class="action-item normal"><strong>Limpar tags de remarketing</strong><div class="meta">Mover historico de disparos para campo "Historico de Comunicacao". Tag = segmento atual, nao historico</div></div>
+                <div class="action-item normal"><strong>Implementar tag de fonte primaria</strong><div class="meta">1 tag unica de fonte: "fonte:google_ads", "fonte:indicacao", "fonte:parceria_daycoval". Sem ambiguidade</div></div>
+                <div class="action-item normal"><strong>Auditar e limpar base</strong><div class="meta">Remover tags obsoletas (MSI_2022, SETUP_2023). Mergear duplicatas. Documentar taxonomia oficial</div></div>
+            </div>
+        </div>
+
+        <h2 class="stitle">Insights Chave das Tags</h2>
+        <div class="grid3">
+            <div class="card">
+                <h3><span>43%</span> tocados por remarketing</h3>
+                <p style="color:var(--t2);font-size:13px">245 dos 570 leads que converteram tinham tags de remarketing. Isso significa que quase metade das vendas foi influenciada por remarketing. O remarketing NAO e custo — e investimento essencial no funil.</p>
+            </div>
+            <div class="card">
+                <h3><span>25%</span> vieram de bases antigas</h3>
+                <p style="color:var(--t2);font-size:13px">143 leads eram de listas MSI, ex-alunos, ou bases historicas. A reativacao de base e um canal significativo. A reuniao mencionou esse potencial — os dados confirmam.</p>
+            </div>
+            <div class="card">
+                <h3><span>13%</span> por indicacao (custo zero)</h3>
+                <p style="color:var(--t2);font-size:13px">74 leads vieram de "Indicacao Alumni". Sem custo de aquisicao. Um programa formal de Member Get Member poderia dobrar esse numero. A Ata menciona foco em retenção — aluno satisfeito indica.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================ -->
+    <!-- TAB 2: DADOS VS ESTRATEGIA -->
+    <!-- ================================================ -->
+    <div id="estrategia" class="panel">
+
+        <div class="hl hl-orange">
+            <strong>Metodologia:</strong> Cada topico da Ata de Reuniao de Heads foi cruzado com os dados reais de vendas, canais e tags. O objetivo e validar, desafiar ou quantificar as decisoes estrategicas com evidencias.
+        </div>
+
+        <!-- TOPICO 1 -->
+        <div class="card">
+            <h3>1. Foco Comercial: B2C vs B2B/B2S/B2G</h3>
+            <h4>O que a Ata diz:</h4>
+            <p style="color:var(--t2)">"B2C e motor caro com LTV menos atrativo; proposta de priorizar Idiomas em B2B/B2S/B2G"</p>
+            <h4>O que os dados mostram:</h4>
+            <table>
+                <tr><td>Vendas B2C (Meta+Google+Organico+Indicacao)</td><td><strong>~540</strong></td><td>95% das vendas</td></tr>
+                <tr><td>Vendas via Parcerias B2B2C</td><td><strong>14-17</strong></td><td>3% das vendas</td></tr>
+                <tr><td>CAC B2C (paid)</td><td><strong>R$ 292</strong></td><td>Meta R$324 + Google R$248</td></tr>
+                <tr><td>Conversao Parcerias</td><td><strong>3,1%</strong></td><td>455 leads → 14 vendas</td></tr>
+                <tr><td>Ticket medio B2C</td><td><strong>~R$ 4.965</strong></td><td>-</td></tr>
+                <tr><td>Receita Parcerias</td><td><strong>R$ 55.935</strong></td><td>Ticket ~R$ 3.995</td></tr>
+            </table>
+            <div class="hl hl-red" style="margin-top:12px">
+                <strong>Alerta:</strong> Pivotar para B2B sem resolver a conversao de 3% e jogar dinheiro fora. Os dados mostram que B2C pago (Meta+Google) tem ROAS de 13,6x — e altamente rentavel. O problema do B2B nao e falta de leads (455), e falta de conversao comercial. Antes de priorizar B2B, corrigir o funil comercial B2B.
+            </div>
+        </div>
+
+        <!-- TOPICO 2 -->
+        <div class="card">
+            <h3>2. Onboarding e Cancelamentos em 7 Dias</h3>
+            <h4>O que a Ata diz:</h4>
+            <p style="color:var(--t2)">"Gargalo critico entre compra e primeiro contato impacta cancelamentos em 7 dias"</p>
+            <h4>O que os dados mostram:</h4>
+            <table>
+                <tr><td>Leads com tag "CANCELADO" que recompraram</td><td><strong>~45</strong></td><td>8% das vendas sao ex-cancelados reativados</td></tr>
+                <tr><td>Leads com tag "Inadimplente" que recompraram</td><td><strong>~20</strong></td><td>3,5% — voltaram mesmo com historico</td></tr>
+                <tr><td>Tempo medio de conversao</td><td><strong>34 dias</strong></td><td>Mas 14% converte no mesmo DIA</td></tr>
+                <tr><td>Conversao 0-7 dias</td><td><strong>33%</strong></td><td>190 leads — esses precisam de onboarding IMEDIATO</td></tr>
+            </table>
+            <div class="hl hl-green" style="margin-top:12px">
+                <strong>Validado pelos dados:</strong> 33% dos leads convertem em 0-7 dias. Se o onboarding nao acontece nesse periodo, o risco de cancelamento e altissimo. O video de onboarding (Ellen/Gilberto) e a iniciativa correta. Sugestao: trigger automatico de onboarding < 24h apos pagamento.
+            </div>
+        </div>
+
+        <!-- TOPICO 3 -->
+        <div class="card">
+            <h3>3. Marketing, Organico e CAC</h3>
+            <h4>O que a Ata diz:</h4>
+            <p style="color:var(--t2)">"CAC caiu ~16% em dois meses (212 vs 88); organico nao entra no CAC; investimento total < R$100K desde novembro"</p>
+            <h4>O que os dados mostram:</h4>
+            <table>
+                <tr><td>Investimento total (Meta+Google)</td><td><strong>R$ 48.405</strong></td><td>Confirmado < R$100K</td></tr>
+                <tr><td>ROAS Google Ads</td><td><strong>22x</strong></td><td>Jan atingiu 48x (!)</td></tr>
+                <tr><td>ROAS Meta Ads</td><td><strong>7x</strong></td><td>Nov foi 11x, Out apenas 3x</td></tr>
+                <tr><td>Vendas organico + indicacao + WhatsApp</td><td><strong>~375</strong></td><td>66% das vendas com custo ZERO de midia</td></tr>
+                <tr><td>CAC real (incluindo organico)</td><td><strong>R$ 85</strong></td><td>R$48.405 / 570 vendas = R$85 por venda</td></tr>
+                <tr><td>Tags de remarketing em conversoes</td><td><strong>43%</strong></td><td>245 leads tocados por rmkt antes de comprar</td></tr>
+            </table>
+            <div class="hl hl-green" style="margin-top:12px">
+                <strong>Os numeros confirmam eficiencia alta.</strong> ROAS de 22x no Google e excepcional. O CAC "real" (diluido pelo organico) e apenas R$85. O remarketing e responsavel por 43% das conversoes — nao cortar investimento em remarketing. Recomendacao da Ata de "expandir com testes controlados" e acertada. Priorizar Google > Meta.
+            </div>
+        </div>
+
+        <!-- TOPICO 4 -->
+        <div class="card">
+            <h3>4. Qualidade, CX e Churn</h3>
+            <h4>O que a Ata diz:</h4>
+            <p style="color:var(--t2)">"Qualidade da entrega e o principal driver de retencao"; "Ju mapeando jornada (cliente oculto)"</p>
+            <h4>O que os dados mostram:</h4>
+            <table>
+                <tr><td>Leads com tag NPS</td><td><strong>103 (18%)</strong></td><td>Ja responderam pesquisa — sao alunos ativos ou ex</td></tr>
+                <tr><td>Ex-alunos que recompraram</td><td><strong>~80 (14%)</strong></td><td>Tags de ex-aluno/MSI/base antiga → compraram de novo</td></tr>
+                <tr><td>Ex-cancelados que recompraram</td><td><strong>~45 (8%)</strong></td><td>Voltaram mesmo apos cancelar</td></tr>
+                <tr><td>Indicacoes (aluno satisfeito indica)</td><td><strong>74 (13%)</strong></td><td>Indicacao e proxy de satisfacao</td></tr>
+                <tr><td>Email open rate</td><td><strong>~1%</strong></td><td>Base desengajada — sinal de insatisfacao?</td></tr>
+            </table>
+            <div class="hl hl-orange" style="margin-top:12px">
+                <strong>Dados parciais mas reveladores:</strong> 14% das vendas sao recompras de ex-alunos — mostra que o produto tem valor para quem experimentou. Mas a taxa de email open de 1% sugere base desengajada. O mapeamento da Ju e URGENTE. Sugestao: cruzar NPS com tags de recompra para identificar perfil do aluno que volta vs. que nao volta.
+            </div>
+        </div>
+
+        <!-- TOPICO 5 -->
+        <div class="card">
+            <h3>5. Processos, Sistemas e Dados</h3>
+            <h4>O que a Ata diz:</h4>
+            <p style="color:var(--t2)">"Gestao baseada em planilhas exige migracao para sistemas integrados"; "Dashboards de matriculas, cancelamentos, ticket medio"</p>
+            <h4>O que os dados mostram (problemas reais):</h4>
+            <table>
+                <tr><td>Deals com valor = R$0</td><td><strong>187 (33%)</strong></td><td>1/3 das vendas sem receita registrada — impossibilita ROI real</td></tr>
+                <tr><td>Tags duplicadas</td><td><strong>~40 pares</strong></td><td>"leads fer" vs "LEADS FERR" vs "Base Fer" — 4 tags para 1 conceito</td></tr>
+                <tr><td>Leads sem UTM</td><td><strong>~60%</strong></td><td>Maioria dos leads sem tracking de origem</td></tr>
+                <tr><td>Mar/26 sem dados de canal</td><td><strong>100%</strong></td><td>Sem dados de leads por canal para Marco — gap de tracking</td></tr>
+                <tr><td>Parcerias: soma mensal ≠ total</td><td><strong>543 vs 455</strong></td><td>Inconsistencia nos dados — falta de governanca</td></tr>
+            </table>
+            <div class="hl hl-red" style="margin-top:12px">
+                <strong>PRIORIDADE MAXIMA.</strong> Sem dados limpos, todas as decisoes sao baseadas em estimativas. 33% das vendas sem valor impede analise de receita real. Tags sem padrao impede segmentacao automatizada. A migracao para sistema integrado (portal) mencionada na Ata e URGENTE. Enquanto isso, pelo menos: (1) obrigar campo "valor" antes de marcar como "Ganho", (2) padronizar tags, (3) implementar UTMs em todos os canais.
+            </div>
+        </div>
+
+        <!-- TOPICO 6 -->
+        <div class="card">
+            <h3>6. Private e Community Flow</h3>
+            <h4>O que a Ata diz:</h4>
+            <p style="color:var(--t2)">"Private (alto ticket) tem grande potencial porem subentregue"; "Community Flow: a cada 5 em grupo, 1 particular"</p>
+            <h4>O que os dados mostram:</h4>
+            <table>
+                <tr><td>Leads que preferiram "Aulas Particulares"</td><td><strong>~22</strong></td><td>Do formulario de conversao</td></tr>
+                <tr><td>Leads que preferiram "Hibrido"</td><td><strong>~68</strong></td><td>MAIORIA quer hibrido — valida Community Flow</td></tr>
+                <tr><td>Orcamento R$500-1000/mes</td><td><strong>~18</strong></td><td>Publico com capacidade para Private</td></tr>
+                <tr><td>Cargo Diretor/C-Level</td><td><strong>~20</strong></td><td>Perfil de Private</td></tr>
+                <tr><td>Vendas com valor > R$10.000</td><td><strong>~25</strong></td><td>Ja existem vendas de alto ticket</td></tr>
+            </table>
+            <div class="hl hl-green" style="margin-top:12px">
+                <strong>Dados validam a tese.</strong> A maioria dos leads convertidos prefere modelo hibrido (grupo + particular) — exatamente o Community Flow. Existe publico com capacidade financeira (R$500+) e perfil executivo (diretores/C-Level). A estruturacao do Private com SLAs e suporte docente vai destravar receita de alto ticket.
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================ -->
+    <!-- TAB 3: PLANO DE ACAO -->
+    <!-- ================================================ -->
+    <div id="acoes" class="panel">
+
+        <h2 class="stitle" style="color:var(--red)">Acoes Urgentes (Impacto Imediato)</h2>
+
+        <div class="action-item urgent">
+            <strong>1. Obrigar preenchimento de VALOR no CRM antes de marcar "Ganho"</strong>
+            <div class="meta">Dado: 33% das vendas sem valor. Impacto: impossibilita calcular receita real, ROAS, LTV. | Owner: TI + Comercial | Prazo: 1 semana</div>
+        </div>
+        <div class="action-item urgent">
+            <strong>2. Implementar onboarding automatico < 24h apos pagamento</strong>
+            <div class="meta">Dado: 33% converte em 0-7 dias; Ata: "gargalo entre compra e primeiro contato". | Owner: Ellen + Gilberto + Ju | Prazo: 2 semanas</div>
+        </div>
+        <div class="action-item urgent">
+            <strong>3. Criar funil comercial dedicado para leads B2B/Parcerias</strong>
+            <div class="meta">Dado: 455 leads, 3% conversao = 441 desperdicados. | Owner: Comercial + CX | Prazo: 2 semanas</div>
+        </div>
+        <div class="action-item urgent">
+            <strong>4. Padronizar tags do CRM (taxonomia oficial)</strong>
+            <div class="meta">Dado: 40+ tags duplicadas, sem padrao. | Owner: Marketing + TI | Prazo: 3 semanas</div>
+        </div>
+
+        <h2 class="stitle" style="color:var(--orange)">Acoes Importantes (Proximo Mes)</h2>
+
+        <div class="action-item important">
+            <strong>5. Realocar budget: aumentar Google Ads, reduzir Meta proporcionalmente</strong>
+            <div class="meta">Dado: Google ROAS 22x vs Meta 7x. Google CAC R$248 vs Meta R$324. | Owner: Marketing + SVM | Prazo: proximo ciclo de budget</div>
+        </div>
+        <div class="action-item important">
+            <strong>6. Implementar programa formal de Member Get Member</strong>
+            <div class="meta">Dado: 74 vendas por indicacao (13%) com custo zero. | Owner: Marketing + CX | Prazo: 30 dias</div>
+        </div>
+        <div class="action-item important">
+            <strong>7. Criar trigger de "7 dias sem aula" no CRM</strong>
+            <div class="meta">Ata: churn em 7 dias e critico. Automatizar alerta para CS quando aluno nao agenda em 7 dias. | Owner: TI + CS | Prazo: 30 dias</div>
+        </div>
+        <div class="action-item important">
+            <strong>8. Estruturar Private: pacote, SLA, precificacao, suporte docente</strong>
+            <div class="meta">Dado: 25 vendas >R$10K existem; 20 leads sao diretores/C-Level. | Owner: Academico + Comercial | Prazo: 30 dias</div>
+        </div>
+        <div class="action-item important">
+            <strong>9. Reavaliar TikTok: pausar ou pivotar</strong>
+            <div class="meta">Dado: 0 vendas em 7 meses, 699 views media. | Owner: Marketing | Prazo: imediato</div>
+        </div>
+
+        <h2 class="stitle" style="color:var(--green)">Acoes Estruturais (60-90 dias)</h2>
+
+        <div class="action-item normal">
+            <strong>10. Migrar gestao de planilhas para sistema integrado (Portal)</strong>
+            <div class="meta">Ata: "gestao baseada em planilhas exige migracao". Dados inconsistentes (soma ≠ total em parcerias). | Owner: TI + Bruno | Prazo: conforme timeline TI</div>
+        </div>
+        <div class="action-item normal">
+            <strong>11. Estruturar controladoria: contas por area, budget, forecast</strong>
+            <div class="meta">Ata: "institucionalizar area de custo". Sem visao de rentabilidade por produto/canal. | Owner: Financeiro + Del | Prazo: 60 dias</div>
+        </div>
+        <div class="action-item normal">
+            <strong>12. Implementar UTM tracking em TODOS os pontos de contato</strong>
+            <div class="meta">Dado: ~60% dos leads sem UTM. 375 vendas sem atribuicao. | Owner: Marketing + TI | Prazo: 45 dias</div>
+        </div>
+        <div class="action-item normal">
+            <strong>13. Criar painel unificado (baseline "700") com KPIs semanais</strong>
+            <div class="meta">Ata: "definir metas a partir do baseline 700". Incluir: churn 7d, NPS, CAC/LTV, ROAS, SLAs. | Owner: Bruno + Marketing | Prazo: 60 dias</div>
+        </div>
+        <div class="action-item normal">
+            <strong>14. Higienizar base de email (3.5M enviados, 1% abertura)</strong>
+            <div class="meta">Dado: 142K devolvidos, 1.502 cancelamentos. Base toxica impacta entregabilidade. | Owner: Marketing | Prazo: 30 dias</div>
+        </div>
+
+        <hr class="sep">
+
+        <div class="card">
+            <h3>Matriz de Prioridade &mdash; Impacto vs Esforco</h3>
+            <canvas id="chartPriority" height="300"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>KPIs para Acompanhar nas Reunioes Semanais (segundas 19h)</h3>
+            <table>
+                <thead><tr><th>KPI</th><th>Baseline Atual</th><th>Meta 30 dias</th><th>Meta 90 dias</th><th>Owner</th></tr></thead>
+                <tbody>
+                    <tr><td>Vendas/mes</td><td>95 (media)</td><td>105</td><td>130</td><td>Comercial</td></tr>
+                    <tr><td>CAC paid</td><td>R$ 292</td><td>R$ 260</td><td>R$ 220</td><td>Marketing</td></tr>
+                    <tr><td>Conversao Parcerias</td><td>3,1%</td><td>5%</td><td>8%</td><td>Comercial B2B</td></tr>
+                    <tr><td>Churn 7 dias</td><td>Nao medido</td><td>Medir</td><td>&lt;5%</td><td>CX/Ju</td></tr>
+                    <tr><td>NPS</td><td>Nao consolidado</td><td>Medir</td><td>&gt;60</td><td>CX/Ju</td></tr>
+                    <tr><td>Deals sem valor</td><td>33%</td><td>10%</td><td>0%</td><td>Comercial + TI</td></tr>
+                    <tr><td>ROAS Google</td><td>22x</td><td>20x+</td><td>20x+</td><td>Marketing</td></tr>
+                    <tr><td>Indicacoes/mes</td><td>~12</td><td>18</td><td>25</td><td>CX + Marketing</td></tr>
+                    <tr><td>Email open rate</td><td>1%</td><td>8%</td><td>15%</td><td>Marketing</td></tr>
+                    <tr><td>Tempo medio onboarding</td><td>Nao medido</td><td>Medir</td><td>&lt;48h</td><td>CS</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">Diagnostico Estrategico &bull; Alumni by Better &bull; Baseado em 570 vendas + dados de canal + ata de reuniao de heads &bull; 30/03/2026</div>
+</div>
+
+<script>
+Chart.defaults.color='#7c829a';Chart.defaults.borderColor='#232838';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=12;
+const C={blue:'#4a8eff',green:'#2dd4a0',purple:'#a78bfa',orange:'#f59e42',pink:'#ec4899',red:'#ef4444',cyan:'#22d3ee',yellow:'#fbbf24'};
+
+function showTab(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');event.target.classList.add('active')}
+
+new Chart(document.getElementById('chartTagDist'),{type:'bar',data:{labels:['Status','Campanha','Remarketing','Organico','ID Vendedor','Landing Page','Origem/Base','NPS','Canal','Indicacao','Parceria','ID Celular','Cust Care'],datasets:[{label:'% dos 570 leads',data:[98,45,43,35,40,30,25,18,22,13,12,15,5],backgroundColor:[C.green,C.blue,C.red,C.cyan,C.yellow,C.purple,C.purple,C.orange,C.blue,C.pink,C.orange,C.cyan,C.green].map(c=>c+'cc'),borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(35,40,56,.5)'},ticks:{callback:v=>v+'%'}},y:{grid:{display:false},ticks:{font:{size:11}}}}}});
+
+new Chart(document.getElementById('chartMultiTouch'),{type:'doughnut',data:{labels:['1-2 categorias (frio/direto)','3-4 categorias (medio)','5-6 categorias (multi-touch)','7+ categorias (super tocado)'],datasets:[{data:[120,185,180,85],backgroundColor:[C.cyan,C.blue,C.purple,C.pink]}]},options:{responsive:true,cutout:'55%',plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+
+new Chart(document.getElementById('chartPriority'),{type:'scatter',data:{datasets:[
+{label:'1. Valor no CRM',data:[{x:2,y:9}],backgroundColor:C.red,pointRadius:12},
+{label:'2. Onboarding 24h',data:[{x:4,y:9}],backgroundColor:C.red,pointRadius:12},
+{label:'3. Funil B2B',data:[{x:5,y:8}],backgroundColor:C.orange,pointRadius:12},
+{label:'4. Tags padrao',data:[{x:6,y:7}],backgroundColor:C.orange,pointRadius:10},
+{label:'5. Budget Google',data:[{x:2,y:8}],backgroundColor:C.green,pointRadius:12},
+{label:'6. Member Get Member',data:[{x:4,y:7}],backgroundColor:C.green,pointRadius:10},
+{label:'9. Pausar TikTok',data:[{x:1,y:5}],backgroundColor:C.green,pointRadius:8},
+{label:'10. Portal integrado',data:[{x:9,y:9}],backgroundColor:C.blue,pointRadius:12},
+{label:'12. UTM tracking',data:[{x:5,y:6}],backgroundColor:C.purple,pointRadius:10},
+{label:'14. Limpar email',data:[{x:3,y:6}],backgroundColor:C.cyan,pointRadius:8}
+]},options:{responsive:true,scales:{x:{title:{display:true,text:'Esforco (1=baixo, 10=alto)'},grid:{color:'rgba(35,40,56,.5)'},min:0,max:10},y:{title:{display:true,text:'Impacto (1=baixo, 10=alto)'},grid:{color:'rgba(35,40,56,.5)'},min:0,max:10}},plugins:{legend:{position:'right',labels:{font:{size:10},padding:6}}}}});
+</script>
+</body>
+</html>

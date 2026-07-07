@@ -136,11 +136,6 @@ export default function NovoContratoB2CPage() {
 
   // Salvar contrato
   const handleSave = async () => {
-    if (!variables.nomeAluno) {
-      alert('Preencha o nome do aluno antes de salvar.');
-      return;
-    }
-
     setSaving(true);
     try {
       const valorTotal = variables.valor_total

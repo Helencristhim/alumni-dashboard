@@ -371,7 +371,7 @@ model B2CContract {
   brand           String   @default("alumni")
 
   // Dados do aluno
-  nomeAluno       String
+  nomeAluno       String?
   cpfAluno        String?
   emailAluno      String?
   telefoneAluno   String?

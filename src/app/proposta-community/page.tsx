@@ -1,0 +1,736 @@
+'use client';
+
+import { useState, useRef, useCallback } from 'react';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { FileDown, Eye, RotateCcw, GraduationCap, Headphones, BookOpen, Users, Video, Award, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
+
+interface PropostaData {
+  nomeAluno: string;
+  numAulas: number;
+  duracaoAula: string;
+  frequencia: string;
+  modalidade: string;
+  valorTotal: string;
+  formaPagamento: string;
+  parcelas: string;
+  valorParcela: string;
+  observacoes: string;
+  validade: string;
+  vendedor: string;
+}
+
+const INITIAL_DATA: PropostaData = {
+  nomeAluno: '',
+  numAulas: 32,
+  duracaoAula: '60 min',
+  frequencia: '2x por semana',
+  modalidade: 'Online (Zoom)',
+  valorTotal: '',
+  formaPagamento: 'Parcelado',
+  parcelas: '12',
+  valorParcela: '',
+  observacoes: '',
+  validade: '7 dias',
+  vendedor: '',
+};
+
+export default function PropostaCommunityPage() {
+  const [data, setData] = useState<PropostaData>(INITIAL_DATA);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showTermos, setShowTermos] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const update = (field: keyof PropostaData, value: string | number) => {
+    setData(prev => {
+      const next = { ...prev, [field]: value };
+      // Auto-calc parcela
+      if (field === 'valorTotal' || field === 'parcelas') {
+        const total = parseFloat(String(field === 'valorTotal' ? value : next.valorTotal).replace(/[^\d,]/g, '').replace(',', '.'));
+        const parc = parseInt(String(field === 'parcelas' ? value : next.parcelas)) || 1;
+        if (total > 0 && parc > 0) {
+          next.valorParcela = (total / parc).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+      }
+      return next;
+    });
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow || !previewRef.current) return;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8">
+        <title>Proposta Alumni - ${data.nomeAluno || 'Cliente'}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Inter', sans-serif; background: #fff; color: #1a1a2e; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          @page { size: A4; margin: 0; }
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        </style>
+      </head>
+      <body>${previewRef.current.innerHTML}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    setTimeout(() => { printWindow.print(); }, 500);
+  };
+
+  const formatCurrency = (val: string) => {
+    const num = parseFloat(val.replace(/[^\d,]/g, '').replace(',', '.'));
+    if (isNaN(num)) return '';
+    return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  };
+
+  return (
+    <DashboardLayout title="Proposta Community" description="Gere propostas personalizadas para novos alunos">
+      <div className="flex gap-6">
+        {/* ── FORMULÁRIO ── */}
+        <div className="w-96 flex-shrink-0">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sticky top-24">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Dados da Proposta</h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Nome do Aluno</label>
+                <input type="text" value={data.nomeAluno} onChange={e => update('nomeAluno', e.target.value)} placeholder="Nome completo" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">N° de Aulas</label>
+                  <input type="number" value={data.numAulas} onChange={e => update('numAulas', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Duração</label>
+                  <select value={data.duracaoAula} onChange={e => update('duracaoAula', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <option>30 min</option>
+                    <option>45 min</option>
+                    <option>60 min</option>
+                    <option>90 min</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Frequência</label>
+                  <select value={data.frequencia} onChange={e => update('frequencia', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <option>1x por semana</option>
+                    <option>2x por semana</option>
+                    <option>3x por semana</option>
+                    <option>5x por semana</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Modalidade</label>
+                  <select value={data.modalidade} onChange={e => update('modalidade', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <option>Online (Zoom)</option>
+                    <option>Presencial</option>
+                    <option>Híbrido</option>
+                  </select>
+                </div>
+              </div>
+
+              <hr className="border-gray-200" />
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Valor Total (R$)</label>
+                <input type="text" value={data.valorTotal} onChange={e => update('valorTotal', e.target.value)} placeholder="Ex: 6.400,00" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                {data.valorTotal && (() => {
+                  const total = parseFloat(data.valorTotal.replace(/[^\d,]/g, '').replace(',', '.'));
+                  if (isNaN(total) || total <= 0) return null;
+                  const metade = (total / 2).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                  return (
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wide">Aulas</p>
+                        <p className="text-sm font-semibold text-blue-800">{metade}</p>
+                      </div>
+                      <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Material Didático</p>
+                        <p className="text-sm font-semibold text-emerald-800">{metade}</p>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Forma de Pagamento</label>
+                  <select value={data.formaPagamento} onChange={e => update('formaPagamento', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <option>À vista</option>
+                    <option>Parcelado</option>
+                    <option>Recorrência mensal</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Parcelas</label>
+                  <select value={data.parcelas} onChange={e => update('parcelas', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" disabled={data.formaPagamento === 'À vista'}>
+                    {[1,2,3,4,5,6,8,10,12].map(n => <option key={n} value={n}>{n}x</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {data.valorParcela && data.formaPagamento !== 'À vista' && (
+                <p className="text-sm text-emerald-600 font-semibold">{data.parcelas}x de {data.valorParcela}</p>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Vendedor</label>
+                <input type="text" value={data.vendedor} onChange={e => update('vendedor', e.target.value)} placeholder="Nome do consultor" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Validade</label>
+                <select value={data.validade} onChange={e => update('validade', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                  <option>3 dias</option>
+                  <option>5 dias</option>
+                  <option>7 dias</option>
+                  <option>15 dias</option>
+                  <option>30 dias</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Observações</label>
+                <textarea value={data.observacoes} onChange={e => update('observacoes', e.target.value)} rows={3} placeholder="Notas internas ou condições especiais..." className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none" />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button onClick={() => setShowPreview(true)} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#003080] text-white rounded-lg text-sm font-semibold hover:bg-[#002060] transition-colors cursor-pointer">
+                  <Eye className="w-4 h-4" /> Visualizar
+                </button>
+                <button onClick={handlePrint} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors cursor-pointer">
+                  <FileDown className="w-4 h-4" /> Salvar PDF
+                </button>
+              </div>
+
+              <button onClick={() => { setData(INITIAL_DATA); setShowPreview(false); }} className="w-full flex items-center justify-center gap-2 px-4 py-2 text-gray-500 text-sm hover:text-gray-700 transition-colors cursor-pointer">
+                <RotateCcw className="w-3.5 h-3.5" /> Limpar formulário
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── PREVIEW ── */}
+        <div className="flex-1 min-w-0">
+          <div ref={previewRef}>
+            <PropostaPreview data={data} onOpenTermos={() => setShowTermos(true)} />
+          </div>
+        </div>
+      </div>
+
+      {/* ── MODAL TERMOS ── */}
+      {showTermos && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={() => setShowTermos(false)}>
+          <div style={{ background: '#fff', borderRadius: 16, maxWidth: 700, width: '90%', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '20px 28px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, fontWeight: 600, color: '#003080' }}>Termos e Condições</h2>
+              <button onClick={() => setShowTermos(false)} style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid #e5e7eb', background: '#f9fafb', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>&#10005;</button>
+            </div>
+            <div style={{ padding: '24px 28px', overflowY: 'auto', fontSize: 13, lineHeight: 1.8, color: '#374151' }}>
+              <TermosConteudo />
+            </div>
+          </div>
+        </div>
+      )}
+    </DashboardLayout>
+  );
+}
+
+function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTermos: () => void }) {
+  const nome = data.nomeAluno || '________';
+  const valorDisplay = data.valorTotal ? `R$ ${data.valorTotal}` : 'R$ ______';
+  const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+  return (
+    <div style={{ fontFamily: "'Inter', sans-serif", color: '#1a1a2e', background: '#fff', maxWidth: 800, margin: '0 auto' }}>
+
+      {/* PAGE 1 — CAPA */}
+      <div style={{ background: 'linear-gradient(135deg, #003080 0%, #001845 100%)', color: '#fff', padding: '60px 48px', minHeight: 400, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 12, marginBottom: 24 }}>
+        <div>
+          <div style={{ marginBottom: 48 }}>
+            <img src="/logos/alumni-by-better.png" alt="Alumni by Better" style={{ height: 40, filter: 'brightness(0) invert(1)' }} />
+          </div>
+          <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: 4, textTransform: 'uppercase' as const, opacity: 0.6, marginBottom: 12 }}>Proposta Personalizada</p>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 42, fontWeight: 600, lineHeight: 1.15, marginBottom: 16 }}>
+            {nome}
+          </h1>
+          <p style={{ fontSize: 16, opacity: 0.75, lineHeight: 1.6, maxWidth: 500 }}>
+            Programa de inglês particular, 100% personalizado para as suas necessidades profissionais e pessoais.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 24, fontSize: 13, opacity: 0.6, marginTop: 32 }}>
+          <span>{hoje}</span>
+          <span>Validade: {data.validade}</span>
+          {data.vendedor && <span>Consultor: {data.vendedor}</span>}
+        </div>
+      </div>
+
+      {/* SEÇÃO — POR QUE ALUMNI */}
+      <div style={{ padding: '32px 48px', marginBottom: 24, background: '#f8f9fa', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 16 }}>Por que a Alumni?</h2>
+        <p style={{ fontSize: 14, lineHeight: 1.8, color: '#4a4a5a', marginBottom: 20 }}>
+          Na Alumni, cada aula é construída sob medida. Antes de iniciar, realizamos uma <strong>consultoria educacional completa</strong> para entender sua realidade profissional, seus objetivos e a forma como você aprende melhor. A partir dessa análise, nosso time acadêmico cria um programa único, com materiais, exercícios e conteúdos que fazem sentido para a <strong>sua</strong> vida, não para um aluno genérico.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {[
+            { icon: <Users size={18} />, title: 'Consultoria Educacional Completa', desc: 'Nivelamento e análise de perfil para personalização completa do seu curso' },
+            { icon: <BookOpen size={18} />, title: 'Material Personalizado Exclusivo', desc: 'Conteúdo desenvolvido para o seu perfil e necessidade' },
+            { icon: <Headphones size={18} />, title: 'Padrão Acadêmico Alumni', desc: 'Tecnologia e tradição unidos na melhor experiência de aula' },
+            { icon: <Video size={18} />, title: 'Tudo 100% Interativo', desc: 'Nada de PDF — material interativo e completo' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', gap: 12, padding: 16, background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(0,48,128,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#003080', flexShrink: 0 }}>
+                {item.icon}
+              </div>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e', marginBottom: 2 }}>{item.title}</p>
+                <p style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* SEÇÃO — O QUE ESTÁ INCLUÍDO */}
+      <div style={{ padding: '32px 48px', marginBottom: 24 }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>O que está incluído</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[
+            'Consultoria educacional completa com nivelamento personalizado',
+            'Material didático 100% personalizado e exclusivo',
+            'Áudios profissionais com vozes naturais para cada aula',
+            'Exercícios de Pre-class para preparar antes de cada aula',
+            'Atividades complementares selecionadas (séries, podcasts, artigos)',
+            'Acesso vitalício ao material digital do aluno',
+            'Relatório de progresso por aula',
+            'Flexibilidade para reagendar aulas com 24h de antecedência',
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < 7 ? '1px solid #f0f0f0' : 'none' }}>
+              <CheckCircle2 size={16} color="#16a34a" />
+              <span style={{ fontSize: 13.5, color: '#2d2d3a' }}>{item}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* SEÇÃO — SEU PROGRAMA */}
+      <div style={{ padding: '32px 48px', marginBottom: 24, background: '#f8f9fa', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>Seu Programa</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {[
+            { label: 'Aluno', value: nome },
+            { label: 'Número de Aulas', value: `${data.numAulas} aulas` },
+            { label: 'Duração por Aula', value: data.duracaoAula },
+            { label: 'Frequência', value: data.frequencia },
+            { label: 'Modalidade', value: data.modalidade },
+            { label: 'Duração Estimada', value: `${Math.ceil(data.numAulas / (data.frequencia.startsWith('1') ? 4 : data.frequencia.startsWith('2') ? 8 : data.frequencia.startsWith('3') ? 12 : 20))} meses` },
+          ].map((item, i) => (
+            <div key={i} style={{ padding: 16, background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#003080', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 4 }}>{item.label}</p>
+              <p style={{ fontSize: 15, fontWeight: 600, color: '#1a1a2e' }}>{item.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* SEÇÃO — INVESTIMENTO */}
+      <div style={{ padding: '32px 48px', marginBottom: 24, background: 'linear-gradient(135deg, #003080 0%, #001845 100%)', borderRadius: 12, color: '#fff' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, marginBottom: 20 }}>Investimento</h2>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+          <span style={{ fontSize: 36, fontWeight: 700 }}>{valorDisplay}</span>
+          {data.numAulas > 0 && data.valorTotal && (
+            <span style={{ fontSize: 14, opacity: 0.7 }}>
+              ({(parseFloat(data.valorTotal.replace(/[^\d,]/g, '').replace(',', '.')) / data.numAulas).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} por aula)
+            </span>
+          )}
+        </div>
+        {data.formaPagamento !== 'À vista' && data.valorParcela && (
+          <p style={{ fontSize: 16, opacity: 0.85, marginBottom: 4 }}>
+            ou <strong>{data.parcelas}x de {data.valorParcela}</strong>
+          </p>
+        )}
+        {data.valorTotal && (() => {
+          const total = parseFloat(data.valorTotal.replace(/[^\d,]/g, '').replace(',', '.'));
+          if (isNaN(total) || total <= 0) return null;
+          const metade = (total / 2).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 20 }}>
+              <div style={{ padding: '14px 18px', background: 'rgba(255,255,255,0.12)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: 1, opacity: 0.7, marginBottom: 4 }}>Aulas</p>
+                <p style={{ fontSize: 20, fontWeight: 700 }}>{metade}</p>
+              </div>
+              <div style={{ padding: '14px 18px', background: 'rgba(255,255,255,0.12)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: 1, opacity: 0.7, marginBottom: 4 }}>Material Didático</p>
+                <p style={{ fontSize: 20, fontWeight: 700 }}>{metade}</p>
+              </div>
+            </div>
+          );
+        })()}
+        <p style={{ fontSize: 13, opacity: 0.6, marginTop: 16 }}>
+          Forma de pagamento: {data.formaPagamento} | Proposta válida por {data.validade}
+        </p>
+      </div>
+
+      {/* SEÇÃO — CONHEÇA O MATERIAL (Carousel) */}
+      <MaterialCarousel />
+
+      {/* BOTÃO TERMOS */}
+      <div style={{ padding: '16px 48px', marginBottom: 24, textAlign: 'center' as const }}>
+        <button onClick={onOpenTermos} style={{ background: 'none', border: '1px solid #003080', color: '#003080', padding: '10px 24px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif", transition: 'all 0.2s' }}>
+          Termos e Condições
+        </button>
+      </div>
+
+      {/* SEÇÃO — PRÓXIMOS PASSOS */}
+      <div style={{ padding: '32px 48px', marginBottom: 24 }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>Próximos Passos</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[
+            { step: '1', title: 'Confirmação', desc: 'Aceite a proposta e formalize o pagamento.' },
+            { step: '2', title: 'Consultoria Educacional', desc: 'Agendamos uma conversa para conhecer você, seu nível e seus objetivos a fundo.' },
+            { step: '3', title: 'Análise Pedagógica', desc: 'Nosso time acadêmico analisa sua consultoria e cria seu perfil pedagógico personalizado.' },
+            { step: '4', title: 'Início da Jornada', desc: 'Seu material exclusivo é elaborado, seu class confirmation é enviado e iniciamos juntos sua jornada de transformação.' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#003080', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{item.step}</div>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', marginBottom: 2 }}>{item.title}</p>
+                <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5 }}>{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* OBSERVAÇÕES */}
+      {data.observacoes && (
+        <div style={{ padding: '24px 48px', marginBottom: 24, background: '#fffbeb', borderRadius: 12, border: '1px solid #fde68a' }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: '#92400e', textTransform: 'uppercase' as const, letterSpacing: 1, marginBottom: 6 }}>Observações</p>
+          <p style={{ fontSize: 13, color: '#78350f', lineHeight: 1.6 }}>{data.observacoes}</p>
+        </div>
+      )}
+
+      {/* FOOTER */}
+      <div style={{ padding: '24px 48px', textAlign: 'center' as const, borderTop: '1px solid #e5e7eb' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+          <img src="/logos/alumni-logo-dark.png" alt="Alumni by Better" style={{ height: 36 }} />
+        </div>
+        <p style={{ fontSize: 11, color: '#9ca3af' }}>Inglês particular, 100% personalizado para você.</p>
+        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>alumni.com.br | contato@alumni.com.br</p>
+      </div>
+
+    </div>
+  );
+}
+
+const MATERIAL_SLIDES = [
+  // Perfil 360
+  { category: 'Perfil 360', label: 'Visão Geral do Aluno', desc: 'Tela inicial com foto, nome, progresso e dados do programa — o aluno acompanha tudo em tempo real.', img: '/material-preview/perfil360-hero.png' },
+  { category: 'Perfil 360', label: 'Ficha Completa + Jornada', desc: 'Perfil detalhado com análise de nível, objetivos e a Jornada de Transformação personalizada.', img: '/material-preview/perfil360-ficha.png' },
+  { category: 'Perfil 360', label: 'Currículo Completo', desc: 'Forças, fraquezas mapeadas e o currículo das 32 aulas — tema, foco linguístico, atividade e homework de cada aula.', img: '/material-preview/perfil360-curriculo.png' },
+  // Pre-class
+  { category: 'Pre-class', label: 'Vocabulário Interativo', desc: 'Cards de vocabulário com tradução, exemplo e áudio profissional — o aluno estuda antes da aula.', img: '/material-preview/preclass-vocabulary.png' },
+  { category: 'Pre-class', label: 'Gramática em Contexto', desc: 'Texto personalizado com a gramática em destaque + quiz de compreensão — aprender na prática.', img: '/material-preview/preclass-grammar.png' },
+  { category: 'Pre-class', label: 'Pronúncia com Gravação', desc: 'Frases-chave com áudio nativo. O aluno ouve, grava sua voz e compara a pronúncia.', img: '/material-preview/preclass-pronunciation.png' },
+  { category: 'Pre-class', label: 'Survival Card + Checklist', desc: 'As 5 frases essenciais da aula + checklist de progresso para o aluno acompanhar.', img: '/material-preview/preclass-survival.png' },
+  // IN CLASS
+  { category: 'IN CLASS', label: 'Vocabulary Cards Interativos', desc: 'Cards coloridos que o professor revela ao vivo — o aluno tenta adivinhar antes de virar.', img: '/material-preview/inclass-vocabulary.png' },
+  { category: 'IN CLASS', label: 'Watch Out! — Erros Comuns', desc: 'Seção visual de erros frequentes com correção — o aluno aprende o que NÃO dizer.', img: '/material-preview/inclass-watchout.png' },
+  { category: 'IN CLASS', label: 'Listening com Controle', desc: 'Player profissional com controle de velocidade — áudios contextualizados para o perfil do aluno.', img: '/material-preview/inclass-listening.png' },
+  { category: 'IN CLASS', label: 'Role-play Guiado', desc: 'Atividades de produção oral com prompts personalizados — o aluno pratica situações reais.', img: '/material-preview/inclass-roleplay.png' },
+  // Complementares
+  { category: 'Complementares', label: 'Séries, Podcasts e Vídeos', desc: 'Conteúdo selecionado a dedo para o perfil do aluno — Netflix, podcasts e YouTube com dicas de estudo.', img: '/material-preview/complementares.png' },
+];
+
+const CATEGORY_COLORS: Record<string, string> = {
+  'Perfil 360': '#003080',
+  'Pre-class': '#92700e',
+  'IN CLASS': '#1a1a2e',
+  'Complementares': '#0891B2',
+};
+
+function MaterialCarousel() {
+  const [current, setCurrent] = useState(0);
+  const touchStartX = useRef(0);
+
+  const prev = useCallback(() => setCurrent(c => (c === 0 ? MATERIAL_SLIDES.length - 1 : c - 1)), []);
+  const next = useCallback(() => setCurrent(c => (c === MATERIAL_SLIDES.length - 1 ? 0 : c + 1)), []);
+
+  const slide = MATERIAL_SLIDES[current];
+  const catColor = CATEGORY_COLORS[slide.category] || '#003080';
+
+  return (
+    <div style={{ padding: '32px 48px', marginBottom: 24 }}>
+      <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 8 }}>Conheça o Material</h2>
+      <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>Veja como é a experiência real de um aluno Alumni. Todo o material abaixo é criado exclusivamente para você.</p>
+
+      {/* Carousel Container */}
+      <div
+        style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: '1px solid #e5e7eb', background: '#fff', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}
+        className="material-carousel-container"
+        onTouchStart={e => { touchStartX.current = e.touches[0].clientX; }}
+        onTouchEnd={e => {
+          const diff = touchStartX.current - e.changedTouches[0].clientX;
+          if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+        }}
+      >
+        {/* Image */}
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#f5f5f0', overflow: 'hidden' }}>
+          <img
+            src={slide.img}
+            alt={slide.label}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+          />
+
+          {/* Category Badge */}
+          <div style={{
+            position: 'absolute', top: 16, left: 16,
+            padding: '6px 14px', borderRadius: 20,
+            background: catColor, color: '#fff',
+            fontSize: 11, fontWeight: 700, letterSpacing: 1,
+            textTransform: 'uppercase' as const,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+          }}>
+            {slide.category}
+          </div>
+
+          {/* Counter */}
+          <div style={{
+            position: 'absolute', top: 16, right: 16,
+            padding: '5px 12px', borderRadius: 20,
+            background: 'rgba(0,0,0,0.5)', color: '#fff',
+            fontSize: 12, fontWeight: 600, backdropFilter: 'blur(4px)'
+          }}>
+            {current + 1} / {MATERIAL_SLIDES.length}
+          </div>
+
+          {/* Nav Arrows */}
+          <button
+            onClick={prev}
+            style={{
+              position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.9)', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              transition: 'transform 0.15s, background 0.15s'
+            }}
+            aria-label="Anterior"
+          >
+            <ChevronLeft size={20} color="#1a1a2e" />
+          </button>
+          <button
+            onClick={next}
+            style={{
+              position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.9)', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              transition: 'transform 0.15s, background 0.15s'
+            }}
+            aria-label="Próximo"
+          >
+            <ChevronRight size={20} color="#1a1a2e" />
+          </button>
+        </div>
+
+        {/* Caption */}
+        <div style={{ padding: '20px 24px' }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 4, fontFamily: "'Cormorant Garamond', Georgia, serif", lineHeight: 1.3 }}>
+            {slide.label}
+          </p>
+          <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6 }}>{slide.desc}</p>
+        </div>
+
+        {/* Dot Indicators */}
+        <div style={{ padding: '0 24px 20px', display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {MATERIAL_SLIDES.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              aria-label={`Slide ${i + 1}`}
+              style={{
+                width: current === i ? 24 : 8, height: 8,
+                borderRadius: 4, border: 'none',
+                background: current === i ? (CATEGORY_COLORS[s.category] || '#003080') : '#d1d5db',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease'
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Print fallback: grid of all images (hidden on screen, visible on print) */}
+      <style>{`
+        .material-print-grid { display: none !important; }
+        @media print {
+          .material-carousel-container { display: none !important; }
+          .material-print-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            page-break-inside: avoid;
+          }
+          .material-print-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+          }
+          .material-print-grid .print-card {
+            break-inside: avoid;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+          }
+        }
+      `}</style>
+      <div className="material-print-grid">
+        {MATERIAL_SLIDES.map((s, i) => (
+          <div key={i} className="print-card">
+            <img src={s.img} alt={s.label} />
+            <div style={{ padding: '8px 12px' }}>
+              <p style={{ fontSize: 9, fontWeight: 700, color: CATEGORY_COLORS[s.category], textTransform: 'uppercase' as const, letterSpacing: 0.5, marginBottom: 2 }}>{s.category}</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: '#1a1a2e' }}>{s.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TermosConteudo() {
+  const s = { title: { fontSize: 16, fontWeight: 700 as const, color: '#003080', marginTop: 24, marginBottom: 8 }, sub: { fontSize: 14, fontWeight: 600 as const, color: '#1a1a2e', marginTop: 16, marginBottom: 6 }, p: { marginBottom: 8 }, ul: { paddingLeft: 20, marginBottom: 8 }, li: { marginBottom: 4 } };
+  return (
+    <div>
+      <h3 style={s.title}>1. Partes Contratantes</h3>
+      <h4 style={s.sub}>1.1 Contratada</h4>
+      <p style={s.p}>Razão Social: Better Education – Alumni by Better<br/>CNPJ: 53.286.868/0001-66<br/>Endereço: Calçada dos Crisântemos, n18 – Condomínio Centro Comercial de Alphaville, Barueri/SP – CEP 06453-008<br/>Telefone: +55 11 97380-0517</p>
+      <h4 style={s.sub}>1.2 Contratante</h4>
+      <p style={s.p}>Dados fornecidos pelo contratante após proposta.</p>
+
+      <h3 style={s.title}>2. Objeto do Contrato</h3>
+      <p style={s.p}>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Particular conforme especificações abaixo:</p>
+      <h4 style={s.sub}>2.1 Especificações do Curso</h4>
+      <p style={s.p}>Conforme proposta.</p>
+      <h4 style={s.sub}>2.2 Recursos Inclusos</h4>
+      <ul style={s.ul}>
+        <li style={s.li}>Acesso à plataforma digital de estudos Alumni personalizada</li>
+        <li style={s.li}>Consultoria avaliativa</li>
+        <li style={s.li}>Avaliações periódicas de desempenho</li>
+        <li style={s.li}>Certificado de conclusão (mediante solicitação e aproveitamento mínimo de 75% das horas contratadas)</li>
+        <li style={s.li}>Suporte pedagógico via chat/e-mail</li>
+      </ul>
+
+      <h3 style={s.title}>3. Investimento e Condições de Pagamento</h3>
+      <h4 style={s.sub}>3.1 Valor Total e Forma de Pagamento</h4>
+      <p style={s.p}>Conforme proposta.</p>
+      <h4 style={s.sub}>3.2 Atraso no Pagamento</h4>
+      <p style={s.p}>Em caso de atraso, serão aplicados:</p>
+      <ul style={s.ul}>
+        <li style={s.li}>Multa: 2% sobre o valor da parcela</li>
+        <li style={s.li}>Juros: 1% ao mês (pro rata die)</li>
+        <li style={s.li}>Suspensão: Acesso à plataforma e aulas será suspenso após 7 dias de inadimplência</li>
+      </ul>
+
+      <h3 style={s.title}>4. Agendamento e Realização das Aulas</h3>
+      <h4 style={s.sub}>4.1 Cancelamento e Reagendamento</h4>
+      <ul style={s.ul}>
+        <li style={s.li}>Para cancelamento — mínimo de 48h — caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</li>
+        <li style={s.li}>Para reagendamento — mínimo de 24h — caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</li>
+        <li style={s.li}>Não é possível reagendar/cancelar uma mesma aula mais de uma vez</li>
+      </ul>
+
+      <h3 style={s.title}>5. Validade e Vigência</h3>
+      <h4 style={s.sub}>5.1 Período de Utilização</h4>
+      <p style={s.p}>De acordo com a proposta. Prorrogação mediante solicitação e aprovação, com cobrança proporcional.</p>
+      <h4 style={s.sub}>5.2 Pausas/Trancamento</h4>
+      <ul style={s.ul}>
+        <li style={s.li}>Permitido 1 trancamento de 15 dias a cada 6 meses de contrato</li>
+        <li style={s.li}>Solicitação com 15 dias de antecedência</li>
+        <li style={s.li}>Período de trancamento não suspende cobranças das parcelas</li>
+      </ul>
+
+      <h3 style={s.title}>6. Política de Cancelamento e Reembolso</h3>
+      <h4 style={s.sub}>6.1 Direito de Arrependimento (7 dias - CDC)</h4>
+      <p style={s.p}>O CONTRATANTE poderá cancelar o contrato no prazo de até 7 (sete) dias corridos a contar da data da contratação, conforme art. 49 do Código de Defesa do Consumidor.</p>
+      <ul style={s.ul}>
+        <li style={s.li}>O cancelamento dentro deste prazo garante reembolso integral dos valores pagos</li>
+        <li style={s.li}>O reembolso será realizado pelo mesmo meio de pagamento utilizado na contratação</li>
+      </ul>
+      <h4 style={s.sub}>6.2 Cancelamento Após 7 Dias</h4>
+      <p style={s.p}>Após o prazo de arrependimento:</p>
+      <ul style={s.ul}>
+        <li style={s.li}>O valor referente aos serviços educacionais poderá ser reembolsado conforme o consumo de aulas utilizado pelo CONTRATANTE independentemente da forma de parcelamento. O valor terá como base o valor da hora aula x aulas utilizadas</li>
+        <li style={s.li}>Sobre o valor remanescente dos serviços, será aplicada multa de 10% (dez por cento)</li>
+        <li style={s.li}>O valor referente aos materiais e plataformas de estudos não são passíveis de cancelamento por se tratar de um produto de acesso vitalício</li>
+      </ul>
+      <h4 style={s.sub}>6.3 Prazo para Reembolso</h4>
+      <p style={s.p}>Quando aplicável, o reembolso será efetuado em até 30 (trinta) dias úteis, contados a partir da solicitação formal de cancelamento, pelo mesmo meio de pagamento utilizado.</p>
+      <h4 style={s.sub}>6.4 Disposições Gerais</h4>
+      <ul style={s.ul}>
+        <li style={s.li}>O cancelamento deve ser solicitado por meio formal indicado pela CONTRATADA através do número (11) 97380-0517 e preenchimento do formulário enviado pelo canal</li>
+        <li style={s.li}>A não utilização das aulas ou da plataforma não caracteriza cancelamento automático nem isenta o pagamento das obrigações contratuais</li>
+      </ul>
+
+      <h3 style={s.title}>7. Obrigações da Contratada</h3>
+      <ul style={s.ul}>
+        <li style={s.li}>Fornecer professores qualificados e certificados</li>
+        <li style={s.li}>Garantir acesso à plataforma digital 24/7</li>
+        <li style={s.li}>Realizar avaliações periódicas de progresso</li>
+        <li style={s.li}>Emitir certificado de conclusão (mediante solicitação e aproveitamento ≥ 75%)</li>
+        <li style={s.li}>Manter sigilo sobre dados pessoais do aluno (LGPD)</li>
+      </ul>
+
+      <h3 style={s.title}>8. Obrigações do Contratante</h3>
+      <ul style={s.ul}>
+        <li style={s.li}>Efetuar pagamentos nas datas acordadas</li>
+        <li style={s.li}>Comparecer/conectar-se pontualmente às aulas agendadas</li>
+        <li style={s.li}>Utilizar adequadamente a plataforma e materiais</li>
+        <li style={s.li}>Respeitar professores e demais alunos (se aplicável)</li>
+        <li style={s.li}>Informar imediatamente problemas técnicos ou pedagógicos</li>
+      </ul>
+
+      <h3 style={s.title}>9. Propriedade Intelectual</h3>
+      <ul style={s.ul}>
+        <li style={s.li}>Todo material didático é propriedade da CONTRATADA</li>
+        <li style={s.li}>Proibida reprodução, distribuição ou comercialização</li>
+        <li style={s.li}>Uso exclusivo para fins de estudo pessoal</li>
+      </ul>
+
+      <h3 style={s.title}>10. Proteção de Dados (LGPD)</h3>
+      <ul style={s.ul}>
+        <li style={s.li}>Dados coletados exclusivamente para execução do contrato</li>
+        <li style={s.li}>Não haverá compartilhamento com terceiros sem autorização</li>
+        <li style={s.li}>Aluno pode solicitar exclusão de dados após término do contrato</li>
+      </ul>
+
+      <h3 style={s.title}>11. Disposições Gerais</h3>
+      <h4 style={s.sub}>11.1 Alterações</h4>
+      <p style={s.p}>Alterações contratuais devem ser formalizadas por escrito.</p>
+      <h4 style={s.sub}>11.2 Cessão</h4>
+      <p style={s.p}>Contrato não pode ser cedido sem anuência das partes.</p>
+      <h4 style={s.sub}>11.3 Caso Fortuito/Força Maior</h4>
+      <p style={s.p}>Partes isentas de responsabilidade em situações imprevisíveis.</p>
+      <h4 style={s.sub}>11.4 Comunicação</h4>
+      <ul style={s.ul}>
+        <li style={s.li}>Comunicações oficiais via e-mail cadastrado e através do número (11) 97380-0517 via WhatsApp</li>
+        <li style={s.li}>Prazo de resposta: 48 horas úteis</li>
+      </ul>
+
+      <h3 style={s.title}>12. Foro</h3>
+      <p style={s.p}>As partes elegem o foro da Comarca de Barueri/SP para dirimir quaisquer dúvidas oriundas deste contrato.</p>
+    </div>
+  );
+}

@@ -29,6 +29,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'module:prospec-b2b:view',
     'module:contratos-b2b:view',
     'module:contratos-b2b:edit',
+    'module:controle-b2b:view',
     'activity:view:own',
   ],
 };

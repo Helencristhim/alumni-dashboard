@@ -11,6 +11,7 @@ import {
   Building2,
   User,
   Loader2,
+  FileCheck2,
 } from 'lucide-react';
 import {
   SignatoryData,
@@ -31,6 +32,7 @@ export function SignatureStatusPanel({
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [signedFileUrl, setSignedFileUrl] = useState<string | null>(null);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -40,6 +42,7 @@ export function SignatureStatusPanel({
       const result = await response.json();
       if (result.success) {
         setSignatories(result.data.signatories);
+        setSignedFileUrl(result.data.signedFileUrl ?? null);
         if (onStatusChange && result.data.status) {
           onStatusChange(result.data.status);
         }
@@ -222,6 +225,19 @@ export function SignatureStatusPanel({
           }}
         />
       </div>
+
+      {/* Acessar contrato assinado */}
+      {signedFileUrl && (
+        <a
+          href={signedFileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+        >
+          <FileCheck2 className="w-4 h-4" />
+          Acessar contrato assinado
+        </a>
+      )}
 
       {/* Signatários agrupados */}
       {contratanteSignatories.length > 0 &&

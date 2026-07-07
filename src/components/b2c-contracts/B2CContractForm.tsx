@@ -178,7 +178,7 @@ export function B2CContractForm({
         onToggle={toggleSection}
       >
         <FormInput
-          label="Nome completo *"
+          label="Nome completo"
           value={variables.nomeAluno || ''}
           onChange={(v) => updateVariable('nomeAluno', v)}
           placeholder="Nome completo do aluno"
@@ -190,7 +190,7 @@ export function B2CContractForm({
           placeholder="000.000.000-00"
         />
         <FormInput
-          label="Email *"
+          label="Email"
           value={variables.emailAluno || ''}
           onChange={(v) => updateVariable('emailAluno', v)}
           placeholder="aluno@email.com"

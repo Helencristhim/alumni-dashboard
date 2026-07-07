@@ -21,6 +21,8 @@ import {
   Calculator,
   GraduationCap,
   Award,
+  MailCheck,
+  Landmark,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -41,6 +43,14 @@ const navItems: NavItem[] = [
     icon: <Clock className="w-5 h-5" />,
     href: '/vendas-hoje',
     color: '#22C55E',
+    moduleId: 'vendas-b2c'
+  },
+  {
+    id: 'envio-relatorios',
+    label: 'Envio Relatórios',
+    icon: <MailCheck className="w-5 h-5" />,
+    href: '/envio-relatorios',
+    color: '#003080',
     moduleId: 'vendas-b2c'
   },
   {
@@ -106,6 +116,14 @@ const navItems: NavItem[] = [
     href: '/cobranca',
     color: '#F59E0B',
     moduleId: 'cobranca'
+  },
+  {
+    id: 'controle-b2b',
+    label: 'Controle B2B',
+    icon: <Landmark className="w-5 h-5" />,
+    href: '/controle-b2b',
+    color: '#003080',
+    moduleId: 'controle-b2b'
   },
   {
     id: 'alunos-ativos',

@@ -50,7 +50,9 @@ export async function POST(
     const base64Pdf = Buffer.from(pdfBytes).toString('base64');
 
     // 3. Enviar para ZapSign com PDF real
-    const docName = `${contract.title} - ${contract.nomeAluno}`;
+    const docName = contract.nomeAluno
+      ? `${contract.title} - ${contract.nomeAluno}`
+      : contract.title;
     const docResult = await createDocumentFromBase64(
       docName,
       base64Pdf,
@@ -73,8 +75,8 @@ export async function POST(
         await tx.b2CContractSignatory.create({
           data: {
             contractId: id,
-            name: signatories[i].name,
-            email: signatories[i].email,
+            name: signatories[i].name || '',
+            email: signatories[i].email || '',
             cpf: signatories[i].cpf ?? '',
             role: signatories[i].role || 'aluno',
             status: 'pending',

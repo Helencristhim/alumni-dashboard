@@ -33,6 +33,10 @@ export interface ZapSignDocResponse {
   external_id: string;
   signers: ZapSignSigner[];
   created_at: string;
+  // URL do PDF assinado (disponível após conclusão de todas as assinaturas)
+  signed_file?: string | null;
+  // URL do PDF original enviado para assinatura
+  original_file?: string | null;
 }
 
 // ============================================================

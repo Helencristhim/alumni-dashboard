@@ -71,6 +71,8 @@ export async function GET(
       data: {
         contract: updated,
         zapsignStatus: docStatus.status,
+        // URL do PDF assinado vindo do ZapSign (null se ainda não concluído)
+        signedFileUrl: docStatus.signed_file ?? null,
         signatories: updated.signatories.map((s) => ({
           id: s.id,
           name: s.name,

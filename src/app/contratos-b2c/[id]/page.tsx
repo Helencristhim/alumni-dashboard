@@ -24,6 +24,7 @@ import {
   XCircle,
   X,
   AlertCircle,
+  FileCheck2,
 } from 'lucide-react';
 import {
   B2CContractType,
@@ -530,6 +531,7 @@ function B2CSignatureStatusPanel({
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [signedFileUrl, setSignedFileUrl] = useState<string | null>(null);
   const [editingEmailId, setEditingEmailId] = useState<string | null>(null);
   const [editEmailValue, setEditEmailValue] = useState('');
   const [savingEmail, setSavingEmail] = useState(false);
@@ -542,6 +544,7 @@ function B2CSignatureStatusPanel({
       const result = await response.json();
       if (result.success) {
         setSignatories(result.data.signatories);
+        setSignedFileUrl(result.data.signedFileUrl ?? null);
         if (onStatusChange && result.data.status) {
           onStatusChange(result.data.status);
         }
@@ -792,6 +795,18 @@ function B2CSignatureStatusPanel({
         />
       </div>
 
+      {signedFileUrl && (
+        <a
+          href={signedFileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+        >
+          <FileCheck2 className="w-4 h-4" />
+          Acessar contrato assinado
+        </a>
+      )}
+
       {contratanteSignatories.length > 0 &&
         renderGroup(
           'Contratante (Aluno)',
@@ -852,28 +867,10 @@ function B2CSignatureModal({
     setSignatories(updated);
   };
 
-  const validate = (): boolean => {
-    const contratante = signatories.find((s) => s.role === 'contratante');
-    const contratada = signatories.find((s) => s.role === 'contratada');
-
-    if (!contratante?.name || !contratante?.email) {
-      setError('Preencha nome e email do aluno (contratante)');
-      return false;
-    }
-    if (!contratada?.name || !contratada?.email) {
-      setError('Preencha nome e email do representante da Better Education');
-      return false;
-    }
-
-    setError('');
-    return true;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
 
-    const validSignatories = signatories.filter((s) => s.name && s.email);
+    const validSignatories = signatories.filter((s) => s.name || s.email);
 
     setSending(true);
     setError('');
@@ -912,22 +909,20 @@ function B2CSignatureModal({
           className="bg-gray-50 rounded-lg p-3 space-y-2 border border-gray-100"
         >
           <input
-            required
             value={signatory.name}
             onChange={(e) =>
               updateSignatory(signatory.originalIndex, { name: e.target.value })
             }
-            placeholder="Nome completo *"
+            placeholder="Nome completo"
             className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
           <input
-            required
             type="email"
             value={signatory.email}
             onChange={(e) =>
               updateSignatory(signatory.originalIndex, { email: e.target.value })
             }
-            placeholder="Email *"
+            placeholder="Email"
             className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
           <input

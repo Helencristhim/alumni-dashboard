@@ -16,6 +16,7 @@ export const PERMISSIONS = {
   'module:customer-care:view': 'Ver Customer Care',
   'module:cancelamentos:view': 'Ver Cancelamentos',
   'module:cobranca:view': 'Ver Cobranca',
+  'module:controle-b2b:view': 'Ver Controle B2B',
   'module:alunos-ativos:view': 'Ver Alunos Ativos',
   'module:marketing:view': 'Ver Marketing',
 
@@ -60,6 +61,7 @@ export const MODULE_ROUTES: Record<string, string> = {
   'customer-care': '/customer-care',
   cancelamentos: '/cancelamentos',
   cobranca: '/cobranca',
+  'controle-b2b': '/controle-b2b',
   'alunos-ativos': '/alunos-ativos',
   marketing: '/marketing',
 };
@@ -71,6 +73,7 @@ export const MODULES = [
   { id: 'customer-care', name: 'Customer Care', route: '/customer-care' },
   { id: 'cancelamentos', name: 'Cancelamentos', route: '/cancelamentos' },
   { id: 'cobranca', name: 'Cobranca', route: '/cobranca' },
+  { id: 'controle-b2b', name: 'Controle B2B', route: '/controle-b2b' },
   { id: 'alunos-ativos', name: 'Alunos Ativos', route: '/alunos-ativos' },
   { id: 'marketing', name: 'Marketing', route: '/marketing' },
 ] as const;

@@ -168,8 +168,8 @@ export default function NovoContratoPage() {
 
   // Salvar contrato
   const handleSave = async () => {
-    if (!companyId) {
-      alert('Selecione uma empresa antes de salvar.');
+    if (!companyId && (!variables.razao_social || !variables.cnpj)) {
+      alert('Selecione uma empresa ou preencha manualmente a Razão Social e CNPJ antes de salvar.');
       return;
     }
 

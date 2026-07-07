@@ -19,6 +19,7 @@ import {
   Copy,
   Trash2,
   Send,
+  FileCheck2,
 } from 'lucide-react';
 import {
   B2CContractStatus,
@@ -36,6 +37,7 @@ export default function ContratosB2CPage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [loadingSignedId, setLoadingSignedId] = useState<string | null>(null);
 
   const fetchContracts = async () => {
     setLoading(true);
@@ -91,6 +93,28 @@ export default function ContratosB2CPage() {
       console.error('Erro ao excluir:', err);
     }
     setMenuOpen(null);
+  };
+
+  const handleOpenSigned = async (id: string) => {
+    setLoadingSignedId(id);
+    try {
+      const response = await fetch(`/api/b2c-contracts/${id}/signature-status`);
+      const result = await response.json();
+      const url = result?.data?.signedFileUrl;
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        alert(
+          'O contrato assinado ainda não está disponível no ZapSign. Aguarde a conclusão de todas as assinaturas e tente novamente.'
+        );
+      }
+    } catch (err) {
+      console.error('Erro ao acessar contrato assinado:', err);
+      alert('Erro ao acessar o contrato assinado. Tente novamente.');
+    } finally {
+      setLoadingSignedId(null);
+      setMenuOpen(null);
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -333,6 +357,19 @@ export default function ContratosB2CPage() {
                                 <Send className="w-4 h-4" />
                                 Enviar p/ Assinatura
                               </button>
+                              {(contract.status === 'SIGNED' ||
+                                contract.status === 'ACTIVE') && (
+                                <button
+                                  onClick={() => handleOpenSigned(contract.id!)}
+                                  disabled={loadingSignedId === contract.id}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-green-50 text-green-700 disabled:opacity-60"
+                                >
+                                  <FileCheck2 className="w-4 h-4" />
+                                  {loadingSignedId === contract.id
+                                    ? 'Abrindo...'
+                                    : 'Contrato assinado'}
+                                </button>
+                              )}
                               <hr className="my-1" />
                               <button
                                 onClick={() => handleDelete(contract.id!)}

@@ -34,7 +34,7 @@ export async function GET(
     }
 
     // Consultar ZapSign para status atualizado
-    let zapsignData = null;
+    let zapsignData: Awaited<ReturnType<typeof getDocumentStatus>> | null = null;
     try {
       zapsignData = await getDocumentStatus(contract.zapsignDocId);
 
@@ -96,6 +96,8 @@ export async function GET(
         status: contract.status,
         zapsignStatus: contract.zapsignStatus,
         zapsignDocId: contract.zapsignDocId,
+        // URL do PDF assinado vindo do ZapSign (null se ainda não concluído)
+        signedFileUrl: zapsignData?.signed_file ?? null,
         signatories: signatories.map((s) => ({
           id: s.id,
           name: s.name,

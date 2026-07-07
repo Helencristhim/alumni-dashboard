@@ -1,2 +1,16 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/send-vendas-report",
+      "schedule": "0 22 * * *"
+    },
+    {
+      "path": "/api/cron/send-b2b-alertas",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/health-check-b2b",
+      "schedule": "*/15 * * * *"
+    }
+  ]
 }
