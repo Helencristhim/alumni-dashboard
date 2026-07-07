@@ -160,6 +160,13 @@ const docItems: NavItem[] = [
     href: '/proposta-private',
     color: '#003080',
   },
+  {
+    id: 'proposta-community',
+    label: 'Proposta Community',
+    icon: <Users className="w-5 h-5" />,
+    href: '/proposta-community',
+    color: '#0EA5E9',
+  },
 {
     id: 'comprovante-matricula',
     label: 'Comprov. Matrícula',
