@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { FileDown, Eye, RotateCcw, GraduationCap, Headphones, BookOpen, Users, Video, Award, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileDown, Eye, RotateCcw, GraduationCap, Headphones, BookOpen, Users, Video, Award, CheckCircle2 } from 'lucide-react';
 
 interface PropostaData {
   nomeAluno: string;
@@ -426,9 +426,6 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         </p>
       </div>
 
-      {/* SEÇÃO — CONHEÇA O MATERIAL (Carousel) */}
-      <MaterialCarousel />
-
       {/* BOTÃO TERMOS */}
       <div style={{ padding: '16px 48px', marginBottom: 24, textAlign: 'center' as const }}>
         <button onClick={onOpenTermos} style={{ background: 'none', border: '1px solid #003080', color: '#003080', padding: '10px 24px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif", transition: 'all 0.2s' }}>
@@ -494,181 +491,6 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>alumni.com.br | contato@alumni.com.br</p>
       </div>
 
-    </div>
-  );
-}
-
-const MATERIAL_SLIDES = [
-  // Pre Class
-  { category: 'Pre Class', label: 'Vocabulário Interativo', desc: 'Cards de vocabulário com tradução, exemplo e áudio profissional — você estuda o tema antes da aula.', img: '/material-preview/preclass-vocabulary.png' },
-  { category: 'Pre Class', label: 'Gramática em Contexto', desc: 'Texto com a gramática em destaque + quiz de compreensão — aprender na prática.', img: '/material-preview/preclass-grammar.png' },
-  { category: 'Pre Class', label: 'Pronúncia com Gravação', desc: 'Frases-chave com áudio nativo. Você ouve, grava sua voz e compara a pronúncia.', img: '/material-preview/preclass-pronunciation.png' },
-  { category: 'Pre Class', label: 'Survival Card + Checklist', desc: 'As 5 frases essenciais da aula + checklist para você acompanhar seu progresso.', img: '/material-preview/preclass-survival.png' },
-  // Live Class
-  { category: 'Live Class', label: 'Vocabulary Cards Interativos', desc: 'Cards coloridos que o professor revela ao vivo — você tenta adivinhar antes de virar.', img: '/material-preview/inclass-vocabulary.png' },
-  { category: 'Live Class', label: 'Watch Out! — Erros Comuns', desc: 'Seção visual de erros frequentes com correção — você aprende o que NÃO dizer.', img: '/material-preview/inclass-watchout.png' },
-  { category: 'Live Class', label: 'Listening com Controle', desc: 'Player profissional com controle de velocidade — áudios contextualizados para o tema da aula.', img: '/material-preview/inclass-listening.png' },
-  { category: 'Live Class', label: 'Role-play Guiado', desc: 'Atividades de produção oral com prompts — você pratica situações reais de conversação.', img: '/material-preview/inclass-roleplay.png' },
-  // Complementares
-  { category: 'Complementares', label: 'Séries, Podcasts e Vídeos', desc: 'Conteúdo selecionado para reforçar o tema da semana — Netflix, podcasts e YouTube com dicas de estudo.', img: '/material-preview/complementares.png' },
-];
-
-const CATEGORY_COLORS: Record<string, string> = {
-  'Pre Class': '#92700e',
-  'Live Class': '#003080',
-  'Complementares': '#0891B2',
-};
-
-function MaterialCarousel() {
-  const [current, setCurrent] = useState(0);
-  const touchStartX = useRef(0);
-
-  const prev = useCallback(() => setCurrent(c => (c === 0 ? MATERIAL_SLIDES.length - 1 : c - 1)), []);
-  const next = useCallback(() => setCurrent(c => (c === MATERIAL_SLIDES.length - 1 ? 0 : c + 1)), []);
-
-  const slide = MATERIAL_SLIDES[current];
-  const catColor = CATEGORY_COLORS[slide.category] || '#003080';
-
-  return (
-    <div style={{ padding: '32px 48px', marginBottom: 24 }}>
-      <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 8 }}>Conheça o Material</h2>
-      <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>Veja como é a experiência real de um aluno Community — da preparação na plataforma à prática ao vivo com o professor.</p>
-
-      {/* Carousel Container */}
-      <div
-        style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: '1px solid #e5e7eb', background: '#fff', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}
-        className="material-carousel-container"
-        onTouchStart={e => { touchStartX.current = e.touches[0].clientX; }}
-        onTouchEnd={e => {
-          const diff = touchStartX.current - e.changedTouches[0].clientX;
-          if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
-        }}
-      >
-        {/* Image */}
-        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#f5f5f0', overflow: 'hidden' }}>
-          <img
-            src={slide.img}
-            alt={slide.label}
-            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-          />
-
-          {/* Category Badge */}
-          <div style={{
-            position: 'absolute', top: 16, left: 16,
-            padding: '6px 14px', borderRadius: 20,
-            background: catColor, color: '#fff',
-            fontSize: 11, fontWeight: 700, letterSpacing: 1,
-            textTransform: 'uppercase' as const,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-          }}>
-            {slide.category}
-          </div>
-
-          {/* Counter */}
-          <div style={{
-            position: 'absolute', top: 16, right: 16,
-            padding: '5px 12px', borderRadius: 20,
-            background: 'rgba(0,0,0,0.5)', color: '#fff',
-            fontSize: 12, fontWeight: 600, backdropFilter: 'blur(4px)'
-          }}>
-            {current + 1} / {MATERIAL_SLIDES.length}
-          </div>
-
-          {/* Nav Arrows */}
-          <button
-            onClick={prev}
-            style={{
-              position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-              width: 40, height: 40, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.9)', border: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              transition: 'transform 0.15s, background 0.15s'
-            }}
-            aria-label="Anterior"
-          >
-            <ChevronLeft size={20} color="#1a1a2e" />
-          </button>
-          <button
-            onClick={next}
-            style={{
-              position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-              width: 40, height: 40, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.9)', border: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              transition: 'transform 0.15s, background 0.15s'
-            }}
-            aria-label="Próximo"
-          >
-            <ChevronRight size={20} color="#1a1a2e" />
-          </button>
-        </div>
-
-        {/* Caption */}
-        <div style={{ padding: '20px 24px' }}>
-          <p style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', marginBottom: 4, fontFamily: "'Cormorant Garamond', Georgia, serif", lineHeight: 1.3 }}>
-            {slide.label}
-          </p>
-          <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6 }}>{slide.desc}</p>
-        </div>
-
-        {/* Dot Indicators */}
-        <div style={{ padding: '0 24px 20px', display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {MATERIAL_SLIDES.map((s, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              aria-label={`Slide ${i + 1}`}
-              style={{
-                width: current === i ? 24 : 8, height: 8,
-                borderRadius: 4, border: 'none',
-                background: current === i ? (CATEGORY_COLORS[s.category] || '#003080') : '#d1d5db',
-                cursor: 'pointer',
-                transition: 'all 0.25s ease'
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Print fallback: grid of all images (hidden on screen, visible on print) */}
-      <style>{`
-        .material-print-grid { display: none !important; }
-        @media print {
-          .material-carousel-container { display: none !important; }
-          .material-print-grid {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            page-break-inside: avoid;
-          }
-          .material-print-grid img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-          }
-          .material-print-grid .print-card {
-            break-inside: avoid;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-            background: #fff;
-          }
-        }
-      `}</style>
-      <div className="material-print-grid">
-        {MATERIAL_SLIDES.map((s, i) => (
-          <div key={i} className="print-card">
-            <img src={s.img} alt={s.label} />
-            <div style={{ padding: '8px 12px' }}>
-              <p style={{ fontSize: 9, fontWeight: 700, color: CATEGORY_COLORS[s.category], textTransform: 'uppercase' as const, letterSpacing: 0.5, marginBottom: 2 }}>{s.category}</p>
-              <p style={{ fontSize: 11, fontWeight: 600, color: '#1a1a2e' }}>{s.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
