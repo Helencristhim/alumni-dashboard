@@ -298,6 +298,27 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         </div>
       </div>
 
+      {/* SEÇÃO — COMO FUNCIONA (Pre / Live / Post Class) */}
+      <div style={{ padding: '32px 48px', marginBottom: 24 }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 8 }}>Como funciona</h2>
+        <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>Cada aula acontece em três etapas, para você chegar preparado, praticar de verdade e fixar o que aprendeu.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+          {[
+            { icon: <BookOpen size={20} />, title: 'Pre Class', tag: 'aquecimento', desc: 'Atividades curtas para ativar vocabulário e ideias do tema da aula. O aluno chega preparado, com mais repertório e segurança para falar.' },
+            { icon: <Video size={20} />, title: 'Live Class', tag: 'ao vivo', desc: 'Condução do professor, foco em conversação, escuta ativa e role-plays de situações reais. Feedback imediato e gramática aplicada ao contexto.' },
+            { icon: <Award size={20} />, title: 'Post Class', tag: 'fixação e avanço', desc: 'Revisão guiada do conteúdo, prática dirigida (ex.: Grammar Practice, Speaking Trainer) e registro do que foi conquistado — com próximo passo claro para evoluir.' },
+          ].map((item, i) => (
+            <div key={i} style={{ padding: 20, background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(0,48,128,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#003080', marginBottom: 12 }}>
+                {item.icon}
+              </div>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e' }}>{item.title} <span style={{ fontSize: 12, fontWeight: 500, color: '#6b7280' }}>({item.tag})</span></p>
+              <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginTop: 6 }}>{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* SEÇÃO — O QUE ESTÁ INCLUÍDO */}
       <div style={{ padding: '32px 48px', marginBottom: 24 }}>
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>O que está incluído</h2>
@@ -386,6 +407,25 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <button onClick={onOpenTermos} style={{ background: 'none', border: '1px solid #003080', color: '#003080', padding: '10px 24px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif", transition: 'all 0.2s' }}>
           Termos e Condições
         </button>
+      </div>
+
+      {/* SEÇÃO — PERGUNTAS FREQUENTES */}
+      <div style={{ padding: '32px 48px', marginBottom: 24, background: '#f8f9fa', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>Perguntas Frequentes</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {[
+            { q: 'Quem são os professores?', a: 'O corpo docente da Alumni é formado por professores altamente qualificados, com certificações internacionais e sólida formação acadêmica. Nossos professores possuem certificações como CELTA, CPE, CAE, DELTA, IELTS, TOEIC, além de licenciatura e pós-graduação em Letras, e ampla experiência no ensino de inglês para adultos, adolescentes e crianças.' },
+            { q: 'Como funciona a agenda flexível?', a: 'Após a matrícula e o teste de nivelamento, você receberá acesso ao portal do aluno, com a agenda do seu nível. Todos os níveis possuem aulas de segunda à sexta (entre 07h e 20h) e também aos sábados (entre 08h e 14h). Você irá agendar as aulas pelo seu portal, de acordo com a sua preferência, no melhor dia e horário, até 30min antes do início da aula.' },
+            { q: 'As turmas não são fixas?', a: 'Não. E esse é um dos maiores diferenciais do Community. Você agenda suas aulas de acordo com a sua disponibilidade e participa de encontros com alunos e, eventualmente, professores diferentes. Essa dinâmica traz mais flexibilidade para a rotina adulta e torna as conversas mais próximas da vida real. A consistência do aprendizado vem do método, do seu nível e da trilha pedagógica estruturada da Alumni: cada aula segue um conteúdo programático claro, com temas, vocabulário e objetivos definidos, garantindo evolução contínua.' },
+            { q: 'O Community tem certificado?', a: 'Sim. Certificação binacional com validade no Brasil e nos Estados Unidos, concedida ao concluir os níveis mediante prova de habilidades.' },
+            { q: 'O curso tem suporte pedagógico?', a: 'Sim. Todos os alunos possuem uma ficha pedagógica gerida pelos professores e pela equipe educacional, para acompanhar e otimizar a trajetória de aprendizado. Se o aluno se sentir muito confortável, pouco desafiado ou com dificuldade de acompanhamento, é feita uma abordagem individual de suporte e aprimoramento da jornada.' },
+          ].map((item, i) => (
+            <div key={i} style={{ padding: 18, background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb' }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#003080', marginBottom: 6 }}>{item.q}</p>
+              <p style={{ fontSize: 13, color: '#4a4a5a', lineHeight: 1.7 }}>{item.a}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* SEÇÃO — PRÓXIMOS PASSOS */}
