@@ -257,12 +257,12 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
           <div style={{ marginBottom: 48 }}>
             <img src="/logos/alumni-by-better.png" alt="Alumni by Better" style={{ height: 40, filter: 'brightness(0) invert(1)' }} />
           </div>
-          <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: 4, textTransform: 'uppercase' as const, opacity: 0.6, marginBottom: 12 }}>Proposta Community</p>
+          <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: 4, textTransform: 'uppercase' as const, opacity: 0.6, marginBottom: 12 }}>Proposta Community Flow</p>
           <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 42, fontWeight: 600, lineHeight: 1.15, marginBottom: 16 }}>
             {nome}
           </h1>
           <p style={{ fontSize: 16, opacity: 0.75, lineHeight: 1.6, maxWidth: 500 }}>
-            Curso de inglês online e ao vivo, com foco total em conversação para você se comunicar com confiança em situações reais do dia a dia.
+            O curso intensivo que combina aulas em grupo com aulas particulares — a prática coletiva da conversação somada ao reforço individual, sob medida para você.
           </p>
         </div>
         <div style={{ display: 'flex', gap: 24, fontSize: 13, opacity: 0.6, marginTop: 32 }}>
@@ -276,11 +276,11 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
       <div style={{ padding: '32px 48px', marginBottom: 24, background: '#f8f9fa', borderRadius: 12, border: '1px solid #e5e7eb' }}>
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 16 }}>Por que a Alumni?</h2>
         <p style={{ fontSize: 14, lineHeight: 1.8, color: '#4a4a5a', marginBottom: 20 }}>
-          No Community, você aprende inglês do jeito que ele realmente se aprende: <strong>conversando</strong>. É um curso online e ao vivo, em turmas reduzidas de até 8 alunos, com foco total em conversação. Cada aula parte de <strong>situações reais do dia a dia</strong> — reuniões, entrevistas, viagens e conversas informais — para você desenvolver fluência com naturalidade, no seu ritmo e com flexibilidade total de horários.
+          O Community Flow une o melhor dos dois mundos: as <strong>aulas em grupo</strong> (turmas de até 8 alunos, foco total em conversação) com <strong>aulas particulares individuais</strong> para trabalhar suas dúvidas e seus objetivos. Você pratica no grupo e, a cada 5 aulas, tem 1 aula particular dedicada só a você — com o melhor custo-benefício, já que essa combinação custaria bem mais se contratada separadamente.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {[
-            { icon: <Users size={18} />, title: 'Turmas Reduzidas', desc: 'Máximo de 8 alunos por grupo — você pratica e é ouvido em todas as aulas' },
+            { icon: <Users size={18} />, title: 'Grupo + Particular', desc: '96h de aulas em grupo (até 8 alunos) + 1 aula particular a cada 5 aulas — reforço individual sob medida' },
             { icon: <BookOpen size={18} />, title: 'Metodologia Pre / Live / Post Class', desc: 'Você prepara na plataforma, pratica ao vivo com o professor e revisa depois' },
             { icon: <Headphones size={18} />, title: 'Professores Certificados', desc: 'Time com certificações internacionais (CELTA, CPE, CAE, DELTA) e experiência real' },
             { icon: <Video size={18} />, title: 'Plataforma Interativa e Gamificada', desc: 'Atividades, quizzes e painel Leaderboard — no computador ou celular, sem baixar app' },
@@ -296,6 +296,13 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
             </div>
           ))}
         </div>
+      </div>
+
+      {/* SEÇÃO — DIFERENCIAL FLOW (aulas particulares) */}
+      <div style={{ padding: '32px 48px', marginBottom: 24, background: 'linear-gradient(135deg, #0f766e 0%, #134e4a 100%)', borderRadius: 12, color: '#fff' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, marginBottom: 12 }}>O diferencial do Flow: reforço individual</h2>
+        <p style={{ fontSize: 14, lineHeight: 1.8, opacity: 0.92, marginBottom: 12 }}>Além das aulas em grupo, a cada <strong>5 aulas você tem 1 aula particular individual</strong> — dedicada exclusivamente a você, para trabalhar dúvidas específicas, objetivos pessoais e ajustes finos no seu aprendizado. É a atenção sob medida que acelera a sua evolução.</p>
+        <p style={{ fontSize: 15, fontWeight: 700 }}>Melhor custo-benefício: prática em grupo + reforço particular custaria bem mais se contratados separadamente.</p>
       </div>
 
       {/* SEÇÃO — COMO FUNCIONA (Pre / Live / Post Class) */}
@@ -351,13 +358,13 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>O que está incluído</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
-            'Aulas online e ao vivo com foco total em conversação',
+            '96 horas de aulas em grupo, com foco em conversação e contextos reais',
             'Turmas reduzidas de até 8 alunos por grupo',
+            '1 aula particular individual a cada 5 aulas em grupo, para dúvidas e objetivos específicos',
             'Metodologia em 3 passos: Pre Class, Live Class e Post Class',
-            'Plataforma de estudos interativa com quizzes e exercícios extras',
-            'Painel Leaderboard com acompanhamento de desempenho em tempo real',
+            'Plataforma de estudos interativa, com quizzes, exercícios extras e painel Leaderboard',
             'Teste de nivelamento e trilha com 11 níveis evolutivos (CEFR)',
-            'Flexibilidade para agendar suas aulas no melhor dia e horário',
+            'Agenda flexível — agende suas aulas até 30 min antes, no melhor dia e horário',
             'Certificação binacional reconhecida no Brasil e nos Estados Unidos',
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < 7 ? '1px solid #f0f0f0' : 'none' }}>
@@ -438,6 +445,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>Perguntas Frequentes</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {[
+            { q: 'Como funcionam as aulas particulares do Flow?', a: 'A cada 5 aulas em grupo, você pode agendar 1 aula particular individual, dedicada exclusivamente a você — para trabalhar dúvidas específicas, objetivos pessoais e ajustes finos no aprendizado, com a mesma flexibilidade de agenda das aulas em grupo.' },
             { q: 'Posso fazer o curso mesmo sem saber nada de inglês?', a: 'Sim. Você realizará um teste de nivelamento para ser direcionado ao módulo ideal. Inclusive, temos um nível inicial chamado "Confidence", perfeito para quem nunca teve contato com o idioma.' },
             { q: 'Quem são os professores?', a: 'O corpo docente da Alumni é formado por professores altamente qualificados, com certificações internacionais e sólida formação acadêmica. Nossos professores possuem certificações como CELTA, CPE, CAE, DELTA, IELTS, TOEIC, além de licenciatura e pós-graduação em Letras, e ampla experiência no ensino de inglês para adultos, adolescentes e crianças.' },
             { q: 'Como funciona a agenda flexível?', a: 'Após a matrícula e o teste de nivelamento, você receberá acesso ao portal do aluno, com a agenda do seu nível. Todos os níveis possuem aulas de segunda à sexta (entre 07h e 20h) e também aos sábados (entre 08h e 14h). Você irá agendar as aulas pelo seu portal, de acordo com a sua preferência, no melhor dia e horário, até 30min antes do início da aula.' },
@@ -487,7 +495,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
           <img src="/logos/alumni-logo-dark.png" alt="Alumni by Better" style={{ height: 36 }} />
         </div>
-        <p style={{ fontSize: 11, color: '#9ca3af' }}>Inglês de verdade — online, ao vivo e com foco em conversação.</p>
+        <p style={{ fontSize: 11, color: '#9ca3af' }}>Aulas em grupo + aulas particulares — prática coletiva e reforço individual.</p>
         <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>alumni.com.br | contato@alumni.com.br</p>
       </div>
 
