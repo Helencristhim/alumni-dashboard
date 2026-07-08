@@ -167,6 +167,13 @@ const docItems: NavItem[] = [
     href: '/proposta-community',
     color: '#0EA5E9',
   },
+  {
+    id: 'proposta-community-flow',
+    label: 'Proposta Community Flow',
+    icon: <GraduationCap className="w-5 h-5" />,
+    href: '/proposta-community-flow',
+    color: '#14B8A6',
+  },
 {
     id: 'comprovante-matricula',
     label: 'Comprov. Matrícula',
