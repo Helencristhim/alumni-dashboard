@@ -684,7 +684,7 @@ function TermosConteudo() {
       <p style={s.p}>Dados fornecidos pelo contratante após proposta.</p>
 
       <h3 style={s.title}>2. Objeto do Contrato</h3>
-      <p style={s.p}>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Particular conforme especificações abaixo:</p>
+      <p style={s.p}>A CONTRATADA prestará ao CONTRATANTE serviços educacionais de ensino de inglês na modalidade Community (aulas online e ao vivo, em grupo) conforme especificações abaixo:</p>
       <h4 style={s.sub}>2.1 Especificações do Curso</h4>
       <p style={s.p}>Conforme proposta.</p>
       <h4 style={s.sub}>2.2 Recursos Inclusos</h4>
