@@ -461,7 +461,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
             { step: '1', title: 'Confirmação', desc: 'Aceite a proposta e formalize o pagamento.' },
             { step: '2', title: 'Teste de Nivelamento', desc: 'Você faz um teste rápido para identificarmos seu nível ideal entre os 11 níveis do Community.' },
             { step: '3', title: 'Acesso à Plataforma', desc: 'Liberamos seu acesso à plataforma de estudos e você já prepara sua primeira aula na etapa Pre Class.' },
-            { step: '4', title: 'Primeira Aula ao Vivo', desc: 'Você agenda no melhor dia e horário e começa a conversar em inglês desde o primeiro encontro.' },
+            { step: '4', title: 'Aulas ao Vivo', desc: 'Você agenda suas aulas no melhor dia e horário e conversa em inglês desde o primeiro encontro — com novos temas a cada aula, evoluindo de forma contínua.' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#003080', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{item.step}</div>
