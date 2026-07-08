@@ -301,7 +301,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
       {/* SEÇÃO — COMO FUNCIONA (Pre / Live / Post Class) */}
       <div style={{ padding: '32px 48px', marginBottom: 24 }}>
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 8 }}>Como funciona</h2>
-        <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>Cada aula acontece em três etapas, para você chegar preparado, praticar de verdade e fixar o que aprendeu.</p>
+        <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>O aprendizado em grupo é essencial para a vida real: conversar com diferentes pessoas, sotaques e estilos estimula a escuta ativa, a adaptação e acelera sua fluência de forma natural. E cada aula acontece em três etapas, para você chegar preparado, praticar de verdade e fixar o que aprendeu.</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
           {[
             { icon: <BookOpen size={20} />, title: 'Pre Class', tag: 'aquecimento', desc: 'Atividades curtas para ativar vocabulário e ideias do tema da aula. O aluno chega preparado, com mais repertório e segurança para falar.' },
@@ -317,6 +317,33 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
             </div>
           ))}
         </div>
+      </div>
+
+      {/* SEÇÃO — PLATAFORMA */}
+      <div style={{ padding: '32px 48px', marginBottom: 24, background: '#f8f9fa', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 12 }}>Estude com autonomia em uma plataforma moderna e intuitiva</h2>
+        <p style={{ fontSize: 14, lineHeight: 1.8, color: '#4a4a5a', marginBottom: 16 }}>A plataforma de estudos do Community é moderna, intuitiva e pensada para facilitar seu progresso. Tudo o que você precisa em um só lugar, no computador ou no celular — sem baixar aplicativo:</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+          {[
+            'Atividades interativas de preparação antes das aulas',
+            'Quiz de fixação do conteúdo após a aula',
+            'Exercícios extras para acelerar seu aprendizado',
+            'Desempenho gamificado em tempo real no painel Leaderboard',
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <CheckCircle2 size={16} color="#16a34a" />
+              <span style={{ fontSize: 13.5, color: '#2d2d3a' }}>{item}</span>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#003080' }}>Seu aprendizado com liberdade, autonomia e suporte contínuo.</p>
+      </div>
+
+      {/* SEÇÃO — CERTIFICAÇÃO */}
+      <div style={{ padding: '32px 48px', marginBottom: 24, background: 'linear-gradient(135deg, #3b1e6e 0%, #2a1250 100%)', borderRadius: 12, color: '#fff' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, marginBottom: 12 }}>Reconhecimento que abre portas</h2>
+        <p style={{ fontSize: 14, lineHeight: 1.8, opacity: 0.9, marginBottom: 12 }}>Ao concluir os níveis do Curso de Inglês Online Community, você recebe uma <strong>certificação binacional reconhecida no Brasil e nos Estados Unidos</strong>, mediante uma prova que mede as habilidades adquiridas ao longo do curso.</p>
+        <p style={{ fontSize: 15, fontWeight: 700 }}>Um diferencial legítimo no currículo acadêmico e profissional.</p>
       </div>
 
       {/* SEÇÃO — O QUE ESTÁ INCLUÍDO */}
@@ -414,6 +441,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>Perguntas Frequentes</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {[
+            { q: 'Posso fazer o curso mesmo sem saber nada de inglês?', a: 'Sim. Você realizará um teste de nivelamento para ser direcionado ao módulo ideal. Inclusive, temos um nível inicial chamado "Confidence", perfeito para quem nunca teve contato com o idioma.' },
             { q: 'Quem são os professores?', a: 'O corpo docente da Alumni é formado por professores altamente qualificados, com certificações internacionais e sólida formação acadêmica. Nossos professores possuem certificações como CELTA, CPE, CAE, DELTA, IELTS, TOEIC, além de licenciatura e pós-graduação em Letras, e ampla experiência no ensino de inglês para adultos, adolescentes e crianças.' },
             { q: 'Como funciona a agenda flexível?', a: 'Após a matrícula e o teste de nivelamento, você receberá acesso ao portal do aluno, com a agenda do seu nível. Todos os níveis possuem aulas de segunda à sexta (entre 07h e 20h) e também aos sábados (entre 08h e 14h). Você irá agendar as aulas pelo seu portal, de acordo com a sua preferência, no melhor dia e horário, até 30min antes do início da aula.' },
             { q: 'As turmas não são fixas?', a: 'Não. E esse é um dos maiores diferenciais do Community. Você agenda suas aulas de acordo com a sua disponibilidade e participa de encontros com alunos e, eventualmente, professores diferentes. Essa dinâmica traz mais flexibilidade para a rotina adulta e torna as conversas mais próximas da vida real. A consistência do aprendizado vem do método, do seu nível e da trilha pedagógica estruturada da Alumni: cada aula segue um conteúdo programático claro, com temas, vocabulário e objetivos definidos, garantindo evolução contínua.' },
