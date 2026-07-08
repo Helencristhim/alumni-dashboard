@@ -257,12 +257,12 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
           <div style={{ marginBottom: 48 }}>
             <img src="/logos/alumni-by-better.png" alt="Alumni by Better" style={{ height: 40, filter: 'brightness(0) invert(1)' }} />
           </div>
-          <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: 4, textTransform: 'uppercase' as const, opacity: 0.6, marginBottom: 12 }}>Proposta Personalizada</p>
+          <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: 4, textTransform: 'uppercase' as const, opacity: 0.6, marginBottom: 12 }}>Proposta Community</p>
           <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 42, fontWeight: 600, lineHeight: 1.15, marginBottom: 16 }}>
             {nome}
           </h1>
           <p style={{ fontSize: 16, opacity: 0.75, lineHeight: 1.6, maxWidth: 500 }}>
-            Programa de inglês particular, 100% personalizado para as suas necessidades profissionais e pessoais.
+            Curso de inglês online e ao vivo, com foco total em conversação para você se comunicar com confiança em situações reais do dia a dia.
           </p>
         </div>
         <div style={{ display: 'flex', gap: 24, fontSize: 13, opacity: 0.6, marginTop: 32 }}>
@@ -276,14 +276,14 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
       <div style={{ padding: '32px 48px', marginBottom: 24, background: '#f8f9fa', borderRadius: 12, border: '1px solid #e5e7eb' }}>
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 16 }}>Por que a Alumni?</h2>
         <p style={{ fontSize: 14, lineHeight: 1.8, color: '#4a4a5a', marginBottom: 20 }}>
-          Na Alumni, cada aula é construída sob medida. Antes de iniciar, realizamos uma <strong>consultoria educacional completa</strong> para entender sua realidade profissional, seus objetivos e a forma como você aprende melhor. A partir dessa análise, nosso time acadêmico cria um programa único, com materiais, exercícios e conteúdos que fazem sentido para a <strong>sua</strong> vida, não para um aluno genérico.
+          No Community, você aprende inglês do jeito que ele realmente se aprende: <strong>conversando</strong>. É um curso online e ao vivo, em turmas reduzidas de até 8 alunos, com foco total em conversação. Cada aula parte de <strong>situações reais do dia a dia</strong> — reuniões, entrevistas, viagens e conversas informais — para você desenvolver fluência com naturalidade, no seu ritmo e com flexibilidade total de horários.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {[
-            { icon: <Users size={18} />, title: 'Consultoria Educacional Completa', desc: 'Nivelamento e análise de perfil para personalização completa do seu curso' },
-            { icon: <BookOpen size={18} />, title: 'Material Personalizado Exclusivo', desc: 'Conteúdo desenvolvido para o seu perfil e necessidade' },
-            { icon: <Headphones size={18} />, title: 'Padrão Acadêmico Alumni', desc: 'Tecnologia e tradição unidos na melhor experiência de aula' },
-            { icon: <Video size={18} />, title: 'Tudo 100% Interativo', desc: 'Nada de PDF — material interativo e completo' },
+            { icon: <Users size={18} />, title: 'Turmas Reduzidas', desc: 'Máximo de 8 alunos por grupo — você pratica e é ouvido em todas as aulas' },
+            { icon: <BookOpen size={18} />, title: 'Metodologia Pre / Live / Post Class', desc: 'Você prepara na plataforma, pratica ao vivo com o professor e revisa depois' },
+            { icon: <Headphones size={18} />, title: 'Professores Certificados', desc: 'Time com certificações internacionais (CELTA, CPE, CAE, DELTA) e experiência real' },
+            { icon: <Video size={18} />, title: 'Plataforma Interativa e Gamificada', desc: 'Atividades, quizzes e painel Leaderboard — no computador ou celular, sem baixar app' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', gap: 12, padding: 16, background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb' }}>
               <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(0,48,128,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#003080', flexShrink: 0 }}>
@@ -303,14 +303,14 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>O que está incluído</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
-            'Consultoria educacional completa com nivelamento personalizado',
-            'Material didático 100% personalizado e exclusivo',
-            'Áudios profissionais com vozes naturais para cada aula',
-            'Exercícios de Pre-class para preparar antes de cada aula',
-            'Atividades complementares selecionadas (séries, podcasts, artigos)',
-            'Acesso vitalício ao material digital do aluno',
-            'Relatório de progresso por aula',
-            'Flexibilidade para reagendar aulas com 24h de antecedência',
+            'Aulas online e ao vivo com foco total em conversação',
+            'Turmas reduzidas de até 8 alunos por grupo',
+            'Metodologia em 3 passos: Pre Class, Live Class e Post Class',
+            'Plataforma de estudos interativa com quizzes e exercícios extras',
+            'Painel Leaderboard com acompanhamento de desempenho em tempo real',
+            'Teste de nivelamento e trilha com 11 níveis evolutivos (CEFR)',
+            'Flexibilidade para agendar suas aulas no melhor dia e horário',
+            'Certificação binacional reconhecida no Brasil e nos Estados Unidos',
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < 7 ? '1px solid #f0f0f0' : 'none' }}>
               <CheckCircle2 size={16} color="#16a34a" />
@@ -394,9 +394,9 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[
             { step: '1', title: 'Confirmação', desc: 'Aceite a proposta e formalize o pagamento.' },
-            { step: '2', title: 'Consultoria Educacional', desc: 'Agendamos uma conversa para conhecer você, seu nível e seus objetivos a fundo.' },
-            { step: '3', title: 'Análise Pedagógica', desc: 'Nosso time acadêmico analisa sua consultoria e cria seu perfil pedagógico personalizado.' },
-            { step: '4', title: 'Início da Jornada', desc: 'Seu material exclusivo é elaborado, seu class confirmation é enviado e iniciamos juntos sua jornada de transformação.' },
+            { step: '2', title: 'Teste de Nivelamento', desc: 'Você faz um teste rápido para identificarmos seu nível ideal entre os 11 níveis do Community.' },
+            { step: '3', title: 'Acesso à Plataforma', desc: 'Liberamos seu acesso à plataforma de estudos e você já prepara sua primeira aula na etapa Pre Class.' },
+            { step: '4', title: 'Primeira Aula ao Vivo', desc: 'Você agenda no melhor dia e horário e começa a conversar em inglês desde o primeiro encontro.' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#003080', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{item.step}</div>
@@ -422,7 +422,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
           <img src="/logos/alumni-logo-dark.png" alt="Alumni by Better" style={{ height: 36 }} />
         </div>
-        <p style={{ fontSize: 11, color: '#9ca3af' }}>Inglês particular, 100% personalizado para você.</p>
+        <p style={{ fontSize: 11, color: '#9ca3af' }}>Inglês de verdade — online, ao vivo e com foco em conversação.</p>
         <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>alumni.com.br | contato@alumni.com.br</p>
       </div>
 
@@ -431,28 +431,23 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
 }
 
 const MATERIAL_SLIDES = [
-  // Perfil 360
-  { category: 'Perfil 360', label: 'Visão Geral do Aluno', desc: 'Tela inicial com foto, nome, progresso e dados do programa — o aluno acompanha tudo em tempo real.', img: '/material-preview/perfil360-hero.png' },
-  { category: 'Perfil 360', label: 'Ficha Completa + Jornada', desc: 'Perfil detalhado com análise de nível, objetivos e a Jornada de Transformação personalizada.', img: '/material-preview/perfil360-ficha.png' },
-  { category: 'Perfil 360', label: 'Currículo Completo', desc: 'Forças, fraquezas mapeadas e o currículo das 32 aulas — tema, foco linguístico, atividade e homework de cada aula.', img: '/material-preview/perfil360-curriculo.png' },
-  // Pre-class
-  { category: 'Pre-class', label: 'Vocabulário Interativo', desc: 'Cards de vocabulário com tradução, exemplo e áudio profissional — o aluno estuda antes da aula.', img: '/material-preview/preclass-vocabulary.png' },
-  { category: 'Pre-class', label: 'Gramática em Contexto', desc: 'Texto personalizado com a gramática em destaque + quiz de compreensão — aprender na prática.', img: '/material-preview/preclass-grammar.png' },
-  { category: 'Pre-class', label: 'Pronúncia com Gravação', desc: 'Frases-chave com áudio nativo. O aluno ouve, grava sua voz e compara a pronúncia.', img: '/material-preview/preclass-pronunciation.png' },
-  { category: 'Pre-class', label: 'Survival Card + Checklist', desc: 'As 5 frases essenciais da aula + checklist de progresso para o aluno acompanhar.', img: '/material-preview/preclass-survival.png' },
-  // IN CLASS
-  { category: 'IN CLASS', label: 'Vocabulary Cards Interativos', desc: 'Cards coloridos que o professor revela ao vivo — o aluno tenta adivinhar antes de virar.', img: '/material-preview/inclass-vocabulary.png' },
-  { category: 'IN CLASS', label: 'Watch Out! — Erros Comuns', desc: 'Seção visual de erros frequentes com correção — o aluno aprende o que NÃO dizer.', img: '/material-preview/inclass-watchout.png' },
-  { category: 'IN CLASS', label: 'Listening com Controle', desc: 'Player profissional com controle de velocidade — áudios contextualizados para o perfil do aluno.', img: '/material-preview/inclass-listening.png' },
-  { category: 'IN CLASS', label: 'Role-play Guiado', desc: 'Atividades de produção oral com prompts personalizados — o aluno pratica situações reais.', img: '/material-preview/inclass-roleplay.png' },
+  // Pre Class
+  { category: 'Pre Class', label: 'Vocabulário Interativo', desc: 'Cards de vocabulário com tradução, exemplo e áudio profissional — você estuda o tema antes da aula.', img: '/material-preview/preclass-vocabulary.png' },
+  { category: 'Pre Class', label: 'Gramática em Contexto', desc: 'Texto com a gramática em destaque + quiz de compreensão — aprender na prática.', img: '/material-preview/preclass-grammar.png' },
+  { category: 'Pre Class', label: 'Pronúncia com Gravação', desc: 'Frases-chave com áudio nativo. Você ouve, grava sua voz e compara a pronúncia.', img: '/material-preview/preclass-pronunciation.png' },
+  { category: 'Pre Class', label: 'Survival Card + Checklist', desc: 'As 5 frases essenciais da aula + checklist para você acompanhar seu progresso.', img: '/material-preview/preclass-survival.png' },
+  // Live Class
+  { category: 'Live Class', label: 'Vocabulary Cards Interativos', desc: 'Cards coloridos que o professor revela ao vivo — você tenta adivinhar antes de virar.', img: '/material-preview/inclass-vocabulary.png' },
+  { category: 'Live Class', label: 'Watch Out! — Erros Comuns', desc: 'Seção visual de erros frequentes com correção — você aprende o que NÃO dizer.', img: '/material-preview/inclass-watchout.png' },
+  { category: 'Live Class', label: 'Listening com Controle', desc: 'Player profissional com controle de velocidade — áudios contextualizados para o tema da aula.', img: '/material-preview/inclass-listening.png' },
+  { category: 'Live Class', label: 'Role-play Guiado', desc: 'Atividades de produção oral com prompts — você pratica situações reais de conversação.', img: '/material-preview/inclass-roleplay.png' },
   // Complementares
-  { category: 'Complementares', label: 'Séries, Podcasts e Vídeos', desc: 'Conteúdo selecionado a dedo para o perfil do aluno — Netflix, podcasts e YouTube com dicas de estudo.', img: '/material-preview/complementares.png' },
+  { category: 'Complementares', label: 'Séries, Podcasts e Vídeos', desc: 'Conteúdo selecionado para reforçar o tema da semana — Netflix, podcasts e YouTube com dicas de estudo.', img: '/material-preview/complementares.png' },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'Perfil 360': '#003080',
-  'Pre-class': '#92700e',
-  'IN CLASS': '#1a1a2e',
+  'Pre Class': '#92700e',
+  'Live Class': '#003080',
   'Complementares': '#0891B2',
 };
 
@@ -469,7 +464,7 @@ function MaterialCarousel() {
   return (
     <div style={{ padding: '32px 48px', marginBottom: 24 }}>
       <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 8 }}>Conheça o Material</h2>
-      <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>Veja como é a experiência real de um aluno Alumni. Todo o material abaixo é criado exclusivamente para você.</p>
+      <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>Veja como é a experiência real de um aluno Community — da preparação na plataforma à prática ao vivo com o professor.</p>
 
       {/* Carousel Container */}
       <div
