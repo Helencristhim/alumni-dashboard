@@ -358,7 +358,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
             'Painel Leaderboard com acompanhamento de desempenho em tempo real',
             'Teste de nivelamento e trilha com 11 níveis evolutivos (CEFR)',
             'Flexibilidade para agendar suas aulas no melhor dia e horário',
-            'Certificação binacional reconhecida no Brasil e nos Estados Unidos',
+            'Certificado com selo da embaixada americana, reconhecido no Brasil e nos Estados Unidos',
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < 7 ? '1px solid #f0f0f0' : 'none' }}>
               <CheckCircle2 size={16} color="#16a34a" />

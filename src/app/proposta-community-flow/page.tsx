@@ -262,7 +262,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
             {nome}
           </h1>
           <p style={{ fontSize: 16, opacity: 0.75, lineHeight: 1.6, maxWidth: 500 }}>
-            O curso intensivo que combina aulas em grupo com aulas particulares — a prática coletiva da conversação somada ao reforço individual, sob medida para você.
+            O curso que combina aulas em grupo com aulas particulares personalizadas: a prática coletiva da conversação somada ao reforço individual, sob medida para você.
           </p>
         </div>
         <div style={{ display: 'flex', gap: 24, fontSize: 13, opacity: 0.6, marginTop: 32 }}>
@@ -276,14 +276,14 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
       <div style={{ padding: '32px 48px', marginBottom: 24, background: '#f8f9fa', borderRadius: 12, border: '1px solid #e5e7eb' }}>
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 16 }}>Por que a Alumni?</h2>
         <p style={{ fontSize: 14, lineHeight: 1.8, color: '#4a4a5a', marginBottom: 20 }}>
-          O Community Flow une o melhor dos dois mundos: as <strong>aulas em grupo</strong> (turmas de até 8 alunos, foco total em conversação) com <strong>aulas particulares individuais</strong> para trabalhar suas dúvidas e seus objetivos. Você pratica no grupo e, a cada 5 aulas, tem 1 aula particular dedicada só a você — com o melhor custo-benefício, já que essa combinação custaria bem mais se contratada separadamente.
+          O Community Flow une o melhor dos dois mundos: as <strong>aulas em grupo</strong> (turmas de até 8 alunos, foco total em conversação) com <strong>aulas particulares personalizadas</strong> para trabalhar suas dúvidas e seus objetivos. Você pratica no grupo e, a cada 5 aulas, tem 1 aula particular dedicada só a você, com <strong>material personalizado e único</strong>, criado para o seu perfil. Tudo isso com o melhor custo-benefício, já que essa combinação custaria bem mais se contratada separadamente.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {[
-            { icon: <Users size={18} />, title: 'Grupo + Particular', desc: '96h de aulas em grupo (até 8 alunos) + 1 aula particular a cada 5 aulas — reforço individual sob medida' },
+            { icon: <Users size={18} />, title: 'Grupo + Particular', desc: '96h de aulas em grupo (até 8 alunos) e 1 aula particular personalizada a cada 5 aulas, com material único por aluno' },
             { icon: <BookOpen size={18} />, title: 'Metodologia Pre / Live / Post Class', desc: 'Você prepara na plataforma, pratica ao vivo com o professor e revisa depois' },
             { icon: <Headphones size={18} />, title: 'Professores Certificados', desc: 'Time com certificações internacionais (CELTA, CPE, CAE, DELTA) e experiência real' },
-            { icon: <Video size={18} />, title: 'Plataforma Interativa e Gamificada', desc: 'Atividades, quizzes e painel Leaderboard — no computador ou celular, sem baixar app' },
+            { icon: <Video size={18} />, title: 'Plataforma Interativa e Gamificada', desc: 'Atividades, quizzes e painel Leaderboard, no computador ou celular, sem baixar app' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', gap: 12, padding: 16, background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb' }}>
               <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(0,48,128,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#003080', flexShrink: 0 }}>
@@ -300,8 +300,8 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
 
       {/* SEÇÃO — DIFERENCIAL FLOW (aulas particulares) */}
       <div style={{ padding: '32px 48px', marginBottom: 24, background: 'linear-gradient(135deg, #0f766e 0%, #134e4a 100%)', borderRadius: 12, color: '#fff' }}>
-        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, marginBottom: 12 }}>O diferencial do Flow: reforço individual</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, opacity: 0.92, marginBottom: 12 }}>Além das aulas em grupo, a cada <strong>5 aulas você tem 1 aula particular individual</strong> — dedicada exclusivamente a você, para trabalhar dúvidas específicas, objetivos pessoais e ajustes finos no seu aprendizado. É a atenção sob medida que acelera a sua evolução.</p>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, marginBottom: 12 }}>O diferencial do Flow: aulas particulares personalizadas</h2>
+        <p style={{ fontSize: 14, lineHeight: 1.8, opacity: 0.92, marginBottom: 12 }}>Além das aulas em grupo, a cada 5 aulas você tem <strong>1 aula particular totalmente personalizada</strong>, dedicada exclusivamente a você. Nela você trabalha suas dúvidas específicas e seus objetivos com <strong>material personalizado e único, criado sob medida para o seu perfil</strong>. É a atenção individual que acelera a sua evolução.</p>
         <p style={{ fontSize: 15, fontWeight: 700 }}>Melhor custo-benefício: prática em grupo + reforço particular custaria bem mais se contratados separadamente.</p>
       </div>
 
@@ -313,7 +313,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
           {[
             { icon: <BookOpen size={20} />, title: 'Pre Class', tag: 'aquecimento', desc: 'Atividades curtas para ativar vocabulário e ideias do tema da aula. O aluno chega preparado, com mais repertório e segurança para falar.' },
             { icon: <Video size={20} />, title: 'Live Class', tag: 'ao vivo', desc: 'Condução do professor, foco em conversação, escuta ativa e role-plays de situações reais. Feedback imediato e gramática aplicada ao contexto.' },
-            { icon: <Award size={20} />, title: 'Post Class', tag: 'fixação e avanço', desc: 'Revisão guiada do conteúdo, prática dirigida (ex.: Grammar Practice, Speaking Trainer) e registro do que foi conquistado — com próximo passo claro para evoluir.' },
+            { icon: <Award size={20} />, title: 'Post Class', tag: 'fixação e avanço', desc: 'Revisão guiada do conteúdo, prática dirigida (ex.: Grammar Practice, Speaking Trainer) e registro do que foi conquistado, com próximo passo claro para evoluir.' },
           ].map((item, i) => (
             <div key={i} style={{ padding: 20, background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb' }}>
               <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(0,48,128,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#003080', marginBottom: 12 }}>
@@ -329,7 +329,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
       {/* SEÇÃO — PLATAFORMA */}
       <div style={{ padding: '32px 48px', marginBottom: 24, background: '#f8f9fa', borderRadius: 12, border: '1px solid #e5e7eb' }}>
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 12 }}>Estude com autonomia em uma plataforma moderna e intuitiva</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: '#4a4a5a', marginBottom: 16 }}>A plataforma de estudos do Community é moderna, intuitiva e pensada para facilitar seu progresso. Tudo o que você precisa em um só lugar, no computador ou no celular — sem baixar aplicativo:</p>
+        <p style={{ fontSize: 14, lineHeight: 1.8, color: '#4a4a5a', marginBottom: 16 }}>A plataforma de estudos do Community é moderna, intuitiva e pensada para facilitar seu progresso. Tudo o que você precisa em um só lugar, no computador ou no celular, sem baixar aplicativo:</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
           {[
             'Atividades interativas de preparação antes das aulas',
@@ -360,12 +360,12 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
           {[
             '96 horas de aulas em grupo, com foco em conversação e contextos reais',
             'Turmas reduzidas de até 8 alunos por grupo',
-            '1 aula particular individual a cada 5 aulas em grupo, para dúvidas e objetivos específicos',
+            '1 aula particular personalizada a cada 5 aulas em grupo, com material exclusivo criado para o seu perfil',
             'Metodologia em 3 passos: Pre Class, Live Class e Post Class',
             'Plataforma de estudos interativa, com quizzes, exercícios extras e painel Leaderboard',
             'Teste de nivelamento e trilha com 11 níveis evolutivos (CEFR)',
-            'Agenda flexível — agende suas aulas até 30 min antes, no melhor dia e horário',
-            'Certificação binacional reconhecida no Brasil e nos Estados Unidos',
+            'Agenda flexível: agende suas aulas até 30 min antes, no melhor dia e horário',
+            'Certificado com selo da embaixada americana, reconhecido no Brasil e nos Estados Unidos',
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < 7 ? '1px solid #f0f0f0' : 'none' }}>
               <CheckCircle2 size={16} color="#16a34a" />
@@ -445,7 +445,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 600, color: '#003080', marginBottom: 20 }}>Perguntas Frequentes</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {[
-            { q: 'Como funcionam as aulas particulares do Flow?', a: 'A cada 5 aulas em grupo, você pode agendar 1 aula particular individual, dedicada exclusivamente a você — para trabalhar dúvidas específicas, objetivos pessoais e ajustes finos no aprendizado, com a mesma flexibilidade de agenda das aulas em grupo.' },
+            { q: 'Como funcionam as aulas particulares do Flow?', a: 'A cada 5 aulas em grupo, você pode agendar 1 aula particular personalizada, dedicada exclusivamente a você, com material único criado para o seu perfil, para trabalhar dúvidas específicas, objetivos pessoais e ajustes finos no aprendizado, com a mesma flexibilidade de agenda das aulas em grupo.' },
             { q: 'Posso fazer o curso mesmo sem saber nada de inglês?', a: 'Sim. Você realizará um teste de nivelamento para ser direcionado ao módulo ideal. Inclusive, temos um nível inicial chamado "Confidence", perfeito para quem nunca teve contato com o idioma.' },
             { q: 'Quem são os professores?', a: 'O corpo docente da Alumni é formado por professores altamente qualificados, com certificações internacionais e sólida formação acadêmica. Nossos professores possuem certificações como CELTA, CPE, CAE, DELTA, IELTS, TOEIC, além de licenciatura e pós-graduação em Letras, e ampla experiência no ensino de inglês para adultos, adolescentes e crianças.' },
             { q: 'Como funciona a agenda flexível?', a: 'Após a matrícula e o teste de nivelamento, você receberá acesso ao portal do aluno, com a agenda do seu nível. Todos os níveis possuem aulas de segunda à sexta (entre 07h e 20h) e também aos sábados (entre 08h e 14h). Você irá agendar as aulas pelo seu portal, de acordo com a sua preferência, no melhor dia e horário, até 30min antes do início da aula.' },
@@ -469,7 +469,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
             { step: '1', title: 'Confirmação', desc: 'Aceite a proposta e formalize o pagamento.' },
             { step: '2', title: 'Teste de Nivelamento', desc: 'Você faz um teste rápido para identificarmos seu nível ideal entre os 11 níveis do Community.' },
             { step: '3', title: 'Acesso à Plataforma', desc: 'Liberamos seu acesso à plataforma de estudos e você já prepara sua primeira aula na etapa Pre Class.' },
-            { step: '4', title: 'Aulas ao Vivo', desc: 'Você agenda suas aulas no melhor dia e horário e conversa em inglês desde o primeiro encontro — com novos temas a cada aula, evoluindo de forma contínua.' },
+            { step: '4', title: 'Aulas ao Vivo', desc: 'Você agenda suas aulas no melhor dia e horário e conversa em inglês desde o primeiro encontro, com novos temas a cada aula, evoluindo de forma contínua.' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#003080', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{item.step}</div>
@@ -495,7 +495,7 @@ function PropostaPreview({ data, onOpenTermos }: { data: PropostaData; onOpenTer
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
           <img src="/logos/alumni-logo-dark.png" alt="Alumni by Better" style={{ height: 36 }} />
         </div>
-        <p style={{ fontSize: 11, color: '#9ca3af' }}>Aulas em grupo + aulas particulares — prática coletiva e reforço individual.</p>
+        <p style={{ fontSize: 11, color: '#9ca3af' }}>Aulas em grupo e aulas particulares personalizadas: prática coletiva e reforço individual.</p>
         <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>alumni.com.br | contato@alumni.com.br</p>
       </div>
 
@@ -540,8 +540,8 @@ function TermosConteudo() {
       <h3 style={s.title}>4. Agendamento e Realização das Aulas</h3>
       <h4 style={s.sub}>4.1 Cancelamento e Reagendamento</h4>
       <ul style={s.ul}>
-        <li style={s.li}>Para cancelamento — mínimo de 48h — caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</li>
-        <li style={s.li}>Para reagendamento — mínimo de 24h — caso o pedido seja feito em período inferior ao estipulado a aula será descontada do pacote</li>
+        <li style={s.li}>Para cancelamento, mínimo de 48h: caso o pedido seja feito em período inferior ao estipulado, a aula será descontada do pacote</li>
+        <li style={s.li}>Para reagendamento, mínimo de 24h: caso o pedido seja feito em período inferior ao estipulado, a aula será descontada do pacote</li>
         <li style={s.li}>Não é possível reagendar/cancelar uma mesma aula mais de uma vez</li>
       </ul>
 
