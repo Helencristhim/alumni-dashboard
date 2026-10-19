@@ -8,6 +8,25 @@ const AUTH_COOKIE_NAME = 'alumni_auth_token';
 // Rotas públicas (não requerem autenticação)
 const publicRoutes = ['/login'];
 
+// APIs que respondem sem sessão: o próprio login, o webhook da ZapSign e os cron
+// (cada rota de cron confere o CRON_SECRET). Todo o resto da API exige o cookie.
+const publicApiPrefixes = [
+  '/api/auth/login',
+  '/api/auth/logout',
+  '/api/auth/session',
+  '/api/webhooks/',
+  '/api/cron/',
+];
+// DOCX que a ZapSign busca pela URL do contrato (sem cookie).
+const publicApiPatterns = [/^\/api\/contracts\/[^/]+\/serve-docx$/];
+
+function isPublicApi(pathname: string): boolean {
+  return (
+    publicApiPrefixes.some(prefix => pathname === prefix || pathname.startsWith(prefix)) ||
+    publicApiPatterns.some(pattern => pattern.test(pathname))
+  );
+}
+
 // Mapeamento de rotas para permissões necessárias
 const routePermissions: Record<string, string[]> = {
   '/vendas-b2c': ['module:vendas-b2c:view'],
@@ -91,6 +110,21 @@ function canAccessRoute(user: TokenPayload, pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // API: exige sessão válida (exceto as públicas acima), com ou sem modo demo.
+  // Antes a API inteira passava direto e quase nenhuma rota conferia a sessão:
+  // contratos, vendas e cobrança respondiam sem login.
+  if (pathname.startsWith('/api')) {
+    if (isPublicApi(pathname)) {
+      return NextResponse.next();
+    }
+    const apiToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+    const apiUser = apiToken ? await verifyToken(apiToken) : null;
+    if (!apiUser) {
+      return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 });
+    }
+    return NextResponse.next();
+  }
+
   // Permite acesso a rotas públicas
   if (publicRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next();
@@ -102,11 +136,6 @@ export async function middleware(request: NextRequest) {
     pathname.includes('.') ||
     pathname.startsWith('/favicon')
   ) {
-    return NextResponse.next();
-  }
-
-  // Permite acesso a APIs (elas têm sua própria autenticação)
-  if (pathname.startsWith('/api')) {
     return NextResponse.next();
   }
 
